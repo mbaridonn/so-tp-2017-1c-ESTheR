@@ -13,6 +13,17 @@ int main(void) {
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
 	direccionServidor.sin_port = httons(8080);
 
-	puts("Proceso Kernel");
-	return EXIT_SUCCESS;
+	int servidor = socket(AF_INET, SOCK_STREAM, 0);
+
+	if(bind(servidor, (void*) &direccionServidor, sizeof(direccionServidor)) != 0){
+		perror("Falló el bind");
+		return 1;
+	}
+
+	printf("Estoy escuchando");
+	listen(servidor,100);
+
+	//puts("Proceso Kernel");
+	//return EXIT_SUCCESS;
+	return 0;
 }
