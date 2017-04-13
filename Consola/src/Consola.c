@@ -3,6 +3,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#define LONGMAX 1000
 
 int main(void) {
 	struct sockaddr_in direccionServidor;
@@ -11,17 +12,18 @@ int main(void) {
 	direccionServidor.sin_port = htons(8080);
 
 	int cliente = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect(cliente, (void*) &direccionServidor, sizeof(direccionServidor)) != 0) {
+	if (connect(cliente, (void*) &direccionServidor, sizeof(direccionServidor))
+			!= 0) {
 		perror("No se pudo conectar");
 		return 1;
 	}
 
-	while (1) {
-		char mensaje[1000];
-		scanf("%s", mensaje);
+	char mensaje[LONGMAX];
+	scanf("%s", mensaje);
 
-		send(cliente, mensaje, strlen(mensaje), 0);
-	}
+	send(cliente, mensaje, strlen(mensaje), 0);
+
+	close(cliente);
 
 	return 0;
 }
