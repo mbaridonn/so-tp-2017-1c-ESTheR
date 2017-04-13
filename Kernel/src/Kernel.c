@@ -10,7 +10,7 @@ int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
-	direccionServidor.sin_port = httons(8080);
+	direccionServidor.sin_port = htons(8080);
 
 	int servidor = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -27,9 +27,9 @@ int main(void) {
 
 	//---------------------------------------------------------------------------------
 
-	struct sockaddr_in direcciónCliente;
-	unsigned int tamañoDirección;
-	int cliente = accept(servidor, (void*) &direcciónCliente, &tamañoDirección);
+	struct sockaddr_in direccionCliente;
+	unsigned int tamanioDireccion;
+	int cliente = accept(servidor, (void*) &direccionCliente, &tamanioDireccion);
 
 	printf("Recibí una conexión en %d!!\n", cliente);
 	send(cliente, "Hola NetCat!", 13, 0);
