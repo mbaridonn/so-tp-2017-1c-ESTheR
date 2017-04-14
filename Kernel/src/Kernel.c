@@ -61,29 +61,29 @@ int main(void) {
 	char* buffer = malloc(LONGMAX);
 
 	esperarConexion(&servidor, &direccionServidor);
-
 	aceptarConexion(&servidor, &cliente);
-
 	recibirMensajeDe(&cliente, buffer);
-
-	//---------------------------------------------------------------------------------
-
-	//----------------------------------------------------------------------------------
-
-	//Conexion con los otros modulos (Memoria, Cpu, y FileSystem)
 	close(servidor);
 
+	//CONEXION CON MEMORIA
 	esperarConexion(&servidor, &direccionServidor);
-
 	aceptarConexion(&servidor, &cliente);
-
 	send(cliente, buffer, LONGMAX, 0);
+	close(servidor);
+
+	//CONEXION CON CPU
+	esperarConexion(&servidor, &direccionServidor);
+	aceptarConexion(&servidor, &cliente);
+	send(cliente, buffer, LONGMAX, 0);
+	close(servidor);
+
+	//CONEXION CON FILESYSTEM
+	esperarConexion(&servidor, &direccionServidor);
+	aceptarConexion(&servidor, &cliente);
+	send(cliente, buffer, LONGMAX, 0);
+	close(servidor);
 
 	free(buffer);
 
-	close(servidor);
-
-//puts("Proceso Kernel");
-//return EXIT_SUCCESS;
 	return 0;
 }
