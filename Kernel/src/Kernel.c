@@ -49,6 +49,18 @@ int recibirMensajeDe(int *cliente, char *buffer) {
 	return 0;
 }
 
+int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
+
+	(*cliente) = socket(AF_INET, SOCK_STREAM, 0);
+	if (connect((*cliente), (void*) &(*direccionServidor),
+			sizeof((*direccionServidor))) != 0) {
+		perror("No se pudo conectar");
+		return 1;
+	}
+
+	return 0;
+}
+
 int main(void) {
 
 	struct sockaddr_in direccionServidor;
@@ -57,19 +69,28 @@ int main(void) {
 	direccionServidor.sin_port = htons(8080);
 
 	int servidor;
-	int cliente;
+	int clienteConsola;
 	char* buffer = malloc(LONGMAX);
 
 	esperarConexion(&servidor, &direccionServidor);
-	aceptarConexion(&servidor, &cliente);
-	recibirMensajeDe(&cliente, buffer);
+	aceptarConexion(&servidor, &clienteConsola);
+	recibirMensajeDe(&clienteConsola, buffer);
 	close(servidor);
 
 	//CONEXION CON MEMORIA
-	esperarConexion(&servidor, &direccionServidor);
+	struct sockaddr_in direccionServidorMemoria;
+		direccionServidor.sin_family = AF_INET;
+		direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
+		direccionServidor.sin_port = htons(8081);
+
+	int cliente;
+	conectar(&cliente, &direccionServidorMemoria);
+	send(cliente, buffer, strlen(buffer), 0);
+	close(cliente);
+	/*esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
 	send(cliente, buffer, LONGMAX, 0);
-	close(servidor);
+	close(servidor);*/
 
 	//CONEXION CON CPU
 	esperarConexion(&servidor, &direccionServidor);
