@@ -24,15 +24,15 @@ void *reservarMemoria(int tamanioArchivo){
 
 void settearVariables(t_config *archivo_Modelo){
 	config = reservarMemoria(sizeof(t_configuracion));
-	config -> puerto = config_get_int_value(archivo_Modelo, "PuertoKernel");
+	config -> puerto = config_get_int_value(archivo_Modelo, "Puerto_Kernel");
 }
 
-void leerArchivo(){
-	if (access(rutaArchivo, F_OK) == -1){
+void leerArchivo(char *argv){
+	if (access(argv, F_OK) == -1){
 		printf("No se encontró el Archivo");
 		exit (-1);
 	}
-		t_config *archivo_config = config_create(rutaArchivo);
+		t_config *archivo_config = config_create(argv);
 		settearVariables(archivo_config);
 		config_destroy(archivo_config);
 		printf("Leí el archivo y extraje el puerto: %d", config -> puerto);
@@ -94,9 +94,17 @@ int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
 	return 0;
 }
 
+void faltaDeParametros(int argc){
+	if (argc == 1){
+		printf("Te falto el parametro  \n");
+	}
+	exit (-1);
+}
 
-int main(void) {
 
+int main(int argc,char *argv[]) {
+
+	faltaDeParametros(argc);
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
@@ -106,7 +114,7 @@ int main(void) {
 	int clienteConsola;
 	char* buffer = malloc(LONGMAX);
 
-	leerArchivo();
+	leerArchivo(argv[1]);
 
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &clienteConsola);
@@ -124,7 +132,7 @@ int main(void) {
 	send(cliente, buffer, strlen(buffer), 0);
 	close(cliente);
 	/*esperarConexion(&servidor, &direccionServidor);
-	aceptarConexion(&servidor, &cliente);
+	aceptarConexionvoid(&servidor, &cliente);
 	send(cliente, buffer, LONGMAX, 0);
 	close(servidor);*/
 
