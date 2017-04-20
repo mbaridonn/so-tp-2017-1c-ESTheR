@@ -4,7 +4,40 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <commons/config.h>
+#include <unistd.h>
 #define LONGMAX 1000
+#define rutaArchivo "/home/utnso/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+typedef struct {
+	int puerto;
+}t_configuracion;
+t_configuracion *config;
+
+void *reservarMemoria(int tamanioArchivo){
+	void *puntero = malloc (tamanioArchivo);
+	if(puntero == NULL){
+		printf("No hay más espacio");
+		exit(-1);
+	}
+	return puntero;
+}
+
+void settearVariables(t_config *archivo_Modelo){
+	config = reservarMemoria(sizeof(t_configuracion));
+	config -> puerto = config_get_int_value(archivo_Modelo, "PuertoKernel");
+}
+
+void leerArchivo(){
+	if (access(rutaArchivo, F_OK) == -1){
+		printf("No se encontró el Archivo");
+		exit (-1);
+	}
+		t_config *archivo_config = config_create(rutaArchivo);
+		settearVariables(archivo_config);
+		config_destroy(archivo_config);
+		printf("Leí el archivo y extraje el puerto: %d", config -> puerto);
+}
+
 
 int esperarConexion(int *servidor, struct sockaddr_in *direccionServidor) {
 
@@ -61,6 +94,7 @@ int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
 	return 0;
 }
 
+
 int main(void) {
 
 	struct sockaddr_in direccionServidor;
@@ -71,6 +105,8 @@ int main(void) {
 	int servidor;
 	int clienteConsola;
 	char* buffer = malloc(LONGMAX);
+
+	leerArchivo();
 
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &clienteConsola);
