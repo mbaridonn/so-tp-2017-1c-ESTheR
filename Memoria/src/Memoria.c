@@ -3,7 +3,40 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <commons/config.h>
+#define rutaArchivo "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt"
 #define LONGMAX 1000
+typedef struct {
+	int puerto;
+}t_configuracion;
+t_configuracion *config;
+
+void *reservarMemoria(int tamanioArchivo){
+	void *puntero = malloc (tamanioArchivo);
+	if(puntero == NULL){
+		printf("No hay más espacio");
+		exit(-1);
+	}
+	return puntero;
+}
+
+void settearVariables(t_config *archivo_Modelo){
+	config = reservarMemoria(sizeof(t_configuracion));
+	config -> puerto = config_get_int_value(archivo_Modelo, "PUERTO");
+}
+
+void leerArchivo(){
+	if (access(rutaArchivo, F_OK) == -1){
+		printf("No se encontró el Archivo");
+		exit (-1);
+	}
+		t_config *archivo_config = config_create(rutaArchivo);
+		settearVariables(archivo_config);
+		config_destroy(archivo_config);
+		printf("Leí el archivo y extraje el puerto: %d", config -> puerto);
+}
 
 int esperarConexion(int *servidor, struct sockaddr_in *direccionServidor) {
 
@@ -71,6 +104,7 @@ int main(void) {
 	int cliente;
 	char* buffer = malloc(LONGMAX);
 
+	leerArchivo();
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
 	recibirMensajeDe(&cliente, buffer);
