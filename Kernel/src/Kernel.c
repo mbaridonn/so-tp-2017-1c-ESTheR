@@ -7,37 +7,36 @@
 #include <commons/config.h>
 #include <unistd.h>
 #define LONGMAX 1000
-#define rutaArchivo "/home/utnso/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+#define rutaArchivo "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 typedef struct {
 	int puerto;
-}t_configuracion;
+} t_configuracion;
 t_configuracion *config;
 
-void *reservarMemoria(int tamanioArchivo){
-	void *puntero = malloc (tamanioArchivo);
-	if(puntero == NULL){
+void *reservarMemoria(int tamanioArchivo) {
+	void *puntero = malloc(tamanioArchivo);
+	if (puntero == NULL) {
 		printf("No hay más espacio");
 		exit(-1);
 	}
 	return puntero;
 }
 
-void settearVariables(t_config *archivo_Modelo){
+void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config -> puerto = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
+	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
 }
 
-void leerArchivo(){
-	if (access(rutaArchivo, F_OK) == -1){
+void leerArchivo() {
+	if (access(rutaArchivo, F_OK) == -1) {
 		printf("No se encontró el Archivo");
-		exit (-1);
+		exit(-1);
 	}
-		t_config *archivo_config = config_create(rutaArchivo);
-		settearVariables(archivo_config);
-		config_destroy(archivo_config);
-		printf("Leí el archivo y extraje el puerto: %d", config -> puerto);
+	t_config *archivo_config = config_create(rutaArchivo);
+	settearVariables(archivo_config);
+	config_destroy(archivo_config);
+	printf("Leí el archivo y extraje el puerto: %d", config->puerto);
 }
-
 
 int esperarConexion(int *servidor, struct sockaddr_in *direccionServidor) {
 
@@ -94,61 +93,145 @@ int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
 	return 0;
 }
 
-void faltaDeParametros(int argc){
-	if (argc == 1){
+void faltaDeParametros(int argc) {
+	if (argc == 1) {
 		printf("Te falto el parametro  \n");
 	}
-	exit (-1);
+	exit(-1);
 }
-
 
 int main(void) {
 
-
+	int opt = 1;
+	int master_socket, addrlen, cliente, client_socket[30], max_clients = 30,activity, i, valread, sd;
+	int max_sd;
 	struct sockaddr_in direccionServidor;
+
+	char buffer[1025];
+	fd_set readfds;
+
+	for (i = 0; i < max_clients; i++) {
+		client_socket[i] = 0;
+	}
+
+	if ((master_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+		perror("socket failed");
+		exit(EXIT_FAILURE);
+	}
+
+	//setea master socket para que reciba multiples conexiones
+	if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &opt,
+			sizeof(opt)) < 0) {
+		perror("setsockopt");
+		exit(EXIT_FAILURE);
+	}
+
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
 	direccionServidor.sin_port = htons(8080);
 
-	int servidor;
-	int clienteConsola;
-	char* buffer = malloc(LONGMAX);
+	if (bind(master_socket, (struct sockaddr *) &direccionServidor, sizeof(direccionServidor))
+			< 0) {
+		perror("bind failed");
+		exit(EXIT_FAILURE);
+	}
+	printf("Listener en puerto %d \n", 8080);
 
-	leerArchivo();
+	//maximo de 3 conexiones pendientes
+	if (listen(master_socket, 3) < 0) {
+		perror("listen");
+		exit(EXIT_FAILURE);
+	}
 
-	esperarConexion(&servidor, &direccionServidor);
-	aceptarConexion(&servidor, &clienteConsola);
-	recibirMensajeDe(&clienteConsola, buffer);
-	close(servidor);
+	addrlen = sizeof(direccionServidor);
+	puts("Esperando conexiones...");
 
-	//CONEXION CON MEMORIA
-	struct sockaddr_in direccionServidorMemoria;
-		direccionServidor.sin_family = AF_INET;
-		direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
-		direccionServidor.sin_port = htons(8081);
+	while (1) {
+		FD_ZERO(&readfds);
 
-	int cliente;
-	conectar(&cliente, &direccionServidorMemoria);
-	send(cliente, buffer, strlen(buffer), 0);
-	close(cliente);
-	/*esperarConexion(&servidor, &direccionServidor);
-	aceptarConexionvoid(&servidor, &cliente);
-	send(cliente, buffer, LONGMAX, 0);
-	close(servidor);*/
+		FD_SET(master_socket, &readfds);
+		max_sd = master_socket;
 
-	//CONEXION CON CPU
-	esperarConexion(&servidor, &direccionServidor);
-	aceptarConexion(&servidor, &cliente);
-	send(cliente, buffer, LONGMAX, 0);
-	close(servidor);
+		for (i = 0; i < max_clients; i++) {
+			sd = client_socket[i];
 
-	//CONEXION CON FILESYSTEM
-	esperarConexion(&servidor, &direccionServidor);
-	aceptarConexion(&servidor, &cliente);
-	send(cliente, buffer, LONGMAX, 0);
-	close(servidor);
+			if (sd > 0)
+				FD_SET(sd, &readfds);
 
-	free(buffer);
+			if (sd > max_sd)
+				max_sd = sd;
+		}
+
+		//espera indefinidamente actividad en algun socket
+		activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
+
+		if (activity < 0) {
+			printf("select error");
+		}
+
+		//maneja conexion entrante
+		if (FD_ISSET(master_socket, &readfds)) {
+			if ((cliente = accept(master_socket,
+					(struct sockaddr *) &direccionServidor, (socklen_t*) &addrlen)) < 0) {
+				perror("accept");
+				exit(EXIT_FAILURE);
+			}
+
+			//info que por ahi es util
+			printf(
+					"Nueva conexion , socket fd: %d , ip: %s , puerto: %d \n",
+					cliente, inet_ntoa(direccionServidor.sin_addr),
+					ntohs(direccionServidor.sin_port));
+
+			recibirMensajeDe(&cliente, buffer);
+
+			//agrega nuevo socket al array de sockets
+			for (i = 0; i < max_clients; i++) {
+				if (client_socket[i] == 0) {
+					client_socket[i] = cliente;
+					printf("Agregando a conjunto de sockets como %d\n", i);
+					break;
+				}
+			}
+		}
+
+		for (i = 0; i < max_clients; i++) {
+			sd = client_socket[i];
+
+			if (FD_ISSET(sd, &readfds)) {
+				if ((valread = read(sd, buffer, 1024)) == 0) {
+					getpeername(sd, (struct sockaddr*) &direccionServidor,
+							(socklen_t*) &addrlen);
+					printf("Cliente desconectado , ip %s , puerto %d \n",
+							inet_ntoa(direccionServidor.sin_addr),
+							ntohs(direccionServidor.sin_port));
+
+					close(sd);
+					client_socket[i] = 0;
+				}
+			}
+		}
+	}
 
 	return 0;
+
+	/*struct sockaddr_in direccionServidor;
+	 direccionServidor.sin_family = AF_INET;
+	 direccionServidor.sin_addr.s_addr = INADDR_ANY;
+	 direccionServidor.sin_port = htons(8080);
+
+	 int servidor;
+	 int clienteConsola;
+	 char* buffer = malloc(LONGMAX);
+
+	 leerArchivo();
+
+	 esperarConexion(&servidor, &direccionServidor);
+	 aceptarConexion(&servidor, &clienteConsola);
+	 recibirMensajeDe(&clienteConsola, buffer);
+	 close(servidor);
+
+	 free(buffer);
+
+	 return 0;*/
 }
