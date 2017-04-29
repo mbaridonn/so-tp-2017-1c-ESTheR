@@ -3,6 +3,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <parser/parser.h>
+#include <parser/metadata_program.h>
 #define LONGMAX 1000
 
 int conectar(int *cliente, struct sockaddr_in *direccionServidor) {

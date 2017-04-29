@@ -7,7 +7,7 @@
 #include <commons/config.h>
 #include <unistd.h>
 #define LONGMAX 1000
-#define rutaArchivo "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+#define RUTAARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 typedef struct {
 	int puerto;
 } t_configuracion;
@@ -28,11 +28,11 @@ void settearVariables(t_config *archivo_Modelo) {
 }
 
 void leerArchivo() {
-	if (access(rutaArchivo, F_OK) == -1) {
+	if (access(RUTAARCHIVO, F_OK) == -1) {
 		printf("No se encontró el Archivo");
 		exit(-1);
 	}
-	t_config *archivo_config = config_create(rutaArchivo);
+	t_config *archivo_config = config_create(RUTAARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	printf("Leí el archivo y extraje el puerto: %d", config->puerto);
