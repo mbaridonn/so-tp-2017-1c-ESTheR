@@ -103,7 +103,8 @@ void faltaDeParametros(int argc) {
 int main(void) {
 
 	int opt = 1;
-	int master_socket, addrlen, cliente, client_socket[30], max_clients = 30,activity, i, valread, sd;
+	int master_socket, addrlen, cliente, client_socket[30], max_clients = 30,
+			activity, i, valread, sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
 
@@ -130,8 +131,8 @@ int main(void) {
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
 	direccionServidor.sin_port = htons(8080);
 
-	if (bind(master_socket, (struct sockaddr *) &direccionServidor, sizeof(direccionServidor))
-			< 0) {
+	if (bind(master_socket, (struct sockaddr *) &direccionServidor,
+			sizeof(direccionServidor)) < 0) {
 		perror("bind failed");
 		exit(EXIT_FAILURE);
 	}
@@ -172,18 +173,28 @@ int main(void) {
 		//maneja conexion entrante
 		if (FD_ISSET(master_socket, &readfds)) {
 			if ((cliente = accept(master_socket,
-					(struct sockaddr *) &direccionServidor, (socklen_t*) &addrlen)) < 0) {
+					(struct sockaddr *) &direccionServidor,
+					(socklen_t*) &addrlen)) < 0) {
 				perror("accept");
 				exit(EXIT_FAILURE);
 			}
 
 			//info que por ahi es util
-			printf(
-					"Nueva conexion , socket fd: %d , ip: %s , puerto: %d \n",
+			printf("Nueva conexion , socket fd: %d , ip: %s , puerto: %d \n",
 					cliente, inet_ntoa(direccionServidor.sin_addr),
 					ntohs(direccionServidor.sin_port));
 
-			recibirMensajeDe(&cliente, buffer);
+			//recibirMensajeDe(&cliente, buffer);
+
+			FILE *archivo;
+			archivo = fopen("prueba.txt", "w");
+
+			int bytesRecibidos;
+			char buffer[10];
+			recv(cliente, buffer, 10, 0);
+			buffer[bytesRecibidos] = '\0';
+			fwrite(buffer, 1, 10, archivo);
+			fclose(archivo);
 
 			//agrega nuevo socket al array de sockets
 			for (i = 0; i < max_clients; i++) {

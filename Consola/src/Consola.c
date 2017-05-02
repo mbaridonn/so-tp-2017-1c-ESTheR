@@ -10,32 +10,32 @@
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 typedef struct {
 	int puerto;
-}t_configuracion;
+} t_configuracion;
 t_configuracion *config;
 
-void *reservarMemoria(int tamanioArchivo){
-	void *puntero = malloc (tamanioArchivo);
-	if(puntero == NULL){
+void *reservarMemoria(int tamanioArchivo) {
+	void *puntero = malloc(tamanioArchivo);
+	if (puntero == NULL) {
 		printf("No hay más espacio \n");
 		exit(-1);
 	}
 	return puntero;
 }
 
-void settearVariables(t_config *archivo_Modelo){
+void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config -> puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
+	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
 }
 
-void leerArchivo(){
-	if (access(RUTAARCHIVO, F_OK) == -1){
+void leerArchivo() {
+	if (access(RUTAARCHIVO, F_OK) == -1) {
 		printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
-		t_config *archivo_config = config_create(RUTAARCHIVO);
-		settearVariables(archivo_config);
-		config_destroy(archivo_config);
-		printf("Leí el archivo y extraje el puerto: %d \n", config -> puerto);
+	t_config *archivo_config = config_create(RUTAARCHIVO);
+	settearVariables(archivo_config);
+	config_destroy(archivo_config);
+	printf("Leí el archivo y extraje el puerto: %d \n", config->puerto);
 }
 
 int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
@@ -61,14 +61,37 @@ int main(void) {
 	int cliente;
 	char mensaje[LONGMAX];
 
+	//
+	FILE* archivo;
+	archivo = fopen("prueba.txt", "r");
+	if (archivo == NULL) {
+		printf("No se pudo leer el archivo\n");
+		return EXIT_FAILURE;
+	}
+
 	conectar(&cliente, &direccionServidor);
 
-	printf("Ingrese un mensaje: ");
-	scanf("%s", mensaje);
+	int bytesLeidos = 0;
+	char buffer[10];
+	while(bytesLeidos = fread(buffer, 1, 10, archivo)){
+		if(send(cliente, buffer, 10, 0) == -1){
+			printf("Error enviando archivo");
+		}
 
-	send(cliente, mensaje, strlen(mensaje), 0);
+	}
 
 	close(cliente);
+	close(archivo);
+
+	//
+
+	//
+	/*conectar(&cliente, &direccionServidor);
+	printf("Ingrese un mensaje: ");
+	scanf("%s", mensaje);
+	send(cliente, mensaje, strlen(mensaje), 0);
+	close(cliente);*/
+	//
 
 	return 0;
 }
