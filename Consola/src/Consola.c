@@ -6,12 +6,22 @@
 #include <commons/config.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <stdio.h>
 #define LONGMAX 1000
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 typedef struct {
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
+
+enum procesos {
+	kernel, cpu, consola, file_system, memoria
+};
+
+void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
+	send((*cliente), unProceso, sizeof(int), 0);
+	recv((*cliente), procesoAConocer, sizeof(int), 0);
+}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
@@ -62,36 +72,49 @@ int main(void) {
 	char mensaje[LONGMAX];
 
 	//
-	FILE* archivo;
-	archivo = fopen("prueba.txt", "r");
-	if (archivo == NULL) {
-		printf("No se pudo leer el archivo\n");
-		return EXIT_FAILURE;
-	}
 
 	conectar(&cliente, &direccionServidor);
 
-	int bytesLeidos = 0;
-	char buffer[10];
-	while(bytesLeidos = fread(buffer, 1, 10, archivo)){
-		if(send(cliente, buffer, 10, 0) == -1){
-			printf("Error enviando archivo");
+	int unaConsola = consola;
+	int *proceso;
+	handshake(&cliente, &unaConsola, proceso);
+
+	int procesoConectado = *proceso;
+	switch (procesoConectado) {
+	case kernel:
+		printf("Me conecte con el Kernel!\n");
+		FILE* archivo;
+		archivo = fopen("prueba.txt", "r");
+		if (archivo == NULL) {
+			printf("No se pudo leer el archivo\n");
+			return EXIT_FAILURE;
 		}
 
+		int bytesLeidos = 0;
+		char buffer[10];
+		while (bytesLeidos = fread(buffer, 1, 10, archivo)) {
+			if (send(cliente, buffer, 10, 0) == -1) {
+				printf("Error enviando archivo");
+			}
+
+		}
+		fclose(archivo);
+		break;
+	default:
+		printf("No me puedo conectar con vos.\n");
+		break;
 	}
 
 	close(cliente);
-	close(archivo);
 
 	//
 
 	//
 	/*conectar(&cliente, &direccionServidor);
-	printf("Ingrese un mensaje: ");
-	scanf("%s", mensaje);
-	send(cliente, mensaje, strlen(mensaje), 0);
-	close(cliente);*/
+	 printf("Ingrese un mensaje: ");
+	 scanf("%s", mensaje);
+	 send(cliente, mensaje, strlen(mensaje), 0);
+	 close(cliente);*/
 	//
-
 	return 0;
 }

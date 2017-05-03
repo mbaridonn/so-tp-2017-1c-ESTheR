@@ -3,9 +3,16 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <parser/parser.h>
-#include <parser/metadata_program.h>
 #define LONGMAX 1000
+
+enum procesos {
+	kernel, cpu, consola, file_system, memoria
+};
+
+void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
+	send((*cliente), unProceso, sizeof(int), 0);
+	recv((*cliente), procesoAConocer, sizeof(int), 0);
+}
 
 int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
 
@@ -40,7 +47,22 @@ int main(void) {
 
 	conectar(&cliente, &direccionServidor);
 
-	recibirMensajeDe(&cliente, buffer);
+	int unaCpu = cpu;
+	int *proceso;
+	handshake(&cliente, &unaCpu, proceso);
+	int procesoConectado = *proceso;
+	switch (procesoConectado) {
+	case kernel:
+		printf("Me conecte con el Kernel!\n");
+		recibirMensajeDe(&cliente, buffer);
+		break;
+	case memoria:
+		printf("Me conecte con Memoria!\n");
+		break;
+	default:
+		printf("No me puedo conectar con vos.\n");
+		break;
+	}
 
 	close(cliente);
 

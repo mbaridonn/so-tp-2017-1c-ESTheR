@@ -6,12 +6,35 @@
 #include <netinet/in.h>
 #include <commons/config.h>
 #include <unistd.h>
+#include <stdio.h>
 #define LONGMAX 1000
 #define RUTAARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+#define MAX_CLIENTS 30
 typedef struct {
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
+
+enum procesos {
+	kernel, cpu, consola, file_system, memoria
+};
+
+void agregarSocket(int client_socket[], int *cliente) {
+	int i = 0;
+	for (i = 0; i < MAX_CLIENTS; i++) {
+		if (client_socket[i] == 0) {
+			client_socket[i] = *cliente;
+			printf("Agregando a conjunto de sockets como %d\n", i);
+			break;
+		}
+	}
+}
+
+void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
+	printf("Estoy haciendo el handshake\n");
+	send((*cliente), unProceso, sizeof(int), 0);
+	recv((*cliente), procesoAConocer, sizeof(int), 0);
+}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
@@ -184,25 +207,41 @@ int main(void) {
 					cliente, inet_ntoa(direccionServidor.sin_addr),
 					ntohs(direccionServidor.sin_port));
 
+			int elKernel = kernel;
+			int *proceso;
+			handshake(&cliente, &elKernel, proceso);
+			int procesoConectado = *proceso;
 			//recibirMensajeDe(&cliente, buffer);
 
-			FILE *archivo;
-			archivo = fopen("prueba.txt", "w");
+			switch (procesoConectado) {
+			case consola:
+				printf("Me conecte con una Consola!\n");
+				FILE *archivo;
+				archivo = fopen("prueba.txt", "w");
 
-			int bytesRecibidos;
-			char buffer[10];
-			recv(cliente, buffer, 10, 0);
-			buffer[bytesRecibidos] = '\0';
-			fwrite(buffer, 1, 10, archivo);
-			fclose(archivo);
+				char buffer[10];
+				recv(cliente, buffer, 10, 0);
+				buffer[9] = '\0';
+				fwrite(buffer, 1, 10, archivo);
+				fclose(archivo);
+				//agrega nuevo socket al array de sockets
+				agregarSocket(client_socket, &cliente);
+				break;
 
-			//agrega nuevo socket al array de sockets
-			for (i = 0; i < max_clients; i++) {
-				if (client_socket[i] == 0) {
-					client_socket[i] = cliente;
-					printf("Agregando a conjunto de sockets como %d\n", i);
-					break;
-				}
+			case memoria:
+				printf("Me conecte con Memoria!\n");
+				break;
+
+			case cpu:
+				printf("Me conecte con CPU!\n");
+				break;
+
+			case file_system:
+				printf("Me conecte con File System!\n");
+				break;
+			default:
+				printf("No me puedo conectar con vos.\n");
+				break;
 			}
 		}
 

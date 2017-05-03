@@ -9,32 +9,41 @@
 #define LONGMAX 1000
 typedef struct {
 	int puerto;
-}t_configuracion;
+} t_configuracion;
 t_configuracion *config;
 
-void *reservarMemoria(int tamanioArchivo){
-	void *puntero = malloc (tamanioArchivo);
-	if(puntero == NULL){
-		printf("No hay más espacio");
+enum procesos {
+	kernel, cpu, consola, file_system, memoria
+};
+
+void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
+	send((*cliente), unProceso, sizeof(int), 0);
+	recv((*cliente), procesoAConocer, sizeof(int), 0);
+}
+
+void *reservarMemoria(int tamanioArchivo) {
+	void *puntero = malloc(tamanioArchivo);
+	if (puntero == NULL) {
+		printf("No hay más espacio\n");
 		exit(-1);
 	}
 	return puntero;
 }
 
-void settearVariables(t_config *archivo_Modelo){
+void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config -> puerto = config_get_int_value(archivo_Modelo, "PUERTO");
+	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
 }
 
-void leerArchivo(){
-	if (access(RUTAARCHIVO, F_OK) == -1){
-		printf("No se encontró el Archivo");
-		exit (-1);
+void leerArchivo() {
+	if (access(RUTAARCHIVO, F_OK) == -1) {
+		printf("No se encontró el Archivo\n");
+		exit(-1);
 	}
-		t_config *archivo_config = config_create(RUTAARCHIVO);
-		settearVariables(archivo_config);
-		config_destroy(archivo_config);
-		printf("Leí el archivo y extraje el puerto: %d", config -> puerto);
+	t_config *archivo_config = config_create(RUTAARCHIVO);
+	settearVariables(archivo_config);
+	config_destroy(archivo_config);
+	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
 }
 
 int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
@@ -42,7 +51,7 @@ int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
 	(*cliente) = socket(AF_INET, SOCK_STREAM, 0);
 	if (connect((*cliente), (void*) &(*direccionServidor),
 			sizeof((*direccionServidor))) != 0) {
-		perror("No se pudo conectar");
+		perror("No se pudo conectar\n");
 		return 1;
 	}
 
@@ -59,7 +68,6 @@ int recibirMensajeDe(int *cliente, char *buffer) {
 	return 0;
 }
 
-
 int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
@@ -72,7 +80,19 @@ int main(void) {
 
 	conectar(&cliente, &direccionServidor);
 
-	recibirMensajeDe(&cliente, buffer);
+	int elFileSystem = file_system;
+	int *proceso;
+	handshake(&cliente, &elFileSystem, proceso);
+	int procesoConectado = *proceso;
+	switch (procesoConectado) {
+	case kernel:
+		printf("Me conecte con el Kernel!\n");
+		recibirMensajeDe(&cliente, buffer);
+		break;
+	default:
+		printf("No me puedo conectar con vos.\n");
+		break;
+	}
 
 	close(cliente);
 
