@@ -32,6 +32,18 @@ void settearVariables(t_config *archivo_Modelo) {
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
 }
 
+void mostrarArchivoConfig(){
+	 FILE *f;
+
+	 f=fopen(RUTAARCHIVO,"r");
+	 int c;
+	 printf("------------------------------------------\n");
+	 while ((c = fgetc (f)) != EOF) putchar(c);
+	 printf("\n");
+	 printf("------------------------------------------\n");
+
+}
+
 void leerArchivo() {
 	if (access(RUTAARCHIVO, F_OK) == -1) {
 		printf("No se encontró el Archivo\n");
@@ -40,8 +52,10 @@ void leerArchivo() {
 	t_config *archivo_config = config_create(RUTAARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
+	mostrarArchivoConfig();
 	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
 }
+
 
 int main(void) {
 	struct sockaddr_in direccionServidor;

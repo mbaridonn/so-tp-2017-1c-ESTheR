@@ -20,6 +20,7 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
@@ -29,6 +30,22 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
+/*typedef struct {
+	int id_Proceso;
+	int contador_Paginas;
+}t_pcb;
+
+void aumentarContadorPagina(t_pcb *pcb){
+	pcb->contador_Paginas++;
+}
+t_pcb *crearPCB(){
+	t_pcb *punteroPCB;
+	punteroPCB = reservarMemoria(sizeof(t_pcb));
+	punteroPCB->id_Proceso = 1;
+	return punteroPCB;
+}*/
+
+
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
@@ -36,7 +53,7 @@ void settearVariables(t_config *archivo_Modelo) {
 
 void leerArchivo() {
 	if (access(RUTAARCHIVO, F_OK) == -1) {
-		printf("No se encontró el Archivo");
+		printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
 	t_config *archivo_config = config_create(RUTAARCHIVO);
@@ -57,6 +74,7 @@ void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
 			inet_ntoa(direccionServidor.sin_addr),
 			ntohs(direccionServidor.sin_port));
 }
+
 
 int main(void) {
 
