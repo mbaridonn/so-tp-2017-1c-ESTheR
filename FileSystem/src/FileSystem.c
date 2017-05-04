@@ -18,6 +18,18 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+void msjConexionCon(char *s){
+	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+} //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
+
+int nuevohandshake(int *cliente, int proceso) {
+	char unProceso[2]; unProceso[0] = '0' + proceso; unProceso[1] = '\0';
+	char procesoAConocer[2];
+	send((*cliente), unProceso, 2, 0);
+	recv((*cliente), procesoAConocer, 2, 0);
+	return atoi(procesoAConocer);
+}
+
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
@@ -69,13 +81,10 @@ int main(void) {
 
 	conectar(&cliente, &direccionServidor);
 
-	int elFileSystem = file_system;
-	int *proceso;
-	handshake(&cliente, &elFileSystem, proceso);
-	int procesoConectado = *proceso;
+	int procesoConectado = nuevohandshake(&cliente, file_system);
 	switch (procesoConectado) {
 	case kernel:
-		printf("Me conecte con el Kernel!\n");
+		msjConexionCon("Kernel");
 		recibirMensajeDe(&cliente, buffer);
 		break;
 	default:

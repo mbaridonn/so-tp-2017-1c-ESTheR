@@ -20,6 +20,17 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+void msjConexionCon(char *s){
+	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+} //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
+
+int nuevohandshake(int *cliente, int proceso) {
+	char unProceso[2]; unProceso[0] = '0' + proceso; unProceso[1] = '\0';
+	char procesoAConocer[2];
+	send((*cliente), unProceso, 2, 0);
+	recv((*cliente), procesoAConocer, 2, 0);
+	return atoi(procesoAConocer);
+}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
@@ -133,14 +144,10 @@ int main(void) {
 
 			mostrarConexion(cliente,direccionServidor);
 
-			int elKernel = kernel;
-			int *proceso;
-			handshake(&cliente, &elKernel, proceso);
-			int procesoConectado = *proceso;
-
+			int procesoConectado = nuevohandshake(&cliente, kernel);
 			switch (procesoConectado) {
 			case consola:
-				printf("Me conecte con una Consola!\n");
+				msjConexionCon("una Consola");
 				FILE *archivo;
 				archivo = fopen("prueba.txt", "w");
 				if (archivo == NULL) {
@@ -150,15 +157,15 @@ int main(void) {
 
 				u_int32_t fsize;
 				if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
-					printf("Error recibiendo longitud del archivo");
+					printf("Error recibiendo longitud del archivo\n");
 					return EXIT_FAILURE;
 				}
 				char *bufferArchivo = malloc(fsize + 1);
 				if (recv(cliente, bufferArchivo, fsize+1, 0) == -1) {
-					printf("Error recibiendo el archivo");
+					printf("Error recibiendo el archivo\n");
 					return EXIT_FAILURE;
 				}
-				printf(bufferArchivo);
+				printf("%s\n\n",bufferArchivo);
 
 				fwrite(bufferArchivo, 1, fsize+1, archivo);
 				fclose(archivo);
@@ -168,7 +175,7 @@ int main(void) {
 				break;
 
 			case cpu:
-				printf("Me conecte con CPU!\n");
+				msjConexionCon("CPU");
 				break;
 
 			/*case memoria:                                 SON NECESARIOS??

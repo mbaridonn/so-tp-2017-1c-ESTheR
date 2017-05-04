@@ -21,6 +21,19 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+
+void msjConexionCon(char *s){
+	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+} //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
+
+int nuevohandshake(int *cliente, int proceso) {
+	char unProceso[2]; unProceso[0] = '0' + proceso; unProceso[1] = '\0';
+	char procesoAConocer[2];
+	recv((*cliente), procesoAConocer, 2, 0);
+	send((*cliente), unProceso, 2, 0);
+	return atoi(procesoAConocer);
+}
+
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
@@ -72,14 +85,11 @@ int main(void) {
 
 	conectar(&cliente, &direccionServidor);
 
-	int unaConsola = consola;
-	int *proceso;
-	handshake(&cliente, &unaConsola, proceso);
+	int procesoConectado = nuevohandshake(&cliente, consola);
 
-	int procesoConectado = *proceso;
 	switch (procesoConectado) {
 	case kernel:
-		printf("Me conecte con el Kernel!\n");
+		msjConexionCon("Kernel");
 
 		FILE * archivo = fopen("prueba.txt", "rb");
 		if (archivo == NULL) {
@@ -95,14 +105,14 @@ int main(void) {
 		fclose(archivo);
 		buffer[fsize] = '\0';
 		if (send(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
-			printf("Error enviando longitud del archivo");
+			printf("Error enviando longitud del archivo\n");
 			return EXIT_FAILURE;
 		}
 		if (send(cliente, buffer, fsize+1, 0) == -1) {
-			printf("Error enviando archivo");
+			printf("Error enviando archivo\n");
 			return EXIT_FAILURE;
 		}
-		printf("El archivo se envió correctamente");
+		printf("El archivo se envió correctamente\n");
 
 		break;
 
