@@ -45,7 +45,6 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d", config->puerto);
 }
 
-
 void faltaDeParametros(int argc) {
 	if (argc == 1) {
 		printf("Te falto el parametro  \n");
@@ -53,60 +52,44 @@ void faltaDeParametros(int argc) {
 	exit(-1);
 }
 
+void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
+	printf("Nueva conexion , socket fd: %d , ip: %s , puerto: %d \n", cliente,
+			inet_ntoa(direccionServidor.sin_addr),
+			ntohs(direccionServidor.sin_port));
+}
+
 int main(void) {
 
 	int opt = 1;
-	int master_socket, addrlen, cliente, client_socket[30], max_clients = 30,
-			activity, i, valread, sd;
+	int master_socket, addrlen, cliente, client_socket[30], activity, valread,
+			sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
 
 	char buffer[1025];
 	fd_set readfds;
 
-	for (i = 0; i < max_clients; i++) {
-		client_socket[i] = 0;
-	}
-
-	if ((master_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-		perror("socket failed");
-		exit(EXIT_FAILURE);
-	}
-
-	//setea master socket para que reciba multiples conexiones
-	if (setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *) &opt,
-			sizeof(opt)) < 0) {
-		perror("setsockopt");
-		exit(EXIT_FAILURE);
-	}
-
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
 	direccionServidor.sin_port = htons(8080);
 
-	if (bind(master_socket, (struct sockaddr *) &direccionServidor,
-			sizeof(direccionServidor)) < 0) {
-		perror("bind failed");
-		exit(EXIT_FAILURE);
+	int i;
+	for (i = 0; i < MAX_CLIENTS; i++) {
+		client_socket[i] = 0;
 	}
-	printf("Listener en puerto %d \n", 8080);
 
-	//maximo de 3 conexiones pendientes
-	if (listen(master_socket, 3) < 0) {
-		perror("listen");
-		exit(EXIT_FAILURE);
-	}
+	esperarConexion(&master_socket, &direccionServidor);
 
 	addrlen = sizeof(direccionServidor);
 	puts("Esperando conexiones...");
 
 	while (1) {
 		FD_ZERO(&readfds);
-
 		FD_SET(master_socket, &readfds);
 		max_sd = master_socket;
 
-		for (i = 0; i < max_clients; i++) {
+		int i;
+		for (i = 0; i < MAX_CLIENTS; i++) {
 			sd = client_socket[i];
 
 			if (sd > 0)
@@ -118,7 +101,6 @@ int main(void) {
 
 		//espera indefinidamente actividad en algun socket
 		activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
-
 		if (activity < 0) {
 			printf("select error");
 		}
@@ -132,10 +114,7 @@ int main(void) {
 				exit(EXIT_FAILURE);
 			}
 
-			//info que por ahi es util
-			printf("Nueva conexion , socket fd: %d , ip: %s , puerto: %d \n",
-					cliente, inet_ntoa(direccionServidor.sin_addr),
-					ntohs(direccionServidor.sin_port));
+			mostrarConexion(cliente,direccionServidor);
 
 			int elKernel = kernel;
 			int *proceso;
@@ -175,7 +154,8 @@ int main(void) {
 			}
 		}
 
-		for (i = 0; i < max_clients; i++) {
+		//cierra todas las conexiones
+		for (i = 0; i < MAX_CLIENTS; i++) {
 			sd = client_socket[i];
 
 			if (FD_ISSET(sd, &readfds)) {
@@ -192,26 +172,5 @@ int main(void) {
 			}
 		}
 	}
-
 	return 0;
-
-	/*struct sockaddr_in direccionServidor;
-	 direccionServidor.sin_family = AF_INET;
-	 direccionServidor.sin_addr.s_addr = INADDR_ANY;
-	 direccionServidor.sin_port = htons(8080);
-
-	 int servidor;
-	 int clienteConsola;
-	 char* buffer = malloc(LONGMAX);
-
-	 leerArchivo();
-
-	 esperarConexion(&servidor, &direccionServidor);
-	 aceptarConexion(&servidor, &clienteConsola);
-	 recibirMensajeDe(&clienteConsola, buffer);
-	 close(servidor);
-
-	 free(buffer);
-
-	 return 0;*/
 }
