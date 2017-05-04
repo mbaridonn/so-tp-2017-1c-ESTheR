@@ -75,12 +75,11 @@ void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
 			ntohs(direccionServidor.sin_port));
 }
 
-
 int main(void) {
 
+	//Cuándo lee el archivo?
 	int opt = 1;
-	int master_socket, addrlen, cliente, client_socket[30], activity, valread,
-			sd;
+	int master_socket, addrlen, cliente, client_socket[30], activity, valread, sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
 
@@ -138,34 +137,46 @@ int main(void) {
 			int *proceso;
 			handshake(&cliente, &elKernel, proceso);
 			int procesoConectado = *proceso;
-			//recibirMensajeDe(&cliente, buffer);
 
 			switch (procesoConectado) {
 			case consola:
 				printf("Me conecte con una Consola!\n");
 				FILE *archivo;
 				archivo = fopen("prueba.txt", "w");
+				if (archivo == NULL) {
+					printf("No se pudo escribir el archivo\n");
+					return EXIT_FAILURE;
+				}
 
-				char buffer[10];
-				recv(cliente, buffer, 10, 0);
-				buffer[9] = '\0';
-				fwrite(buffer, 1, 10, archivo);
+				u_int32_t fsize;
+				if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
+					printf("Error recibiendo longitud del archivo");
+					return EXIT_FAILURE;
+				}
+				char *bufferArchivo = malloc(fsize + 1);
+				if (recv(cliente, bufferArchivo, fsize+1, 0) == -1) {
+					printf("Error recibiendo el archivo");
+					return EXIT_FAILURE;
+				}
+				printf(bufferArchivo);
+
+				fwrite(bufferArchivo, 1, fsize+1, archivo);
 				fclose(archivo);
-				//agrega nuevo socket al array de sockets
-				agregarSocket(client_socket, &cliente);
-				break;
 
-			case memoria:
-				printf("Me conecte con Memoria!\n");
+				//agrega nuevo socket al array de sockets    NO CONVENDRÍA QUE ESTÉ AL PRINCIPIO?
+				agregarSocket(client_socket, &cliente);
 				break;
 
 			case cpu:
 				printf("Me conecte con CPU!\n");
 				break;
 
+			/*case memoria:                                 SON NECESARIOS??
+				printf("Me conecte con Memoria!\n");
+				break;
 			case file_system:
 				printf("Me conecte con File System!\n");
-				break;
+				break;*/
 			default:
 				printf("No me puedo conectar con vos.\n");
 				break;

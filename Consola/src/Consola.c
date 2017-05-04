@@ -12,6 +12,7 @@
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
 typedef struct {
+	//char ipKernel[10]; FALTA IMPLEMENTAR
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
@@ -31,6 +32,7 @@ void *reservarMemoria(int tamanioArchivo) {
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
+	//config->ipKernel = config_get_string_value(archivo_Modelo,"IP_KERNEL");
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
 }
 void mostrarArchivoConfig(){
@@ -57,20 +59,16 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d \n", config->puerto);
 }
 
-
-
 int main(void) {
+
+	leerArchivo();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
-	direccionServidor.sin_port = htons(8080);
+	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");//En realidad se le debería pasar config->ipKernel
+	direccionServidor.sin_port = htons(config->puerto);
 
-	leerArchivo();
 	int cliente;
-	char mensaje[LONGMAX];
-
-	//
 
 	conectar(&cliente, &direccionServidor);
 
@@ -82,23 +80,32 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		printf("Me conecte con el Kernel!\n");
-		FILE* archivo;
-		archivo = fopen("prueba.txt", "r");
+
+		FILE * archivo = fopen("prueba.txt", "rb");
 		if (archivo == NULL) {
 			printf("No se pudo leer el archivo\n");
 			return EXIT_FAILURE;
 		}
+		fseek(archivo, 0, SEEK_END);
+		u_int32_t fsize = ftell(archivo);
+		fseek(archivo, 0, SEEK_SET);
 
-		int bytesLeidos = 0;
-		char buffer[10];
-		while (bytesLeidos = fread(buffer, 1, 10, archivo)) {
-			if (send(cliente, buffer, 10, 0) == -1) {
-				printf("Error enviando archivo");
-			}
-
-		}
+		char *buffer = malloc(fsize + 1);
+		fread(buffer, fsize, 1, archivo);
 		fclose(archivo);
+		buffer[fsize] = '\0';
+		if (send(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
+			printf("Error enviando longitud del archivo");
+			return EXIT_FAILURE;
+		}
+		if (send(cliente, buffer, fsize+1, 0) == -1) {
+			printf("Error enviando archivo");
+			return EXIT_FAILURE;
+		}
+		printf("El archivo se envió correctamente");
+
 		break;
+
 	default:
 		printf("No me puedo conectar con vos.\n");
 		break;
@@ -106,12 +113,5 @@ int main(void) {
 
 	close(cliente);
 
-	//
-	/*conectar(&cliente, &direccionServidor);
-	 printf("Ingrese un mensaje: ");
-	 scanf("%s", mensaje);
-	 send(cliente, mensaje, strlen(mensaje), 0);
-	 close(cliente);*/
-	//
 	return 0;
 }
