@@ -6,8 +6,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <commons/config.h>
+#include "libreriaSockets.h"
+
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt"
-#define LONGMAX 1000
+
 typedef struct {
 	int puerto;
 	int cantFrames;
@@ -18,11 +20,6 @@ t_configuracion *config;
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
-
-void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
-	send((*cliente), unProceso, sizeof(int), 0);
-	recv((*cliente), procesoAConocer, sizeof(int), 0);
-}
 
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
@@ -49,53 +46,6 @@ void leerArchivo() {
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
-}
-
-void esperarConexion(int *servidor, struct sockaddr_in *direccionServidor) {
-
-	(*servidor) = socket(AF_INET, SOCK_STREAM, 0);
-	int activado = 1;
-	setsockopt((*servidor), SOL_SOCKET, SO_REUSEADDR, &activado,
-			sizeof(activado));
-
-	if (bind((*servidor), (void*) &(*direccionServidor),
-			sizeof((*direccionServidor))) != 0) {
-		perror("Falló el bind\n");
-		exit(-1);
-	}
-
-	printf("Estoy escuchando\n");
-	listen((*servidor), SOMAXCONN);
-}
-
-void aceptarConexion(int *servidor, int *cliente) {
-
-	struct sockaddr_in direccionCliente;
-	unsigned int tamanioDireccion;
-	(*cliente) = accept((*servidor), (void*) &direccionCliente,
-			&tamanioDireccion);
-	printf("Recibí una conexión en %d!!\n", (*cliente));
-}
-
-void recibirMensajeDe(int *cliente, char *buffer) {
-
-	int bytesRecibidos = recv((*cliente), buffer, LONGMAX, 0);
-	if (bytesRecibidos <= 0) {
-		perror("El chabón se desconectó\n");
-		exit(-1);
-	}
-	buffer[bytesRecibidos] = '\0';
-	printf("Me llegaron %d bytes con %s\n", bytesRecibidos, buffer);
-}
-
-void conectar(int *cliente, struct sockaddr_in *direccionServidor) { //Es necesaria?
-
-	(*cliente) = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect((*cliente), (void*) &(*direccionServidor),
-			sizeof((*direccionServidor))) != 0) {
-		perror("No se pudo conectar\n");
-		exit(-1);
-	}
 }
 
 int main(void) {

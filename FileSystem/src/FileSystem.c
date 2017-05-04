@@ -5,8 +5,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <commons/config.h>
+#include "libreriaSockets.h"
+
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem"
-#define LONGMAX 1000
+
 typedef struct {
 	int puerto;
 } t_configuracion;
@@ -15,11 +17,6 @@ t_configuracion *config;
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
-
-void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
-	send((*cliente), unProceso, sizeof(int), 0);
-	recv((*cliente), procesoAConocer, sizeof(int), 0);
-}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
@@ -44,28 +41,6 @@ void leerArchivo() {
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
-}
-
-int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
-
-	(*cliente) = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect((*cliente), (void*) &(*direccionServidor),
-			sizeof((*direccionServidor))) != 0) {
-		perror("No se pudo conectar\n");
-		return 1;
-	}
-
-	return 0;
-}
-
-int recibirMensajeDe(int *cliente, char *buffer) {
-
-	int bytesRecibidos = recv((*cliente), buffer, LONGMAX, 0);
-
-	buffer[bytesRecibidos] = '\0';
-	printf("Me llegaron %d bytes con %s\n", bytesRecibidos, buffer);
-
-	return 0;
 }
 
 int main(void) {

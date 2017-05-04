@@ -7,8 +7,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdio.h>
-#define LONGMAX 1000
+#include "libreriaSockets.h"
+
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
+
 typedef struct {
 	int puerto;
 } t_configuracion;
@@ -17,11 +19,6 @@ t_configuracion *config;
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
-
-void handshake(int *cliente, int *unProceso, int *procesoAConocer) {
-	send((*cliente), unProceso, sizeof(int), 0);
-	recv((*cliente), procesoAConocer, sizeof(int), 0);
-}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
@@ -46,18 +43,6 @@ void leerArchivo() {
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	printf("Leí el archivo y extraje el puerto: %d \n", config->puerto);
-}
-
-int conectar(int *cliente, struct sockaddr_in *direccionServidor) {
-
-	(*cliente) = socket(AF_INET, SOCK_STREAM, 0);
-	if (connect((*cliente), (void*) &(*direccionServidor),
-			sizeof((*direccionServidor))) != 0) {
-		perror("No se pudo conectar \n");
-		return 1;
-	}
-
-	return 0;
 }
 
 int main(void) {
@@ -106,8 +91,6 @@ int main(void) {
 	}
 
 	close(cliente);
-
-	//
 
 	//
 	/*conectar(&cliente, &direccionServidor);
