@@ -20,8 +20,10 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
-void msjConexionCon(char *s){
-	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+void msjConexionCon(char *s) {
+	printf(
+			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
+			s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
 void *reservarMemoria(int tamanioArchivo) {
@@ -34,20 +36,19 @@ void *reservarMemoria(int tamanioArchivo) {
 }
 
 /*typedef struct {
-	int id_Proceso;
-	int contador_Paginas;
-}t_pcb;
+ int id_Proceso;
+ int contador_Paginas;
+ }t_pcb;
 
-void aumentarContadorPagina(t_pcb *pcb){
-	pcb->contador_Paginas++;
-}
-t_pcb *crearPCB(){
-	t_pcb *punteroPCB;
-	punteroPCB = reservarMemoria(sizeof(t_pcb));
-	punteroPCB->id_Proceso = 1;
-	return punteroPCB;
-}*/
-
+ void aumentarContadorPagina(t_pcb *pcb){
+ pcb->contador_Paginas++;
+ }
+ t_pcb *crearPCB(){
+ t_pcb *punteroPCB;
+ punteroPCB = reservarMemoria(sizeof(t_pcb));
+ punteroPCB->id_Proceso = 1;
+ return punteroPCB;
+ }*/
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -82,7 +83,8 @@ int main(void) {
 
 	//Cuándo lee el archivo?
 	int opt = 1;
-	int master_socket, addrlen, cliente, client_socket[30], activity, valread, sd;
+	int master_socket, addrlen, cliente, client_socket[30], activity, valread,
+			sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
 
@@ -92,6 +94,13 @@ int main(void) {
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = INADDR_ANY;
 	direccionServidor.sin_port = htons(8080);
+
+	//PARA MEMORIA
+	struct sockaddr_in direccionServidor2;
+	direccionServidor2.sin_family = AF_INET;
+	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
+	direccionServidor2.sin_port = htons(8195);
+	//
 
 	int i;
 	for (i = 0; i < MAX_CLIENTS; i++) {
@@ -134,7 +143,7 @@ int main(void) {
 				exit(EXIT_FAILURE);
 			}
 
-			mostrarConexion(cliente,direccionServidor);
+			mostrarConexion(cliente, direccionServidor);
 
 			int procesoConectado = handshake(&cliente, kernel);
 			switch (procesoConectado) {
@@ -153,14 +162,45 @@ int main(void) {
 					return EXIT_FAILURE;
 				}
 				char *bufferArchivo = malloc(fsize + 1);
-				if (recv(cliente, bufferArchivo, fsize+1, 0) == -1) {
+				if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
 					printf("Error recibiendo el archivo\n");
 					return EXIT_FAILURE;
 				}
-				printf("%s\n\n",bufferArchivo);
+				printf("%s\n\n", bufferArchivo);
 
-				fwrite(bufferArchivo, 1, fsize+1, archivo);
+				fwrite(bufferArchivo, 1, fsize + 1, archivo);
+
 				fclose(archivo);
+
+				//PARA MEMORIA
+				int cliente2;
+				conectar(&cliente2, &direccionServidor2);
+				//int procesoConectado = handshake(&cliente2, kernel);
+				//printf(procesoConectado);
+
+				FILE * archivo2 = fopen("prueba.txt", "rb");
+				if (archivo == NULL) {
+					printf("No se pudo leer el archivo\n");
+					return EXIT_FAILURE;
+				}
+				fseek(archivo2, 0, SEEK_END);
+				u_int32_t fsize2 = ftell(archivo2);
+				fseek(archivo2, 0, SEEK_SET);
+
+				char *buffer = malloc(fsize2 + 1);
+				fread(buffer, fsize2, 1, archivo2);
+				fclose(archivo2);
+				buffer[fsize2] = '\0';
+				if (send(cliente2, &fsize2, sizeof(u_int32_t), 0) == -1) {
+					printf("Error enviando longitud del archivo\n");
+					return EXIT_FAILURE;
+				}
+				if (send(cliente2, buffer, fsize2 + 1, 0) == -1) {
+					printf("Error enviando archivo\n");
+					return EXIT_FAILURE;
+				}
+				printf("El archivo se envió correctamente\n");
+				//
 
 				//agrega nuevo socket al array de sockets    NO CONVENDRÍA QUE ESTÉ AL PRINCIPIO?
 				agregarSocket(client_socket, &cliente);
@@ -170,12 +210,12 @@ int main(void) {
 				msjConexionCon("CPU");
 				break;
 
-			/*case memoria:                                 SON NECESARIOS??
-				printf("Me conecte con Memoria!\n");
-				break;
-			case file_system:
-				printf("Me conecte con File System!\n");
-				break;*/
+				/*case memoria:                                 SON NECESARIOS??
+				 printf("Me conecte con Memoria!\n");
+				 break;
+				 case file_system:
+				 printf("Me conecte con File System!\n");
+				 break;*/
 			default:
 				printf("No me puedo conectar con vos.\n");
 				break;

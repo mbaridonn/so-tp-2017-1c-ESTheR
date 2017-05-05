@@ -37,15 +37,16 @@ void settearVariables(t_config *archivo_Modelo) {
 	config->tamFrame = config_get_int_value(archivo_Modelo, "MARCO_SIZE");
 }
 
-void mostrarArchivoConfig(){
-	 FILE *f;
+void mostrarArchivoConfig() {
+	FILE *f;
 
-	 f=fopen(RUTAARCHIVO,"r");
-	 int c;
-	 printf("------------------------------------------\n");
-	 while ((c = fgetc (f)) != EOF) putchar(c);
-	 printf("\n");
-	 printf("------------------------------------------\n");
+	f = fopen(RUTAARCHIVO, "r");
+	int c;
+	printf("------------------------------------------\n");
+	while ((c = fgetc(f)) != EOF)
+		putchar(c);
+	printf("\n");
+	printf("------------------------------------------\n");
 
 }
 
@@ -67,8 +68,9 @@ int main(void) {
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = INADDR_ANY;
-	direccionServidor.sin_port = htons(config->puerto);
+	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
+	//direccionServidor.sin_port = htons(config->puerto);
+	direccionServidor.sin_port = htons(8195);
 
 	int servidor;
 	int cliente;
@@ -76,18 +78,37 @@ int main(void) {
 
 	int memoriaTotal = config->tamFrame * config->cantFrames;
 
-	char* memoria = reservarMemoria(memoriaTotal); //Por ahora, esta va a ser la memoria es un único bloque no paginado
+	char* memoriA = reservarMemoria(memoriaTotal); //Por ahora, esta va a ser la memoria es un único bloque no paginado
 
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
-	int laMemoria = memoria;
-	int *proceso;
-	handshake(&cliente, &laMemoria, proceso);
-	int procesoConectado = *proceso;
+
+	int procesoConectado = handshake(&cliente, memoria);
+
 	switch (procesoConectado) {
 	case kernel:
 		printf("Me conecte con el Kernel!\n");
-		recibirMensajeDe(&cliente, buffer);
+		//recibirMensajeDe(&cliente, buffer);
+		FILE *archivo;
+		archivo = fopen("prueba.txt", "w");
+		if (archivo == NULL) {
+			printf("No se pudo escribir el archivo\n");
+			return EXIT_FAILURE;
+		}
+
+		u_int32_t fsize;
+		if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
+			printf("Error recibiendo longitud del archivo\n");
+			return EXIT_FAILURE;
+		}
+		char *bufferArchivo = malloc(fsize + 1);
+		if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
+			printf("Error recibiendo el archivo\n");
+			return EXIT_FAILURE;
+		}
+		printf("%s\n\n", bufferArchivo);
+
+		fwrite(bufferArchivo, 1, fsize + 1, archivo);
 		break;
 
 	case cpu:

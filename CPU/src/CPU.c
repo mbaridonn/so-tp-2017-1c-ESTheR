@@ -20,10 +20,8 @@ int main(void) {
 
 	conectar(&cliente, &direccionServidor);
 
-	int unaCpu = cpu;
-	int *proceso;
-	handshake(&cliente, &unaCpu, proceso);
-	int procesoConectado = *proceso;
+	int procesoConectado = handshake(&cliente, cpu);
+
 	switch (procesoConectado) {
 	case kernel:
 		printf("Me conecte con el Kernel!\n");
