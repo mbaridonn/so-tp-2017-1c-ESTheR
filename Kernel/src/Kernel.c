@@ -24,14 +24,6 @@ void msjConexionCon(char *s){
 	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
-int nuevohandshake(int *cliente, int proceso) {
-	char unProceso[2]; unProceso[0] = '0' + proceso; unProceso[1] = '\0';
-	char procesoAConocer[2];
-	send((*cliente), unProceso, 2, 0);
-	recv((*cliente), procesoAConocer, 2, 0);
-	return atoi(procesoAConocer);
-}
-
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
@@ -144,7 +136,7 @@ int main(void) {
 
 			mostrarConexion(cliente,direccionServidor);
 
-			int procesoConectado = nuevohandshake(&cliente, kernel);
+			int procesoConectado = handshake(&cliente, kernel);
 			switch (procesoConectado) {
 			case consola:
 				msjConexionCon("una Consola");
