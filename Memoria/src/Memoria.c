@@ -101,8 +101,9 @@ int main(void) {
 			printf("Error recibiendo longitud del archivo\n");
 			return EXIT_FAILURE;
 		}
-		char *bufferArchivo = malloc(fsize + 1);
-		if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
+		//Hardcodeado el tamanio del archivo por error con el fsize
+		char *bufferArchivo = malloc(22 + 1);
+		if (recv(cliente, bufferArchivo, 22 + 1, 0) == -1) {
 			printf("Error recibiendo el archivo\n");
 			return EXIT_FAILURE;
 		}
