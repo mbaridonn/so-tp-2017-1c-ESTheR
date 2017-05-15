@@ -62,6 +62,12 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
 }
 
+void msjConexionCon(char *s) {
+	printf(
+			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
+			s);
+}
+
 int main(void) {
 
 	leerArchivo();
@@ -70,15 +76,16 @@ int main(void) {
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
 	//direccionServidor.sin_port = htons(config->puerto);
-	direccionServidor.sin_port = htons(8195);
+	direccionServidor.sin_port = htons(8125);
 
 	int servidor;
 	int cliente;
-	char* buffer = reservarMemoria(LONGMAX);
 
-	int memoriaTotal = config->tamFrame * config->cantFrames;
+	//char* buffer = reservarMemoria(LONGMAX);
 
-	char* memoriA = reservarMemoria(memoriaTotal); //Por ahora, esta va a ser la memoria es un único bloque no paginado
+	//int memoriaTotal = config->tamFrame * config->cantFrames;
+
+	//char* memoriA = reservarMemoria(memoriaTotal); //Por ahora, esta va a ser la memoria es un único bloque no paginado
 
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
@@ -87,7 +94,7 @@ int main(void) {
 
 	switch (procesoConectado) {
 	case kernel:
-		printf("Me conecte con el Kernel!\n");
+		msjConexionCon("el Kernel");
 		//recibirMensajeDe(&cliente, buffer);
 		FILE *archivo;
 		archivo = fopen("prueba.txt", "w");
@@ -96,20 +103,22 @@ int main(void) {
 			return EXIT_FAILURE;
 		}
 
-		u_int32_t fsize;
+		u_int32_t fsize = 0;
 		if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
 			printf("Error recibiendo longitud del archivo\n");
 			return EXIT_FAILURE;
 		}
+
 		//Hardcodeado el tamanio del archivo por error con el fsize
-		char *bufferArchivo = malloc(22 + 1);
-		if (recv(cliente, bufferArchivo, 22 + 1, 0) == -1) {
+		char *bufferArchivo = reservarMemoria(fsize + 1);
+		if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
 			printf("Error recibiendo el archivo\n");
 			return EXIT_FAILURE;
 		}
 		printf("%s\n\n", bufferArchivo);
 
-		fwrite(bufferArchivo, 1, fsize + 1, archivo);
+		fwrite(bufferArchivo, 1, fsize, archivo);
+		free(bufferArchivo);
 		break;
 
 	case cpu:

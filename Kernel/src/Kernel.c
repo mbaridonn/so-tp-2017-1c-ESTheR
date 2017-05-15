@@ -91,15 +91,17 @@ int main(void) {
 	char buffer[1025];
 	fd_set readfds;
 
+	int cliente2;
+
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = INADDR_ANY;
+	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor.sin_port = htons(8080);
 
 	//PARA MEMORIA
 	struct sockaddr_in direccionServidor2;
 	direccionServidor2.sin_family = AF_INET;
 	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
-	direccionServidor2.sin_port = htons(8195);
+	direccionServidor2.sin_port = htons(8125);
 	//
 
 	int i;
@@ -161,22 +163,23 @@ int main(void) {
 					printf("Error recibiendo longitud del archivo\n");
 					return EXIT_FAILURE;
 				}
-				char *bufferArchivo = malloc(fsize + 1);
+				char *bufferArchivo = reservarMemoria(fsize + 1);
 				if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
 					printf("Error recibiendo el archivo\n");
 					return EXIT_FAILURE;
 				}
 				printf("%s\n\n", bufferArchivo);
 
-				fwrite(bufferArchivo, 1, fsize + 1, archivo);
+				fwrite(bufferArchivo, 1, fsize, archivo);
 
+				free(bufferArchivo);
 				fclose(archivo);
 
 				//PARA MEMORIA
-				int cliente2;
+
 				conectar(&cliente2, &direccionServidor2);
-				//int procesoConectado = handshake(&cliente2, kernel);
-				//printf(procesoConectado);
+				handshake(&cliente2, kernel);
+				msjConexionCon("una Memoria");
 
 				FILE * archivo2 = fopen("prueba.txt", "rb");
 				if (archivo == NULL) {
@@ -187,9 +190,9 @@ int main(void) {
 				u_int32_t fsize2 = ftell(archivo2);
 				fseek(archivo2, 0, SEEK_SET);
 
-				char *buffer = malloc(fsize2 + 1);
+				char *buffer = reservarMemoria(fsize2 + 1);
 				fread(buffer, fsize2, 1, archivo2);
-				fclose(archivo2);
+
 				buffer[fsize2] = '\0';
 				if (send(cliente2, &fsize2, sizeof(u_int32_t), 0) == -1) {
 					printf("Error enviando longitud del archivo\n");
@@ -200,6 +203,8 @@ int main(void) {
 					return EXIT_FAILURE;
 				}
 				printf("El archivo se envió correctamente\n");
+				free(buffer);
+				fclose(archivo2);
 				//
 
 				//agrega nuevo socket al array de sockets    NO CONVENDRÍA QUE ESTÉ AL PRINCIPIO?

@@ -95,7 +95,7 @@ void mandarArchivo(int *cliente) {
 	u_int32_t fsize = ftell(archivo);
 	fseek(archivo, 0, SEEK_SET);
 
-	char *buffer = malloc(fsize + 1);
+	char *buffer = reservarMemoria(fsize + 1);
 	fread(buffer, fsize, 1, archivo);
 	fclose(archivo);
 	buffer[fsize] = '\0';
