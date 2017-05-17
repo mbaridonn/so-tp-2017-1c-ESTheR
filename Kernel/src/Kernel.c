@@ -7,9 +7,13 @@
 #include <commons/config.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+
+
+int cliente, cliente2, esperar=0;
 
 typedef struct {
 	int puerto;
@@ -79,19 +83,75 @@ void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
 			ntohs(direccionServidor.sin_port));
 }
 
+void *proced_consola(void *direccionServidor2) {
+	FILE *archivo;
+	archivo = fopen("prueba.txt", "w");
+	if (archivo == NULL) {
+		printf("No se pudo escribir el archivo\n");
+		return NULL;
+	}
+	u_int32_t fsize;
+	if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo longitud del archivo\n");
+		return NULL;
+	}
+
+	char *bufferArchivo = reservarMemoria(fsize + 1);
+	if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
+		printf("Error recibiendo el archivo\n");
+		return NULL;
+	}
+	printf("%s\n\n", bufferArchivo);
+
+	fwrite(bufferArchivo, 1, fsize, archivo);
+
+	free(bufferArchivo);
+	fclose(archivo);
+
+	//PARA MEMORIA
+
+	conectar(&cliente2, direccionServidor2);
+	handshake(&cliente2, kernel);
+	msjConexionCon("una Memoria");
+
+	FILE * archivo2 = fopen("prueba.txt", "rb");
+	if (archivo == NULL) {
+		printf("No se pudo leer el archivo\n");
+		return NULL;
+	}
+	fseek(archivo2, 0, SEEK_END);
+	u_int32_t fsize2 = ftell(archivo2);
+	fseek(archivo2, 0, SEEK_SET);
+
+	char *buffer = reservarMemoria(fsize2 + 1);
+	fread(buffer, fsize2, 1, archivo2);
+
+	buffer[fsize2] = '\0';
+	if (send(cliente2, &fsize2, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando longitud del archivo\n");
+		return NULL;
+	}
+	if (send(cliente2, buffer, fsize2 + 1, 0) == -1) {
+		printf("Error enviando archivo\n");
+		return NULL;
+	}
+	printf("El archivo se envió correctamente\n");
+	free(buffer);
+	fclose(archivo2);
+	esperar = 0;
+	return NULL;
+}
+
 int main(void) {
 
 	//Cuándo lee el archivo?
-	int opt = 1;
-	int master_socket, addrlen, cliente, client_socket[30], activity, valread,
+	int master_socket, addrlen, client_socket[30], activity, valread,
 			sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
 
 	char buffer[1025];
 	fd_set readfds;
-
-	int cliente2;
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -131,6 +191,7 @@ int main(void) {
 		}
 
 		//espera indefinidamente actividad en algun socket
+		while(esperar==1);
 		activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
 		if (activity < 0) {
 			printf("select error");
@@ -150,65 +211,17 @@ int main(void) {
 			int procesoConectado = handshake(&cliente, kernel);
 			switch (procesoConectado) {
 			case consola:
-				msjConexionCon("una Consola");
-				FILE *archivo;
-				archivo = fopen("prueba.txt", "w");
-				if (archivo == NULL) {
-					printf("No se pudo escribir el archivo\n");
-					return EXIT_FAILURE;
-				}
-
-				u_int32_t fsize;
-				if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
-					printf("Error recibiendo longitud del archivo\n");
-					return EXIT_FAILURE;
-				}
-				char *bufferArchivo = reservarMemoria(fsize + 1);
-				if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
-					printf("Error recibiendo el archivo\n");
-					return EXIT_FAILURE;
-				}
-				printf("%s\n\n", bufferArchivo);
-
-				fwrite(bufferArchivo, 1, fsize, archivo);
-
-				free(bufferArchivo);
-				fclose(archivo);
-
-				//PARA MEMORIA
-
-				conectar(&cliente2, &direccionServidor2);
-				handshake(&cliente2, kernel);
-				msjConexionCon("una Memoria");
-
-				FILE * archivo2 = fopen("prueba.txt", "rb");
-				if (archivo == NULL) {
-					printf("No se pudo leer el archivo\n");
-					return EXIT_FAILURE;
-				}
-				fseek(archivo2, 0, SEEK_END);
-				u_int32_t fsize2 = ftell(archivo2);
-				fseek(archivo2, 0, SEEK_SET);
-
-				char *buffer = reservarMemoria(fsize2 + 1);
-				fread(buffer, fsize2, 1, archivo2);
-
-				buffer[fsize2] = '\0';
-				if (send(cliente2, &fsize2, sizeof(u_int32_t), 0) == -1) {
-					printf("Error enviando longitud del archivo\n");
-					return EXIT_FAILURE;
-				}
-				if (send(cliente2, buffer, fsize2 + 1, 0) == -1) {
-					printf("Error enviando archivo\n");
-					return EXIT_FAILURE;
-				}
-				printf("El archivo se envió correctamente\n");
-				free(buffer);
-				fclose(archivo2);
-				//
-
-				//agrega nuevo socket al array de sockets    NO CONVENDRÍA QUE ESTÉ AL PRINCIPIO?
+				msjConexionCon("una Consola\n");
 				agregarSocket(client_socket, &cliente);
+				printf("Creando hilo para consola...\n");
+				pthread_t thread_ID;
+				if (pthread_create(&thread_ID, NULL, proced_consola,
+				&direccionServidor2)) {
+					printf("Error al crear el thread.\n");
+					break;
+				}
+				esperar = 1;
+				//agregarThread(threads_clientes, thread_ID);
 				break;
 
 			case cpu:
