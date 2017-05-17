@@ -14,6 +14,10 @@ typedef struct {
 	int puerto;
 	int cantFrames;
 	int tamFrame;
+	int entradasCache;
+	int cacheXProceso;
+	//int reemplazoCache CONVENDRÁ USAR ENUM PARA EL ALGORITMO DE REEMPLAZO?
+	int retardoMemoria;
 } t_configuracion;
 t_configuracion *config;
 
@@ -35,6 +39,10 @@ void settearVariables(t_config *archivo_Modelo) {
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
 	config->cantFrames = config_get_int_value(archivo_Modelo, "MARCOS");
 	config->tamFrame = config_get_int_value(archivo_Modelo, "MARCO_SIZE");
+	config->entradasCache = config_get_int_value(archivo_Modelo, "ENTRADAS_CACHE");
+	config->cacheXProceso = config_get_int_value(archivo_Modelo, "CACHE_X_PROC");
+	//config->reemplazoCache = config_get_int_value(archivo_Modelo, "REEMPLAZO_CACHE"); Guarda, es un string!!
+	config->retardoMemoria = config_get_int_value(archivo_Modelo, "RETARDO_MEMORIA");
 }
 
 void mostrarArchivoConfig() {
@@ -81,11 +89,11 @@ int main(void) {
 	int servidor;
 	int cliente;
 
-	//char* buffer = reservarMemoria(LONGMAX);
-
-	//int memoriaTotal = config->tamFrame * config->cantFrames;
-
-	//char* memoriA = reservarMemoria(memoriaTotal); //Por ahora, esta va a ser la memoria es un único bloque no paginado
+	//Reservo memoria que funcionará como memoria principal del sistema
+	int memoriaTotal = config->tamFrame * config->cantFrames;
+	char* memoriA = reservarMemoria(memoriaTotal);
+	/*Luego creará las estructuras administrativas necesarias para poder gestionar dicho espacio, permitiendo a cada Programa en
+	funcionamiento utilizar un conjunto de páginas de tamaño fijo.*/
 
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
@@ -95,7 +103,33 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		msjConexionCon("el Kernel");
-		//recibirMensajeDe(&cliente, buffer);
+		//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
+		//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
+
+		/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
+		el código del programa y el stack. También le enviará el código completo del Programa.
+		Si no se pudiera obtener espacio suficiente para algunas de las estructuras necesarias del proceso,
+		entonces se le debe informar*/
+
+		/*
+		Existe la posibilidad de que los procesos le soliciten al Kernel bloques de memoria dinámica.
+		El Kernel será el encargado de administrar el ciclo de vida de estos bloques de memoria,
+		denominados Heap, de forma tal que permita al proceso reservar y liberar bloques de forma aleatoria.
+		VER FUNCIONAMIENTO DE MEMORIA DINÁMICA EN LA PARTE DE KERNEL
+		*/
+
+		/*
+		Cada página dedicada a la gestión de memoria dinámica podrá almacenar uno o más bloques de
+		datos. Para poder determinar la consistencia de los bloques de datos almacenados en una página se
+		guardará metadata específica dentro de la misma, la que nos permitirá determinar cuáles son las
+		secciones de memoria sobre las cuales el proceso puede trabajar. Para ello, utilizaremos la siguiente
+		estructura:
+		typedef struct HeapMetadata {
+			uint32_t size,
+			Bool isFree
+		}
+		*/
+
 		FILE *archivo;
 		archivo = fopen("prueba.txt", "w");
 		if (archivo == NULL) {
@@ -104,12 +138,12 @@ int main(void) {
 		}
 
 		u_int32_t fsize = 0;
+		//recibirMensajeDe(&cliente, buffer); NO CONVENDRÍA USAR ESA ABSTRACCIÓN??
 		if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
 			printf("Error recibiendo longitud del archivo\n");
 			return EXIT_FAILURE;
 		}
 
-		//Hardcodeado el tamanio del archivo por error con el fsize
 		char *bufferArchivo = reservarMemoria(fsize + 1);
 		if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
 			printf("Error recibiendo el archivo\n");
@@ -123,6 +157,16 @@ int main(void) {
 
 	case cpu:
 		printf("Me conecte con CPU!\n");
+		//Por cada conexión, la Memoria creará un hilo dedicado a atenderlo, que quedará a la espera de solicitudes de operaciones.
+		//Hay que atacar los problemas de concurrencia que surjan.
+
+		/*Ante cualquier solicitud de acceso a la memoria principal, deberá esperar una cantidad de tiempo configurable
+		(en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
+		no se deberá esperar.*/
+
+		/*En caso de que un CPU solicite memoria y no se le pueda asignar por falta de espacio, se
+		deberá informar  que no hay más espacio disponible.*/
+
 		break;
 
 	default:
@@ -130,20 +174,6 @@ int main(void) {
 		break;
 	}
 	close(servidor);
-
-	/*struct sockaddr_in direccionServidor;
-	 direccionServidor.sin_family = AF_INET;
-	 direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
-	 direccionServidor.sin_port = htons(8080);
-
-	 int cliente;
-	 char* buffer = malloc(LONGMAX);
-
-	 conectar(&cliente, &direccionServidor);
-
-	 recibirMensajeDe(&cliente, buffer);
-
-	 close(cliente);*/
 
 	return 0;
 }
