@@ -62,8 +62,8 @@ void leerArchivo() {
 	t_config *archivo_config = config_create(RUTAARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
-	mostrarArchivoConfig();
-	printf("Leí el archivo y extraje el puerto: %d \n", config->puerto);
+	//mostrarArchivoConfig();
+	printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
 void mandarArchivo(int *cliente) {
@@ -114,6 +114,64 @@ void mandarArchivo(int *cliente) {
 
 }
 
+void iniciarPrograma() {
+	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
+	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
+	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
+	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
+	 relativos y deberán fundamentar su elección.*/
+}
+
+void finalizarPrograma() {
+	/*Finalizar Programa: Como su nombre lo indica este comando finalizará un Programa
+	 AnSISOP, terminando el thread correspondiente al PID que se desee finalizar.*/
+}
+
+void desconectarConsola() {
+	/*Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola
+	 con el kernel, dando por muertos todos los programas de manera abortiva.*/
+}
+
+void limpiarMensajes() {
+	/*Limpiar Mensajes: Este comando eliminará todos los mensajes de la pantalla.*/
+}
+
+void elegirComando(int *cliente) {
+	char *opcionIngresada;
+
+	printf("Los siguientes comandos estan disponibles para ejecutar:\n");
+	printf("1-iniciarPrograma\n");
+	printf("2-desconectarConsola\n");
+	printf("3-limpiarMensajes\n");
+	printf("4-mandarArchivo\n\n");
+
+	printf("Ingrese el numero de comando para ejecutarlo:\n");
+
+	opcionIngresada = reservarMemoria(10);
+	fgets(opcionIngresada,10,stdin);
+
+	switch (*opcionIngresada) {
+	case '1':
+		printf("\nOpcion 1 \n");
+		break;
+	case '2':
+		printf("\nOpcion 2 \n");
+		break;
+	case '3':
+		printf("\nOpcion 3 \n");
+		break;
+	case '4':
+		mandarArchivo(cliente);
+		break;
+	default:
+		printf("Opcion invalida. Vuelva a elegir una opcion \n");
+		//deberia volver a empezar el switch
+		break;
+	}
+
+	free(opcionIngresada);
+}
+
 int main(void) {
 
 	leerArchivo();
@@ -126,14 +184,12 @@ int main(void) {
 	int cliente;
 
 	conectar(&cliente, &direccionServidor);
-
 	int procesoConectado = handshake(&cliente, consola);
 
 	switch (procesoConectado) {
 	case kernel:
 		msjConexionCon("Kernel");
-
-		mandarArchivo(&cliente);
+		elegirComando(&cliente);
 
 		break;
 
