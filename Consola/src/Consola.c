@@ -133,7 +133,6 @@ void desconectarConsola() {
 }
 
 void limpiarMensajes() {
-	/*Limpiar Mensajes: Este comando eliminará todos los mensajes de la pantalla.*/
 }
 
 void elegirComando(int *cliente) {
@@ -158,7 +157,6 @@ void elegirComando(int *cliente) {
 		printf("\nOpcion 2 \n");
 		break;
 	case '3':
-		printf("\nOpcion 3 \n");
 		break;
 	case '4':
 		mandarArchivo(cliente);

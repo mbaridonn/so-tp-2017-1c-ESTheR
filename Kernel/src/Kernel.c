@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include "libreriaSockets.h"
-
-#define RUTAARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+#define MAX_PCB 100
+#define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
 
 int cliente, cliente2, esperar=0;
@@ -39,20 +39,30 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
-/*typedef struct {
- int id_Proceso;
- int contador_Paginas;
+typedef struct {
+ int id_proceso;
+ int contador_paginas;
  }t_pcb;
 
  void aumentarContadorPagina(t_pcb *pcb){
- pcb->contador_Paginas++;
+ pcb->contador_paginas++;
  }
- t_pcb *crearPCB(){
+
+ void crearPCB(int vector_pcb[]){
  t_pcb *punteroPCB;
  punteroPCB = reservarMemoria(sizeof(t_pcb));
- punteroPCB->id_Proceso = 1;
- return punteroPCB;
- }*/
+ punteroPCB->contador_paginas = 0;
+ agregarVectorPCB(punteroPCB,vector_pcb);
+ }
+
+ void agregarVectorPCB(t_pcb *puntero_pcb,int vector_pcb[]){
+	 int i = 0;
+	 while(vector_pcb[i] !=0){
+		 i++;
+	 }
+	 vector_pcb[i] = puntero_pcb;
+	 puntero_pcb->id_proceso = i;
+ }
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -60,11 +70,11 @@ void settearVariables(t_config *archivo_Modelo) {
 }
 
 void leerArchivo() {
-	if (access(RUTAARCHIVO, F_OK) == -1) {
+	if (access(RUTA_ARCHIVO, F_OK) == -1) {
 		printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
-	t_config *archivo_config = config_create(RUTAARCHIVO);
+	t_config *archivo_config = config_create(RUTA_ARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	printf("Leí el archivo y extraje el puerto: %d", config->puerto);
@@ -149,7 +159,7 @@ int main(void) {
 			sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
-
+	//int vector_PCB [MAX_PCB];
 	char buffer[1025];
 	fd_set readfds;
 
@@ -168,6 +178,11 @@ int main(void) {
 	for (i = 0; i < MAX_CLIENTS; i++) {
 		client_socket[i] = 0;
 	}
+	//inicializar el vector de PCBs
+	/*int h;
+	for (h = 0; h < MAX_PCB; h++){
+		vector_PCB[h] = 0;
+	}*/
 
 	esperarConexion(&master_socket, &direccionServidor);
 
@@ -209,6 +224,7 @@ int main(void) {
 			mostrarConexion(cliente, direccionServidor);
 
 			int procesoConectado = handshake(&cliente, kernel);
+
 			switch (procesoConectado) {
 			case consola:
 				msjConexionCon("una Consola\n");
