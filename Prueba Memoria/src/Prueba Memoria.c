@@ -10,6 +10,10 @@ typedef struct {
 	int numPag;
 } tablaPagInv;
 
+int tamFrame = 0;
+int cantFrames = 0;
+tablaPagInv* estructuraAdm;//Tiene que apuntar SIEMPRE al inicio de la tabla
+
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
 	if (puntero == NULL) {
@@ -25,6 +29,20 @@ int divisionRoundUp(int dividendo, int divisor) {
 		exit(-1); //En realidad tendría más sentido que se recupere
 	}
 	return 1 + ((dividendo - 1) / divisor);
+}
+
+void inicializarTablaPags(int cantFramesEstructuraAdm){//Está bien? No está haciendo cagadas con puntero?
+	int i=0;
+	for(i=0;i<cantFrames;i++){
+		if (i<cantFramesEstructuraAdm){
+			estructuraAdm[i].PID=0;//Supongo que PID 0 significa frame de estructura administrativa
+		}else {
+			estructuraAdm[i].PID=-1;//Supongo que PID -1 significa frame vacío
+		}
+	}
+	for(i=0;i<cantFrames;i++){ // Prueba de que está bien inicializado (después borrar)
+		printf("%d,", estructuraAdm[i].PID);
+	}
 }
 
 void atenderComandos() {
@@ -62,6 +80,28 @@ void atenderComandos() {
 	}
 }
 
+int hash(int PID, int nroPag){
+	int indiceEnLaTabla = 0;
+	//Pendiente
+	indiceEnLaTabla+=nroPag;
+	indiceEnLaTabla%=cantFrames;
+	return indiceEnLaTabla;
+}
+
+int buscarPagina(int PID, int nroPag){
+	int frameBuscado=-1;
+	int frameActual=hash(PID, nroPag);
+	while (frameActual<cantFrames && frameBuscado==-1){
+		if(estructuraAdm[frameActual].PID==PID && estructuraAdm[frameActual].numPag==nroPag) frameBuscado=frameActual;
+		frameActual++;//Qué pasa si una página queda al principio (por el módulo) y yo empiezo a buscar por el final?
+	}
+	if (frameBuscado==-1){
+		printf("No se encontró la página");
+		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA BÚSQUEDA
+	}
+	return frameBuscado;//Debería devolver el frame o los bytes (frameBuscado*tamFrame)??
+}
+
 void inicializarPrograma(int PID, int cantPags){
 	/*Hay que asignar páginas necesarias para el segmento de código y para el de datos. Inmediatamente despues de
 	las paginas asignadas al codigo, le vas a asignar las paginas al stack de tal manera que esten contiguas.
@@ -73,14 +113,22 @@ void inicializarPrograma(int PID, int cantPags){
 }
 
 void leerPagina(int PID, int nroPag, int offset, int tamanio){
-	//if (offset+tamanio>tamPag) ERROR
+	if (offset+tamanio>tamFrame){
+		printf("Se está intentando leer más allá del límite de la página");
+		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+	}
+	buscarPagina(PID, nroPag);
 	//Buscar frame en tabla de pags con PID y nroPag (si no se encuentra: ERROR)
 	//Multiplicar el frame por tamFrame para obtener el byte donde empieza el frame
 	//Sumarle el offset y empezar a leer hasta limite
 }
 
 void escribirPagina(int PID, int nroPag, int offset, int tamanio, int buffer){
-	//if(offset+tamanio>tamPag) ERROR
+	if (offset+tamanio>tamFrame){
+		printf("Se está intentando escribir más allá del límite de la página");
+		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA ESCRITURA
+	}
+	buscarPagina(PID, nroPag);
 	//Buscar frame en tabla de pags con PID y nroPag (si no se encuentra: ERROR)
 	//Multiplicar el frame por tamFrame para obtener el byte donde empieza el frame
 	//Sumarle el offset y empezar a escribir hasta limite
@@ -106,15 +154,13 @@ void finalizarPrograma (int PID){
 	//Algo más/falta algo??
 }
 
-int hash(int PID, int nroPag){
-	int indiceEnLaTabla = 0;//Pendiente
-	return indiceEnLaTabla;
+void ejecutarOperaciones(){
+	/*Antes de ejecutar cada una hay que esperar una cantidad de tiempo configurable (en milisegundos), simulando el tiempo de
+	acceso a memoria*/
 }
 
 int main() {
 
-	int tamFrame = 0;
-	int cantFrames = 0;
 	puts("Ingrese tamFrame: ");
 	scanf("%i", &tamFrame);
 	puts("Ingrese cantFrames: ");
@@ -122,18 +168,35 @@ int main() {
 	int memoriaTotal = tamFrame * cantFrames;
 	printf("Memoria Total: %i \n", memoriaTotal);
 	char* memoria = reservarMemoria(memoriaTotal);
-	char* estructuraAdm = reservarMemoria(sizeof(tablaPagInv) * cantFrames);
-	int cantFramesEstructuraAdm = divisionRoundUp(sizeof(tablaPagInv) * cantFrames, tamFrame);//Coincide con 1er frame para procesos
-	printf("bytesEstructuraAdm: %i \n", sizeof(tablaPagInv) * cantFrames);
+
+	int cantBytesEstructuraAdm = sizeof(tablaPagInv) * cantFrames;
+	estructuraAdm = malloc (cantBytesEstructuraAdm);//La tabla de páginas no está EN MEMORIA. La tengo aparte pero
+	//no accedo a los bytes que ocuparía en la MP (así simulo que está ahí)
+	int cantFramesEstructuraAdm = divisionRoundUp(cantBytesEstructuraAdm, tamFrame);//Coincide con 1er frame para procesos
+	printf("bytesEstructuraAdm: %i \n", cantBytesEstructuraAdm);
 	printf("cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
+
+	inicializarTablaPags(cantFramesEstructuraAdm);
 
 	printf("Creado hilo para comandos\n");
 	pthread_t hilo_comandos;
 	if (pthread_create(&hilo_comandos, NULL, atenderComandos, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
-		printf("Error al crear el thread.\n");
+		printf("Error al crear el thread de comandos.\n");
 		exit(-1);
 	}
+
+	printf("Creado hilo para operaciones\n");//Hilo de prueba, eliminar después!!
+	pthread_t hilo_operaciones;
+	if (pthread_create(&hilo_operaciones, NULL, ejecutarOperaciones, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+		printf("Error al crear el thread de operaciones.\n");
+		exit(-1);
+	}
+
+	pthread_join(hilo_operaciones, NULL);
 	pthread_join(hilo_comandos, NULL);
+
+	free(memoria);
+	free(estructuraAdm);
 
 	return EXIT_SUCCESS;
 }
