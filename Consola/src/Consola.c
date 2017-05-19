@@ -133,11 +133,15 @@ void desconectarConsola() {
 }
 
 void limpiarMensajes() {
+	system("clear");
 }
 
 void elegirComando(int *cliente) {
 	char *opcionIngresada;
+	int seguirAbierto = 0; /*Si se va a cerrar sólo en una de las opciones, tendría que ser
+							 directamente la "opcionIngresada" la condición del do-while. Por ahora la dejo así*/
 
+	do{
 	printf("Los siguientes comandos estan disponibles para ejecutar:\n");
 	printf("1-iniciarPrograma\n");
 	printf("2-desconectarConsola\n");
@@ -155,8 +159,10 @@ void elegirComando(int *cliente) {
 		break;
 	case '2':
 		printf("\nOpcion 2 \n");
+		seguirAbierto = 1;
 		break;
 	case '3':
+		limpiarMensajes();
 		break;
 	case '4':
 		mandarArchivo(cliente);
@@ -168,6 +174,7 @@ void elegirComando(int *cliente) {
 	}
 
 	free(opcionIngresada);
+	}while (seguirAbierto != 1);
 }
 
 int main(void) {
