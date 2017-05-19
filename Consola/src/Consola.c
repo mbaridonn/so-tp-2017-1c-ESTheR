@@ -71,10 +71,10 @@ void mandarArchivo(int *cliente) {
 	char *lineaIngresada, *comando, *nombreArchivo;
 	FILE *archivo;
 
-	printf("Ingrese mandarArchivo + nombre de su archivo\n");
+	printf("\nIngrese mandarArchivo + nombre de su archivo\n");
 	printf("Ejemplo: mandarArchivo prueba.txt\n\n");
 
-	lineaIngresada = malloc(100);
+	lineaIngresada = reservarMemoria(100);
 
 	fgets(lineaIngresada, 100, stdin);
 
@@ -105,9 +105,9 @@ void mandarArchivo(int *cliente) {
 	}
 	if (send(*cliente, buffer, fsize + 1, 0) == -1) {
 		printf("Error enviando archivo\n");
-		exit(-1);
+		exit(-1); //no deberia darle la opcion de volver a intentar en vez de hacer exit? Lo mismo con los exit de arriba
 	}
-	printf("El archivo se envió correctamente\n");
+	printf("El archivo se envió correctamente\n\n");
 
 	free(lineaIngresada);
 	free(buffer);
@@ -120,6 +120,25 @@ void iniciarPrograma() {
 	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
 	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
 	 relativos y deberán fundamentar su elección.*/
+
+	char *lineaIngresada, *comando, *nombreScript;
+
+	printf("\nIngrese iniciarPrograma + nombre del script AnSISOP. \n");
+	printf("Ejemplo: iniciarPrograma script123\n\n");
+
+	lineaIngresada = reservarMemoria(100);
+
+	fgets(lineaIngresada, 100, stdin);
+
+	comando = strtok(lineaIngresada, " ");
+	nombreScript = strtok(NULL, "\n");
+
+	if (strcmp("iniciarPrograma", comando) != 0) {
+		printf("El comando ingresado no existe");
+	} else {
+		//error si el script no se encuentra/no existe
+		}
+
 }
 
 void finalizarPrograma() {
@@ -130,51 +149,52 @@ void finalizarPrograma() {
 void desconectarConsola() {
 	/*Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola
 	 con el kernel, dando por muertos todos los programas de manera abortiva.*/
+	printf("\nConsola desconectada. \n\n");
+	exit(-1);
 }
 
 void limpiarMensajes() {
 	system("clear");
+	printf("Consola limpiada! \n\n");
 }
 
 void elegirComando(int *cliente) {
 	char *opcionIngresada;
-	int seguirAbierto = 0; /*Si se va a cerrar sólo en una de las opciones, tendría que ser
-							 directamente la "opcionIngresada" la condición del do-while. Por ahora la dejo así*/
+	int seguirAbierto = 1; /*Si se va a cerrar sólo en una de las opciones, tendría que ser
+	 directamente la "opcionIngresada" la condición del do-while. Por ahora la dejo así*/
 
-	do{
-	printf("Los siguientes comandos estan disponibles para ejecutar:\n");
-	printf("1-iniciarPrograma\n");
-	printf("2-desconectarConsola\n");
-	printf("3-limpiarMensajes\n");
-	printf("4-mandarArchivo\n\n");
+	do {
+		printf("Los siguientes comandos estan disponibles para ejecutar:\n");
+		printf("1-iniciarPrograma\n");
+		printf("2-desconectarConsola\n");
+		printf("3-limpiarMensajes\n");
+		printf("4-mandarArchivo\n\n");
 
-	printf("Ingrese el numero de comando para ejecutarlo:\n");
+		printf("Ingrese el numero de comando para ejecutarlo:\n");
 
-	opcionIngresada = reservarMemoria(10);
-	fgets(opcionIngresada,10,stdin);
+		opcionIngresada = reservarMemoria(10);
+		fgets(opcionIngresada, 10, stdin);
 
-	switch (*opcionIngresada) {
-	case '1':
-		printf("\nOpcion 1 \n");
-		break;
-	case '2':
-		printf("\nOpcion 2 \n");
-		seguirAbierto = 1;
-		break;
-	case '3':
-		limpiarMensajes();
-		break;
-	case '4':
-		mandarArchivo(cliente);
-		break;
-	default:
-		printf("Opcion invalida. Vuelva a elegir una opcion \n");
-		//deberia volver a empezar el switch
-		break;
-	}
+		switch (*opcionIngresada) {
+		case '1':
+			iniciarPrograma();
+			break;
+		case '2':
+			desconectarConsola();
+			break;
+		case '3':
+			limpiarMensajes();
+			break;
+		case '4':
+			mandarArchivo(cliente);
+			break;
+		default:
+			printf("\nOpcion invalida. Vuelva a elegir una opcion \n\n");
+			break;
+		}
 
-	free(opcionIngresada);
-	}while (seguirAbierto != 1);
+		free(opcionIngresada);
+	} while (seguirAbierto == 1);
 }
 
 int main(void) {
