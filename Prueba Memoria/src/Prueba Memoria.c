@@ -3,18 +3,19 @@
 
 #include <pthread.h>
 
+int tamFrame = 0;
+int cantFrames = 0;
+
 typedef struct {
-	int numFrame; //Hace falta? En la parte de función de hash dice que:
-	//Por una cuestión de simplicidad, asociamos el número de frame con el índice en el que se encuentra la entrada en la página.
 	int PID;
 	int numPag;
 } tablaPagInv;
 
 int cantFramesEstructuraAdm;
-int tamFrame = 0;
-int cantFrames = 0;
 char* memoriaPrincipal;
 tablaPagInv* estructuraAdm;	//Tiene que apuntar SIEMPRE al inicio de la tabla
+int* cantPagsPorPID; //Esta tabla NO está en MP. Se accede a través del PID de un proceso
+//En vez de tener varios punteros a MP se podría tener uno solo, e irlo casteando
 
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
@@ -33,16 +34,17 @@ int divisionRoundUp(int dividendo, int divisor) {
 	return 1 + ((dividendo - 1) / divisor);
 }
 
-void inicializarTablaPags(int cantFramesEstructuraAdm) { //Está bien? No está haciendo cagadas con puntero?
+void inicializarTablaPags(int cantFramesEstructuraAdm) {
 	int i = 0;
 	for (i = 0; i < cantFrames; i++) {
 		if (i < cantFramesEstructuraAdm) {
 			estructuraAdm[i].PID = 0; //Supongo que PID 0 significa frame de estructura administrativa
-			estructuraAdm[i].numPag = i; //ESTO ESTA MAS QUE HARDCODEADO PARA PROBAR. BORRAR PORFAVOR
+			estructuraAdm[i].numPag = i; //ESTO ESTA MAS QUE HARDCODEADO PARA PROBAR. BORRAR POR FAVOR
 		} else {
 			estructuraAdm[i].PID = -1; //Supongo que PID -1 significa frame vacío
 		}
 	}
+	cantPagsPorPID[0]=cantFramesEstructuraAdm;
 	for (i = 0; i < cantFrames; i++) { // Prueba de que está bien inicializado (después borrar)
 		printf("%d,", estructuraAdm[i].PID);
 	}
@@ -58,7 +60,7 @@ void atenderComandos() {
 		switch (comando) {
 		case 'r':
 			printf("Especifique valor del Retardo (en milisegundos)");
-			//fgets(); Hace falta validar TODO lo que podría salir mal?
+			//fgets(); Hace falta validar TODO lo que podría salir mal!
 			//config->retardoMemoria = (habría que pedir el nuevo valor)
 			//Debería usar un mutex?
 			break;
@@ -100,15 +102,21 @@ int buscarPagina(int PID, int nroPag) {
 				&& estructuraAdm[frameActual].numPag == nroPag)
 			frameBuscado = frameActual;
 		frameActual++;
-		if (frameActual == cantFrames) {/*Si llega al final y no encuentra la página solicitada, la busca desde el principio.*/
-			frameActual = cantFramesEstructuraAdm;/*Comienza a buscar desde que terminan los frames de la estructura administrativa.*/
+		if (frameActual == cantFrames) {//Si llega al final y no encuentra la página solicitada,
+			frameActual = cantFramesEstructuraAdm;//comienza a buscar desde que terminan los frames de la estructura administrativa
 		}
 		if (frameActual == frameBase) {
 			printf("No se encontró la página");
 			return -1;
 		}
 	}
-	return frameBuscado * tamFrame;	//Debería devolver el frame o los bytes (frameBuscado*tamFrame)??
+	return frameBuscado * tamFrame;	//Devuelve el byte donde comienza el frame (para direccionarlo usando un puntero a char)
+}
+
+int proximaPagina(int PID, int nroPag){
+	int proxPag = -1;
+	if (nroPag < (cantPagsPorPID[PID] - 1)/*empieza por la cero*/) proxPag=nroPag+1;
+	return proxPag;
 }
 
 void inicializarPrograma(int PID, int cantPags) {
@@ -121,30 +129,54 @@ void inicializarPrograma(int PID, int cantPags) {
 	 */
 }
 
-char *leerPagina(int PID, int nroPag, int offset, int tamanio) { //El tipo puede variar
+char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	int posByteComienzoPag;
+	int tamanioRestante = 0;
+	int proxPag;
 	if (offset + tamanio > tamFrame) {
-		printf("Se está intentando leer más allá del límite de la página");
-		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+		proxPag = proximaPagina(PID, nroPag);
+		if(proxPag == -1){
+			printf("Se está intentando leer más allá del límite de memoria asignada");
+			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+		}
+		tamanioRestante = tamanio-(tamFrame-offset);//Si hay otra pág, me guardo el tamaño restante
 	}
-	if ((posByteComienzoPag = buscarPagina(PID, nroPag)) == -1) {
+	if ((posByteComienzoPag = buscarPagina(PID, nroPag)) == -1) {//No se encontró la pagina
 		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 	}
 	posByteComienzoPag += offset;
 	int i;
-	char *bytesLeidos = reservarMemoria(tamanio); //El tipo puede variar
-	for (i = 0; i < tamanio; i++) {
+	char *bytesLeidos = reservarMemoria(tamanio);
+	for (i = 0; i < tamanio-tamanioRestante/*en caso de que haya que leer más de otra pág*/; i++) {
 		bytesLeidos[i] = memoriaPrincipal[posByteComienzoPag];
 		posByteComienzoPag++;
+	}
+	if (tamanioRestante){ //Hay que leer el resto de otra página
+		char *bytesRestantesLeidos = leerPagina(PID,proxPag,0,tamanioRestante);//Lee lo que esta en la página que sigue
+		//Si leerPagina me manda un error, lo tendría que tratar (por ahora hay un exit)
+		int j=0;
+		while(i < tamanio){
+			bytesLeidos[i] = bytesRestantesLeidos[j];
+			i++;
+			j++;
+		}
+		free(bytesRestantesLeidos);
 	}
 	return bytesLeidos;
 }
 
-void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) { //El tipo de buffer puede variar, no necesariamente int.
+void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) {
 	int posByteComienzoPag;
 	if (offset + tamanio > tamFrame) {
-		printf("Se está intentando escribir más allá del límite de la página");
-		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA ESCRITURA
+		int proxPag = proximaPagina(PID, nroPag);
+		if (proxPag == -1){
+			printf("Se está intentando escribir más allá del límite de la página");
+			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA ESCRITURA
+		}
+		int tamanioRestante = tamanio-(tamFrame-offset);
+		escribirPagina(PID, proxPag,0,tamanioRestante,&buffer[tamanio-tamanioRestante]);
+		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
+		//Si escribirPagina me manda un error, lo tendría que tratar (por ahora hay un exit)
 	}
 	if ((posByteComienzoPag = buscarPagina(PID, nroPag)) == -1) {
 		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
@@ -180,10 +212,10 @@ void finalizarPrograma(int PID) {
 void ejecutarOperaciones() { // ES DE PRUEBA. BORRAR DESPUES
 	/*Antes de ejecutar cada una hay que esperar una cantidad de tiempo configurable (en milisegundos), simulando el tiempo de
 	 acceso a memoria*/
-	int bytesAEscribir[5] = {1,2,3,4,5};
-	escribirPagina(0,0,0,20,bytesAEscribir);
-	int *bytesLeidos = leerPagina(0,0,0,20);
-	printf("%d",bytesLeidos[2]);
+	int bytesAEscribir[10] = {0,1,2,3,4,5,6,7,8,9};
+	escribirPagina(0,0,0,40,bytesAEscribir);
+	int *bytesLeidos = leerPagina(0,0,0,40);
+	printf("%d",bytesLeidos[8]);
 	free(bytesLeidos);
 }
 
@@ -203,6 +235,8 @@ int main() {
 	cantFramesEstructuraAdm = divisionRoundUp(cantBytesEstructuraAdm, tamFrame);//Coincide con 1er frame para procesos
 	printf("bytesEstructuraAdm: %i \n", cantBytesEstructuraAdm);
 	printf("cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
+
+	cantPagsPorPID = malloc(sizeof(int)*cantFrames);//REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
 
 	inicializarTablaPags(cantFramesEstructuraAdm);
 
@@ -225,6 +259,7 @@ int main() {
 
 	free(memoriaPrincipal);
 	free(estructuraAdm);
+	free(cantPagsPorPID);
 
 	return EXIT_SUCCESS;
 }
