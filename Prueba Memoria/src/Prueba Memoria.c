@@ -14,8 +14,10 @@ typedef struct {
 int cantFramesEstructuraAdm;
 char* memoriaPrincipal;
 tablaPagInv* estructuraAdm;	//Tiene que apuntar SIEMPRE al inicio de la tabla
-int* cantPagsPorPID; //Esta tabla NO está en MP. Se accede a través del PID de un proceso
 //En vez de tener varios punteros a MP se podría tener uno solo, e irlo casteando
+
+int* cantPagsPorPID; //Esta tabla NO está en MP. Se accede a través del PID de un proceso
+
 
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
@@ -119,14 +121,51 @@ int proximaPagina(int PID, int nroPag){
 	return proxPag;
 }
 
+int proximoFrameLibre(int frameBase){
+	int frameActual = frameBase;
+	while (1){
+		if (estructuraAdm[frameActual].PID == -1) return frameActual;
+		frameActual++;
+		if (frameActual == cantFrames) {//Si llega al final y no encuentra la página solicitada,
+			frameActual = cantFramesEstructuraAdm;//comienza a buscar desde que terminan los frames de la estructura administrativa
+		}
+		if (frameActual == frameBase) {
+			printf("No se encontró ninguna página libre");
+			return -1;
+		}
+	}
+}
+
+void asignarPaginasAProceso(int PID, int pagsRequeridas){
+	int nroPag = 0;
+	int frameAAsignar;
+	while(nroPag<pagsRequeridas-1){
+		frameAAsignar = proximoFrameLibre(buscarPagina(PID, nroPag)/tamFrame/*buscarPagina devuelve la pos en bytes*/);
+		if (frameAAsignar == -1){//No se encontró ninguna página libre
+			printf("Sólo se pudieron asignar %d páginas",nroPag);
+			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+		}
+		estructuraAdm[frameAAsignar].PID = PID;
+		estructuraAdm[frameAAsignar].numPag = nroPag;
+		nroPag++;
+		cantPagsPorPID[PID]++;
+	}
+}
+
 void inicializarPrograma(int PID, int cantPags) {
 	/*Hay que asignar páginas necesarias para el segmento de código y para el de datos. Inmediatamente despues de
-	 las paginas asignadas al codigo, le vas a asignar las paginas al stack de tal manera que esten contiguas.
+	 las paginas asignadas al codigo, le vas a asignar las paginas al stack de tal manera que esten contiguas (no necesariamente).
 	 1) gracias al PCB sabes cuantas paginas va a ocupar el codigo de tu programa, en el campo 'Paginas de codigo'
 	 2) las paginas del stack estan seteados por archivo de configuracion cuanto pueden pesar (el campo STACK_SIZE)
 	 Chequear al momento de escribir en una pagina nueva que la pagina nueva no sea de un PID distinto o que no este asignada
-	 a nadie. Nunca ningun proceso le manda a escribir a la memoria mas de lo que tiene una pagina
-	 */
+	 a nadie. Nunca ningun proceso le manda a escribir a la memoria mas de lo que tiene una pagina*/
+
+	if (!cantPagsPorPID[PID]){//Chequea que el programa no esté ya inicializado
+		printf("El programa ya se encuentra inicializado");
+		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+	}
+	cantPagsPorPID[PID]=0;//Tengo que inicializarlo xq asignarPaginasAProceso le suma la cantPags
+	asignarPaginasAProceso(PID,cantPags);//Si asignarPaginasAProceso me manda un error, lo tendría que tratar (por ahora hay un exit)
 }
 
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
@@ -190,23 +229,21 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 	//Qué pasa si al escribir estoy pisando datos anteriores? Hay que chequear esto??
 }
 
-void asignarPaginasAProceso(int PID, int pagsRequeridas) {
-	/*Se podría tener una tener una estructura adicional (que no este guardada en "memoria principal") que
-	 almacene, para cada PID, la cant de páginas que tiene asignadas*/
-	//Ejecutar función de hash con PID y nroPag?
-	//Verificar que en la entrada de la tabla de paginas ese frame no este asignado	a nadie. Sino avanzar hasta que esto se cumpla
-	//Actualizar esa entrada en la tabla de paginas (y aumentar tambien el contador de pags en la estructura adicional)
-	//Seguir asi hasta asignar todas las pags requeridas
-	//En caso de que no se pueda asignar más páginas se deberá informar de la imposibilidad de asignar por falta de espacio
-	//Algo más/falta algo??
-}
-
 void finalizarPrograma(int PID) {
-	//Buscar entrada con ese pid
-	//Eliminar lógicamente la entrada en tabla de pags (poniendoles PID -1 ??)
+
 	//Repetir hasta que cantidad de entradas eliminadas sea igual a la cant de pags que el proceso tenia asignadas
 	//Borrar (físicamente?) la entrada de la estructura auxiliar que almacena, para cada PID, la cant de páginas que tiene asignadas
 	//Algo más/falta algo??
+	int nroPag = cantPagsPorPID[PID]-1;
+	int paginaABorrar;
+	while (nroPag>=0){
+		if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) {//No se encontró la pagina
+			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+		}
+		estructuraAdm[paginaABorrar].PID = -1;
+		cantPagsPorPID[PID]--;//Conviene ir decrementándolo 1 a 1 por si falla algo
+		nroPag--;
+	}
 }
 
 void ejecutarOperaciones() { // ES DE PRUEBA. BORRAR DESPUES
@@ -237,6 +274,8 @@ int main() {
 	printf("cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
 
 	cantPagsPorPID = malloc(sizeof(int)*cantFrames);//REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
+	/*Se puede tener una tener una estructura adicional como ésta (que no este guardada en "memoria principal") que
+	almacene, para cada PID, la cant de páginas que tiene asignadas??*/
 
 	inicializarTablaPags(cantFramesEstructuraAdm);
 
