@@ -66,25 +66,30 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
-void mandarArchivo(int *cliente) {
+void iniciarPrograma(int *cliente) {
+	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
+	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
+	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
+	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
+	 relativos y deberán fundamentar su elección.*/
 
-	char *lineaIngresada, *comando, *nombreArchivo;
+	char *lineaIngresada, *comando, *nombreScript;
 	FILE *archivo;
 
-	printf("\nIngrese mandarArchivo + nombre de su archivo\n");
-	printf("Ejemplo: mandarArchivo prueba.txt\n\n");
+	printf("\nIngrese iniciarPrograma + nombre del script AnSISOP. \n");
+	printf("Ejemplo: iniciarPrograma script.ansisop\n\n");
 
 	lineaIngresada = reservarMemoria(100);
 
 	fgets(lineaIngresada, 100, stdin);
 
 	comando = strtok(lineaIngresada, " ");
-	nombreArchivo = strtok(NULL, "\n");
+	nombreScript = strtok(NULL, "\n");
 
-	if (strcmp("mandarArchivo", comando) != 0) {
+	if (strcmp("iniciarPrograma", comando) != 0) {
 		printf("El comando ingresado no existe");
 	} else {
-		archivo = fopen(nombreArchivo, "rb");
+		archivo = fopen(nombreScript, "rb"); //USAR PATH ABSOLUTO?
 		if (archivo == NULL) {
 			printf("No se pudo leer el archivo\n");
 			exit(-1);
@@ -105,39 +110,12 @@ void mandarArchivo(int *cliente) {
 	}
 	if (send(*cliente, buffer, fsize + 1, 0) == -1) {
 		printf("Error enviando archivo\n");
-		exit(-1); //no deberia darle la opcion de volver a intentar en vez de hacer exit? Lo mismo con los exit de arriba
+		exit(-1);
 	}
 	printf("El archivo se envió correctamente\n\n");
 
 	free(lineaIngresada);
 	free(buffer);
-
-}
-
-void iniciarPrograma() {
-	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
-	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
-	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
-	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
-	 relativos y deberán fundamentar su elección.*/
-
-	char *lineaIngresada, *comando, *nombreScript;
-
-	printf("\nIngrese iniciarPrograma + nombre del script AnSISOP. \n");
-	printf("Ejemplo: iniciarPrograma script123\n\n");
-
-	lineaIngresada = reservarMemoria(100);
-
-	fgets(lineaIngresada, 100, stdin);
-
-	comando = strtok(lineaIngresada, " ");
-	nombreScript = strtok(NULL, "\n");
-
-	if (strcmp("iniciarPrograma", comando) != 0) {
-		printf("El comando ingresado no existe");
-	} else {
-		//error si el script no se encuentra/no existe
-		}
 
 }
 
@@ -168,16 +146,15 @@ void elegirComando(int *cliente) {
 		printf("1-iniciarPrograma\n");
 		printf("2-desconectarConsola\n");
 		printf("3-limpiarMensajes\n");
-		printf("4-mandarArchivo\n\n");
 
 		printf("Ingrese el numero de comando para ejecutarlo:\n");
 
-		opcionIngresada = reservarMemoria(10);
-		fgets(opcionIngresada, 10, stdin);
+		opcionIngresada = reservarMemoria(sizeof(opcionIngresada));
+		fgets(opcionIngresada, sizeof(opcionIngresada), stdin);
 
 		switch (*opcionIngresada) {
 		case '1':
-			iniciarPrograma();
+			iniciarPrograma(cliente);
 			break;
 		case '2':
 			desconectarConsola();
@@ -185,16 +162,13 @@ void elegirComando(int *cliente) {
 		case '3':
 			limpiarMensajes();
 			break;
-		case '4':
-			mandarArchivo(cliente);
-			break;
 		default:
 			printf("\nOpcion invalida. Vuelva a elegir una opcion \n\n");
 			break;
 		}
 
 		free(opcionIngresada);
-	} while (seguirAbierto == 1);
+	} while (seguirAbierto);
 }
 
 int main(void) {

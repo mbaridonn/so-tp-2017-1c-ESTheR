@@ -9,11 +9,11 @@
 #include <stdio.h>
 #include <pthread.h>
 #include "libreriaSockets.h"
+#include "lib/list.h"
 #define MAX_PCB 100
 #define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
-
-int cliente, cliente2, esperar=0;
+int cliente, cliente2, esperar = 0;
 
 typedef struct {
 	int puerto;
@@ -40,29 +40,21 @@ void *reservarMemoria(int tamanioArchivo) {
 }
 
 typedef struct {
- int id_proceso;
- int contador_paginas;
- }t_pcb;
+	int id_proceso;
+	int contador_paginas;
+} t_pcb;
 
- void aumentarContadorPagina(t_pcb *pcb){
- pcb->contador_paginas++;
- }
+void aumentarContadorPagina(t_pcb *pcb) {
+	pcb->contador_paginas++;
+}
 
- void crearPCB(int vector_pcb[]){
- t_pcb *punteroPCB;
- punteroPCB = reservarMemoria(sizeof(t_pcb));
- punteroPCB->contador_paginas = 0;
- agregarVectorPCB(punteroPCB,vector_pcb);
- }
-
- void agregarVectorPCB(t_pcb *puntero_pcb,int vector_pcb[]){
-	 int i = 0;
-	 while(vector_pcb[i] !=0){
-		 i++;
-	 }
-	 vector_pcb[i] = puntero_pcb;
-	 puntero_pcb->id_proceso = i;
- }
+t_pcb *crearPCB() {
+	t_pcb *punteroPCB;
+	punteroPCB = reservarMemoria(sizeof(t_pcb));
+	punteroPCB->contador_paginas = 0;
+	punteroPCB->id_proceso = 1;
+	return punteroPCB;
+}
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -93,7 +85,7 @@ void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
 			ntohs(direccionServidor.sin_port));
 }
 
-void *proced_consola(void *direccionServidor2) {
+void *proced_script(void *direccionServidor2, t_list *listaPCBs) {
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w");
 	if (archivo == NULL) {
@@ -112,6 +104,8 @@ void *proced_consola(void *direccionServidor2) {
 		return NULL;
 	}
 	printf("%s\n\n", bufferArchivo);
+
+	list_add(listaPCBs,crearPCB());
 
 	fwrite(bufferArchivo, 1, fsize, archivo);
 
@@ -155,13 +149,14 @@ void *proced_consola(void *direccionServidor2) {
 int main(void) {
 
 	//Cuándo lee el archivo?
-	int master_socket, addrlen, client_socket[30], activity, valread,
-			sd;
+	int master_socket, addrlen, client_socket[30], activity, valread, sd;
 	int max_sd;
 	struct sockaddr_in direccionServidor;
-	//int vector_PCB [MAX_PCB];
 	char buffer[1025];
 	fd_set readfds;
+
+	t_list *listaPCBs;
+	listaPCBs = list_create();
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -178,11 +173,6 @@ int main(void) {
 	for (i = 0; i < MAX_CLIENTS; i++) {
 		client_socket[i] = 0;
 	}
-	//inicializar el vector de PCBs
-	/*int h;
-	for (h = 0; h < MAX_PCB; h++){
-		vector_PCB[h] = 0;
-	}*/
 
 	esperarConexion(&master_socket, &direccionServidor);
 
@@ -206,7 +196,8 @@ int main(void) {
 		}
 
 		//espera indefinidamente actividad en algun socket
-		while(esperar==1);
+		while (esperar == 1)
+			;
 		activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
 		if (activity < 0) {
 			printf("select error");
@@ -230,14 +221,19 @@ int main(void) {
 				msjConexionCon("una Consola\n");
 				agregarSocket(client_socket, &cliente);
 				printf("Creando hilo para consola...\n");
-				pthread_t thread_ID;
+				/*pthread_t thread_ID;
 				if (pthread_create(&thread_ID, NULL, proced_consola,
-				&direccionServidor2)) {
+						&direccionServidor2)) {
 					printf("Error al crear el thread.\n");
 					break;
-				}
+				}*/
+				//proced_consola(&direccionServidor2);
+
+				proced_script(&direccionServidor2,listaPCBs);
+
 				esperar = 1;
 				//agregarThread(threads_clientes, thread_ID);
+
 				break;
 
 			case cpu:
@@ -255,6 +251,11 @@ int main(void) {
 				break;
 			}
 		}
+
+		/*
+		list_destroy_and_destroy_elements(listaPCBs,);
+		Que va en el segundo parametro del proced de arriba???
+		*/
 
 		//cierra todas las conexiones
 		for (i = 0; i < MAX_CLIENTS; i++) {
