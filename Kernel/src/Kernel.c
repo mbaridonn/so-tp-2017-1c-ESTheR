@@ -14,6 +14,7 @@
 #define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
 int cliente, cliente2, esperar = 0;
+int id_proceso_actual = 0;
 
 typedef struct {
 	int puerto;
@@ -52,7 +53,7 @@ t_pcb *crearPCB() {
 	t_pcb *punteroPCB;
 	punteroPCB = reservarMemoria(sizeof(t_pcb));
 	punteroPCB->contador_paginas = 0;
-	punteroPCB->id_proceso = 1;
+	punteroPCB->id_proceso = ++id_proceso_actual;
 	return punteroPCB;
 }
 
