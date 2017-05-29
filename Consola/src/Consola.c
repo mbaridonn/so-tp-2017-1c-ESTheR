@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "libreriaSockets.h"
 
-#define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
+#define RUTAARCHIVO "/home/utnso/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
 typedef struct {
 	//char ipKernel[10]; FALTA IMPLEMENTAR
@@ -21,6 +21,12 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+void solicitarA(int *cliente,char *nombreCli){
+	char a[2] = "a";
+	send((*cliente),a,2,0);
+	printf("Esperando atencion de %s..\n",nombreCli);
+	recv((*cliente),a,2,0);
+}
 void msjConexionCon(char *s) {
 	printf(
 			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
@@ -66,7 +72,9 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
+
 void iniciarPrograma(int *cliente) {
+	solicitarA(cliente,"Kernel");
 	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
 	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
 	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP

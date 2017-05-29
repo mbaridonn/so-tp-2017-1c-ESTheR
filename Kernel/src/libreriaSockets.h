@@ -14,7 +14,7 @@ void conectar(int *cliente, struct sockaddr_in *direccionServidor);
 void agregarSocket(int client_socket[], int *cliente) {
 	int i = 0;
 	for (i = 0; i < MAX_CLIENTS; i++) {
-		if (client_socket[i] == 0) {
+		if (client_socket[i] == -1) {
 			client_socket[i] = *cliente;
 			printf("Agregando a conjunto de sockets como %d \n", i);
 			break;

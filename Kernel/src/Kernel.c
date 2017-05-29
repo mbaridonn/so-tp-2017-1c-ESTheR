@@ -14,7 +14,6 @@
 #define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
 int cliente, cliente2, esperar = 0;
-int id_proceso_actual = 0;
 
 typedef struct {
 	int puerto;
@@ -24,6 +23,22 @@ t_configuracion *config;
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
+
+int primerIndiceLibre(int client_socket[]){
+	int i;
+	for(i=0;i<MAX_CLIENTS;i++){
+		if(client_socket[i]==-1){
+			return i;
+		}
+	}
+	printf("No hay indices libres\n");
+	return -99;
+}
+
+void confirmarAtencionA(int *unCliente) {
+	char a[2] = "a";
+	send((*unCliente), a, 2, 0);
+}
 
 void msjConexionCon(char *s) {
 	printf(
@@ -53,7 +68,7 @@ t_pcb *crearPCB() {
 	t_pcb *punteroPCB;
 	punteroPCB = reservarMemoria(sizeof(t_pcb));
 	punteroPCB->contador_paginas = 0;
-	punteroPCB->id_proceso = ++id_proceso_actual;
+	punteroPCB->id_proceso = 1;
 	return punteroPCB;
 }
 
@@ -86,7 +101,8 @@ void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
 			ntohs(direccionServidor.sin_port));
 }
 
-void *proced_script(void *direccionServidor2, t_list *listaPCBs) {
+void *proced_script(void *direccionServidor2, t_list *listaPCBs, int *unCliente) {
+
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w");
 	if (archivo == NULL) {
@@ -106,7 +122,7 @@ void *proced_script(void *direccionServidor2, t_list *listaPCBs) {
 	}
 	printf("%s\n\n", bufferArchivo);
 
-	list_add(listaPCBs,crearPCB());
+	list_add(listaPCBs, crearPCB());
 
 	fwrite(bufferArchivo, 1, fsize, archivo);
 
@@ -151,6 +167,7 @@ int main(void) {
 
 	//Cuándo lee el archivo?
 	int master_socket, addrlen, client_socket[30], activity, valread, sd;
+	int procesos_por_socket[30];
 	int max_sd;
 	struct sockaddr_in direccionServidor;
 	char buffer[1025];
@@ -172,7 +189,8 @@ int main(void) {
 
 	int i;
 	for (i = 0; i < MAX_CLIENTS; i++) {
-		client_socket[i] = 0;
+		client_socket[i] = -1;
+		procesos_por_socket[i] = -1;
 	}
 
 	esperarConexion(&master_socket, &direccionServidor);
@@ -220,21 +238,9 @@ int main(void) {
 			switch (procesoConectado) {
 			case consola:
 				msjConexionCon("una Consola\n");
+				int indice = primerIndiceLibre(client_socket);
+				procesos_por_socket[indice] = consola;
 				agregarSocket(client_socket, &cliente);
-				printf("Creando hilo para consola...\n");
-				/*pthread_t thread_ID;
-				if (pthread_create(&thread_ID, NULL, proced_consola,
-						&direccionServidor2)) {
-					printf("Error al crear el thread.\n");
-					break;
-				}*/
-				//proced_consola(&direccionServidor2);
-
-				proced_script(&direccionServidor2,listaPCBs);
-
-				esperar = 1;
-				//agregarThread(threads_clientes, thread_ID);
-
 				break;
 
 			case cpu:
@@ -254,9 +260,9 @@ int main(void) {
 		}
 
 		/*
-		list_destroy_and_destroy_elements(listaPCBs,);
-		Que va en el segundo parametro del proced de arriba???
-		*/
+		 list_destroy_and_destroy_elements(listaPCBs,);
+		 Que va en el segundo parametro del proced de arriba???
+		 */
 
 		//cierra todas las conexiones
 		for (i = 0; i < MAX_CLIENTS; i++) {
@@ -271,7 +277,20 @@ int main(void) {
 							ntohs(direccionServidor.sin_port));
 
 					close(sd);
-					client_socket[i] = 0;
+					client_socket[i] = -1;
+					procesos_por_socket[i] = -1;
+				} else {
+					int proceso = procesos_por_socket[i];
+					switch (proceso) {
+					case consola:
+						printf("Hubo movimiento en una consola\n");
+						confirmarAtencionA(&client_socket[i]);
+						proced_script(&direccionServidor2, listaPCBs, &client_socket[i]);
+						break;
+					default:
+						break;
+					}
+
 				}
 			}
 		}
