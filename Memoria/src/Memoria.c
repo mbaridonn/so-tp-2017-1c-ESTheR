@@ -6,7 +6,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <commons/config.h>
+#include <pthread.h>
 #include "libreriaSockets.h"
+#include "lib/funcionesMemoria.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt"
 
@@ -24,15 +26,6 @@ t_configuracion *config;
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
-
-void *reservarMemoria(int tamanio) {
-	void *puntero = malloc(tamanio);
-	if (puntero == NULL) {
-		printf("No hay más espacio\n");
-		exit(-1);
-	}
-	return puntero;
-}
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -89,11 +82,24 @@ int main(void) {
 	int servidor;
 	int cliente;
 
-	//Reservo memoria que funcionará como memoria principal del sistema
-	int memoriaTotal = config->tamFrame * config->cantFrames;
-	char* memoriA = reservarMemoria(memoriaTotal);
-	/*Luego creará las estructuras administrativas necesarias para poder gestionar dicho espacio, permitiendo a cada Programa en
-	funcionamiento utilizar un conjunto de páginas de tamaño fijo.*/
+	inicializarMemoriaPrincipal(config->tamFrame,config->cantFrames);
+
+	printf("Creado hilo para comandos\n");
+	pthread_t hilo_comandos;
+	if (pthread_create(&hilo_comandos, NULL, atenderComandos, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+		printf("Error al crear el thread de comandos.\n");
+		exit(-1);
+	}
+
+	printf("Creado hilo para operaciones\n"); //Hilo de prueba, eliminar después!!
+	pthread_t hilo_operaciones;
+	if (pthread_create(&hilo_operaciones, NULL, ejecutarOperaciones, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+		printf("Error al crear el thread de operaciones.\n");
+		exit(-1);
+	}
+
+	pthread_join(hilo_operaciones, NULL);
+	pthread_join(hilo_comandos, NULL);
 
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
@@ -174,6 +180,8 @@ int main(void) {
 		break;
 	}
 	close(servidor);
+
+	liberarMemoriaPrincipal();
 
 	return 0;
 }
