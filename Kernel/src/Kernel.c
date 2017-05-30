@@ -10,7 +10,8 @@
 #include <pthread.h>
 #include "libreriaSockets.h"
 #include "lib/list.h"
-#define MAX_PCB 100
+#include "lib/pcb.h"
+
 #define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
 int cliente, cliente2, esperar = 0;
@@ -46,32 +47,6 @@ void msjConexionCon(char *s) {
 			s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
-void *reservarMemoria(int tamanioArchivo) {
-	void *puntero = malloc(tamanioArchivo);
-	if (puntero == NULL) {
-		printf("No hay más espacio");
-		exit(-1);
-	}
-	return puntero;
-}
-
-typedef struct {
-	int id_proceso;
-	int contador_paginas;
-} t_pcb;
-
-void aumentarContadorPagina(t_pcb *pcb) {
-	pcb->contador_paginas++;
-}
-
-t_pcb *crearPCB() {
-	t_pcb *punteroPCB;
-	punteroPCB = reservarMemoria(sizeof(t_pcb));
-	punteroPCB->contador_paginas = 0;
-	punteroPCB->id_proceso = 1;
-	return punteroPCB;
-}
-
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
@@ -101,7 +76,7 @@ void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
 			ntohs(direccionServidor.sin_port));
 }
 
-void *proced_script(void *direccionServidor2, t_list *listaPCBs, int *unCliente) {
+void *proced_script(void *direccionServidor2, t_list *listaPCBs_NEW, int *unCliente) {
 
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w");
@@ -122,7 +97,7 @@ void *proced_script(void *direccionServidor2, t_list *listaPCBs, int *unCliente)
 	}
 	printf("%s\n\n", bufferArchivo);
 
-	list_add(listaPCBs, crearPCB());
+	list_add(listaPCBs_NEW, crearPCB());
 
 	fwrite(bufferArchivo, 1, fsize, archivo);
 
@@ -173,8 +148,11 @@ int main(void) {
 	char buffer[1025];
 	fd_set readfds;
 
-	t_list *listaPCBs;
-	listaPCBs = list_create();
+	t_list *listaPCBs_NEW = list_create();
+	t_list *listaPCBs_READY = list_create();
+	t_list *listaPCBs_EXEC = list_create();
+	t_list *listaPCBs_BLOCK = list_create();
+	t_list *listaPCBs_EXIT = list_create();
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -260,7 +238,7 @@ int main(void) {
 		}
 
 		/*
-		 list_destroy_and_destroy_elements(listaPCBs,);
+		 list_destroy_and_destroy_elements(listaPCBs_NEW,);
 		 Que va en el segundo parametro del proced de arriba???
 		 */
 
@@ -285,7 +263,7 @@ int main(void) {
 					case consola:
 						printf("Hubo movimiento en una consola\n");
 						confirmarAtencionA(&client_socket[i]);
-						proced_script(&direccionServidor2, listaPCBs, &client_socket[i]);
+						proced_script(&direccionServidor2, listaPCBs_NEW, &client_socket[i]);
 						break;
 					default:
 						break;

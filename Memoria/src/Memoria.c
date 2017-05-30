@@ -98,9 +98,6 @@ int main(void) {
 		exit(-1);
 	}
 
-	pthread_join(hilo_operaciones, NULL);
-	pthread_join(hilo_comandos, NULL);
-
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
 
@@ -180,6 +177,9 @@ int main(void) {
 		break;
 	}
 	close(servidor);
+
+	pthread_join(hilo_operaciones, NULL);
+	pthread_join(hilo_comandos, NULL);
 
 	liberarMemoriaPrincipal();
 

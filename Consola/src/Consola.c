@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include "libreriaSockets.h"
 
-#define RUTAARCHIVO "/home/utnso/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
+#define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
 typedef struct {
 	//char ipKernel[10]; FALTA IMPLEMENTAR
