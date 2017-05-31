@@ -21,6 +21,15 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+enum acciones{
+	startProgram
+};
+
+void informarAccion(int *cliente,int *accion){
+	u_int32_t acc = (*accion);
+	send((*cliente),&acc,sizeof(u_int32_t),0);
+}
+
 void solicitarA(int *cliente,char *nombreCli){
 	char a[2] = "a";
 	send((*cliente),a,2,0);
@@ -75,6 +84,7 @@ void leerArchivo() {
 
 void iniciarPrograma(int *cliente) {
 	solicitarA(cliente,"Kernel");
+	int accion;
 	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
 	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
 	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
@@ -102,6 +112,8 @@ void iniciarPrograma(int *cliente) {
 			printf("No se pudo leer el archivo\n");
 			exit(-1);
 		}
+		accion = startProgram;
+		informarAccion(cliente,&accion);
 	}
 
 	fseek(archivo, 0, SEEK_END);

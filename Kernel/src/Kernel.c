@@ -6,46 +6,21 @@
 #include <netinet/in.h>
 #include <commons/config.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <pthread.h>
 #include "libreriaSockets.h"
 #include "lib/list.h"
 #include "lib/pcb.h"
+#include "conexionesSelect.h"
+#include "estructurasComunes.h"
+#include "accionesDeKernel.h"
 
 #define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
-int cliente, cliente2, esperar = 0;
 
 typedef struct {
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
-
-enum procesos {
-	kernel, cpu, consola, file_system, memoria
-};
-
-int primerIndiceLibre(int client_socket[]){
-	int i;
-	for(i=0;i<MAX_CLIENTS;i++){
-		if(client_socket[i]==-1){
-			return i;
-		}
-	}
-	printf("No hay indices libres\n");
-	return -99;
-}
-
-void confirmarAtencionA(int *unCliente) {
-	char a[2] = "a";
-	send((*unCliente), a, 2, 0);
-}
-
-void msjConexionCon(char *s) {
-	printf(
-			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
-			s);
-} //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -70,83 +45,11 @@ void faltaDeParametros(int argc) {
 	exit(-1);
 }
 
-void mostrarConexion(int cliente, struct sockaddr_in direccionServidor) {
-	printf("Nueva conexion , socket fd: %d , ip: %s , puerto: %d \n", cliente,
-			inet_ntoa(direccionServidor.sin_addr),
-			ntohs(direccionServidor.sin_port));
-}
-
-void *proced_script(void *direccionServidor2, t_list *listaPCBs_NEW, int *unCliente) {
-
-	FILE *archivo;
-	archivo = fopen("prueba.txt", "w");
-	if (archivo == NULL) {
-		printf("No se pudo escribir el archivo\n");
-		return NULL;
-	}
-	u_int32_t fsize;
-	if (recv(cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo longitud del archivo\n");
-		return NULL;
-	}
-
-	char *bufferArchivo = reservarMemoria(fsize + 1);
-	if (recv(cliente, bufferArchivo, fsize + 1, 0) == -1) {
-		printf("Error recibiendo el archivo\n");
-		return NULL;
-	}
-	printf("%s\n\n", bufferArchivo);
-
-	list_add(listaPCBs_NEW, crearPCB());
-
-	fwrite(bufferArchivo, 1, fsize, archivo);
-
-	free(bufferArchivo);
-	fclose(archivo);
-
-	//PARA MEMORIA
-
-	conectar(&cliente2, direccionServidor2);
-	handshake(&cliente2, kernel);
-	msjConexionCon("una Memoria");
-
-	FILE * archivo2 = fopen("prueba.txt", "rb");
-	if (archivo == NULL) {
-		printf("No se pudo leer el archivo\n");
-		return NULL;
-	}
-	fseek(archivo2, 0, SEEK_END);
-	u_int32_t fsize2 = ftell(archivo2);
-	fseek(archivo2, 0, SEEK_SET);
-
-	char *buffer = reservarMemoria(fsize2 + 1);
-	fread(buffer, fsize2, 1, archivo2);
-
-	buffer[fsize2] = '\0';
-	if (send(cliente2, &fsize2, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando longitud del archivo\n");
-		return NULL;
-	}
-	if (send(cliente2, buffer, fsize2 + 1, 0) == -1) {
-		printf("Error enviando archivo\n");
-		return NULL;
-	}
-	printf("El archivo se envió correctamente\n");
-	free(buffer);
-	fclose(archivo2);
-	esperar = 0;
-	return NULL;
-}
-
 int main(void) {
 
 	//Cuándo lee el archivo?
-	int master_socket, addrlen, client_socket[30], activity, valread, sd;
-	int procesos_por_socket[30];
-	int max_sd;
+	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
 	struct sockaddr_in direccionServidor;
-	char buffer[1025];
-	fd_set readfds;
 
 	t_list *listaPCBs_NEW = list_create();
 	t_list *listaPCBs_READY = list_create();
@@ -163,74 +66,35 @@ int main(void) {
 	direccionServidor2.sin_family = AF_INET;
 	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor2.sin_port = htons(8125);
-	//
 
-	int i;
-	for (i = 0; i < MAX_CLIENTS; i++) {
-		client_socket[i] = -1;
-		procesos_por_socket[i] = -1;
-	}
+	inicializarVec(client_socket);
+	inicializarVec(procesos_por_socket);
 
-	esperarConexion(&master_socket, &direccionServidor);
-
-	addrlen = sizeof(direccionServidor);
-	puts("Esperando conexiones...");
+	esperarConexionDe(&direccionServidor);
 
 	while (1) {
-		FD_ZERO(&readfds);
-		FD_SET(master_socket, &readfds);
-		max_sd = master_socket;
+		prepararSockets(client_socket);
+		esperarActividad();
+		if (esConexionEntrante()) {
+			manejarConexionEntrante(&direccionServidor); //La vieja y confiable.
+			mostrarNuevaConexion(direccionServidor);
 
-		int i;
-		for (i = 0; i < MAX_CLIENTS; i++) {
-			sd = client_socket[i];
-
-			if (sd > 0)
-				FD_SET(sd, &readfds);
-
-			if (sd > max_sd)
-				max_sd = sd;
-		}
-
-		//espera indefinidamente actividad en algun socket
-		while (esperar == 1)
-			;
-		activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
-		if (activity < 0) {
-			printf("select error");
-		}
-
-		//maneja conexion entrante
-		if (FD_ISSET(master_socket, &readfds)) {
-			if ((cliente = accept(master_socket,
-					(struct sockaddr *) &direccionServidor,
-					(socklen_t*) &addrlen)) < 0) {
-				perror("accept");
-				exit(EXIT_FAILURE);
-			}
-
-			mostrarConexion(cliente, direccionServidor);
-
-			int procesoConectado = handshake(&cliente, kernel);
+			procesoConectado = realizarHandshake(kernel);
 
 			switch (procesoConectado) {
 			case consola:
 				msjConexionCon("una Consola\n");
-				int indice = primerIndiceLibre(client_socket);
-				procesos_por_socket[indice] = consola;
-				agregarSocket(client_socket, &cliente);
+				setInformacionSockets(client_socket,procesos_por_socket,consola);
 				break;
 
 			case cpu:
 				msjConexionCon("CPU");
 				break;
 
-				/*case memoria:                                 SON NECESARIOS??
-				 printf("Me conecte con Memoria!\n");
-				 break;
-				 case file_system:
+			case file_system:
 				 printf("Me conecte con File System!\n");
-				 break;*/
+				 break;
+
 			default:
 				printf("No me puedo conectar con vos.\n");
 				break;
@@ -242,28 +106,19 @@ int main(void) {
 		 Que va en el segundo parametro del proced de arriba???
 		 */
 
-		//cierra todas las conexiones
-		for (i = 0; i < MAX_CLIENTS; i++) {
-			sd = client_socket[i];
-
-			if (FD_ISSET(sd, &readfds)) {
-				if ((valread = read(sd, buffer, 1024)) == 0) {
-					getpeername(sd, (struct sockaddr*) &direccionServidor,
-							(socklen_t*) &addrlen);
-					printf("Cliente desconectado , ip %s , puerto %d \n",
-							inet_ntoa(direccionServidor.sin_addr),
-							ntohs(direccionServidor.sin_port));
-
-					close(sd);
-					client_socket[i] = -1;
-					procesos_por_socket[i] = -1;
+		setClienteActual(socketQueTuvoActividad(client_socket));
+		i = numeroSocketQueTuvoActividad(client_socket);
+				if (clienteActualSeDesconecto()) {
+					cerrarConexionClienteActual(&direccionServidor);
+					liberarPosicion(client_socket,i);
+					liberarPosicion(procesos_por_socket,i);
 				} else {
 					int proceso = procesos_por_socket[i];
-					switch (proceso) {
+					switch (proceso) { // ACA VAN TODOS LOS CASES DE CUANDO HAY MOVIMIENTO EN UN SOCKET PORQUE SOLICITA ALGO
 					case consola:
 						printf("Hubo movimiento en una consola\n");
 						confirmarAtencionA(&client_socket[i]);
-						proced_script(&direccionServidor2, listaPCBs_NEW, &client_socket[i]);
+						atenderAConsola(&direccionServidor2,listaPCBs_NEW,&client_socket[i]);
 						break;
 					default:
 						break;
@@ -271,7 +126,6 @@ int main(void) {
 
 				}
 			}
-		}
-	}
+
 	return 0;
 }
