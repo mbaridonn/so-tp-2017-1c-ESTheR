@@ -1,0 +1,74 @@
+Cpu
+//Memoria nos indica que pudo comenzar bien el proceso
+//No se lo debería decir al kernel??
+mem_cpu_startProcessOk(pid) 
+pid = id del proceso
+
+//Memoria nos indica que no hay frames suficientes para comenzar un proceso
+//No se lo debería decir al kernel??
+mem_cpu_noFrames(pid) 
+pid = id del proceso
+
+//Memoria nos indica que no hay espacio suficiente para el proceso a comenzar
+//No se lo debería decir al kernel??
+mem_cpu_noSpace(pid) 
+pid = id del proceso
+
+//Memoria nos envía el contenido de un frame
+mem_cpu_frameData(frame, data) 
+frame = número de frame
+data = contenido del frame
+
+//Memoria nos indica que se escribió bien la pagina
+mem_cpu_writeOk(data, num) 
+data = contenido del frame
+num = numero de pagina escrita
+
+Memory
+//Inicializar programa: Kernel nos indica que comienza un proceso
+kernel_mem_startProcess(pid, cantPags) 
+pid = id del proceso
+cantPags = cantidad de páginas necesarios para el proceso
+
+//Solicitar bytes de una página: CPU nos solicita la lectura de una pagina
+cpu_mem_read(pid, numPag, offset, tamanio)
+pid = id del proceso
+numPag = número de página (o frame??) a leer
+offset = ???
+tamanio = ???
+
+//Almacenar bytes en una página: CPU nos indica escribir una pagina
+cpu_mem_write(pid, numPag, offset, tamanio, buffer) 
+pid = id del proceso
+page = número de página (o frame??) a escribir
+offset = ???
+tamanio = ???
+buffer = página (?) a escribir en el frame
+
+//Asignar Páginas a Proceso: Kernel nos pide que asignemos páginas a un proceso
+kernel_mem_assignPages(pid, cantPags)
+pid = id del proceso
+cantPags = cantidad de páginas a asignar al proceso
+
+//Finalizar programa: Kernel nos indica que finaliza un proceso
+kernel_mem_endProcess(pid) 
+pid = id del proceso
+
+//Swap nos indica que no hay espacio suficiente para el proceso a comenzar
+sw_mem_noSpace(pid) 
+pid = id del proceso
+
+
+
+Necesarias?
+
+//Swap nos indica que comenzo correctamente un proceso
+sw_mem_startProcessOk(pid)
+pid = id del proceso
+
+
+//Swap nos devuelve el contenido de una página
+sw_mem_page(pid, page, data) 
+pid = id del proceso
+page = número de frame a escribir
+data = datos del frame
