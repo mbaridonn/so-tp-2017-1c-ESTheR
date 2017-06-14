@@ -32,10 +32,13 @@ void settearVariables(t_config *archivo_Modelo) {
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
 	config->cantFrames = config_get_int_value(archivo_Modelo, "MARCOS");
 	config->tamFrame = config_get_int_value(archivo_Modelo, "MARCO_SIZE");
-	config->entradasCache = config_get_int_value(archivo_Modelo, "ENTRADAS_CACHE");
-	config->cacheXProceso = config_get_int_value(archivo_Modelo, "CACHE_X_PROC");
+	config->entradasCache = config_get_int_value(archivo_Modelo,
+			"ENTRADAS_CACHE");
+	config->cacheXProceso = config_get_int_value(archivo_Modelo,
+			"CACHE_X_PROC");
 	//config->reemplazoCache = config_get_int_value(archivo_Modelo, "REEMPLAZO_CACHE"); Guarda, es un string!!
-	config->retardoMemoria = config_get_int_value(archivo_Modelo, "RETARDO_MEMORIA");
+	config->retardoMemoria = config_get_int_value(archivo_Modelo,
+			"RETARDO_MEMORIA");
 }
 
 void mostrarArchivoConfig() {
@@ -82,19 +85,12 @@ int main(void) {
 	int servidor;
 	int cliente;
 
-	inicializarMemoriaPrincipal(config->tamFrame,config->cantFrames);
+	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames);
 
 	printf("Creado hilo para comandos\n");
 	pthread_t hilo_comandos;
 	if (pthread_create(&hilo_comandos, NULL, atenderComandos, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
 		printf("Error al crear el thread de comandos.\n");
-		exit(-1);
-	}
-
-	printf("Creado hilo para operaciones\n"); //Hilo de prueba, eliminar después!!
-	pthread_t hilo_operaciones;
-	if (pthread_create(&hilo_operaciones, NULL, ejecutarOperaciones, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
-		printf("Error al crear el thread de operaciones.\n");
 		exit(-1);
 	}
 
@@ -106,32 +102,40 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		msjConexionCon("el Kernel");
+		printf("Creado hilo para Kernel\n");
+		send(cliente,config->tamFrame,sizeof(int),0);//Convendria que sea u_int32_t
+		/*pthread_t hilo_kernel;
+		if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+			printf("Error al crear el thread de Kernel.\n");
+			exit(-1);
+		}*/
+
 		//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
 		//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
 
 		/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
-		el código del programa y el stack. También le enviará el código completo del Programa.
-		Si no se pudiera obtener espacio suficiente para algunas de las estructuras necesarias del proceso,
-		entonces se le debe informar*/
+		 el código del programa y el stack. También le enviará el código completo del Programa.
+		 Si no se pudiera obtener espacio suficiente para algunas de las estructuras necesarias del proceso,
+		 entonces se le debe informar*/
 
 		/*
-		Existe la posibilidad de que los procesos le soliciten al Kernel bloques de memoria dinámica.
-		El Kernel será el encargado de administrar el ciclo de vida de estos bloques de memoria,
-		denominados Heap, de forma tal que permita al proceso reservar y liberar bloques de forma aleatoria.
-		VER FUNCIONAMIENTO DE MEMORIA DINÁMICA EN LA PARTE DE KERNEL
-		*/
+		 Existe la posibilidad de que los procesos le soliciten al Kernel bloques de memoria dinámica.
+		 El Kernel será el encargado de administrar el ciclo de vida de estos bloques de memoria,
+		 denominados Heap, de forma tal que permita al proceso reservar y liberar bloques de forma aleatoria.
+		 VER FUNCIONAMIENTO DE MEMORIA DINÁMICA EN LA PARTE DE KERNEL
+		 */
 
 		/*
-		Cada página dedicada a la gestión de memoria dinámica podrá almacenar uno o más bloques de
-		datos. Para poder determinar la consistencia de los bloques de datos almacenados en una página se
-		guardará metadata específica dentro de la misma, la que nos permitirá determinar cuáles son las
-		secciones de memoria sobre las cuales el proceso puede trabajar. Para ello, utilizaremos la siguiente
-		estructura:
-		typedef struct HeapMetadata {
-			uint32_t size,
-			Bool isFree
-		}
-		*/
+		 Cada página dedicada a la gestión de memoria dinámica podrá almacenar uno o más bloques de
+		 datos. Para poder determinar la consistencia de los bloques de datos almacenados en una página se
+		 guardará metadata específica dentro de la misma, la que nos permitirá determinar cuáles son las
+		 secciones de memoria sobre las cuales el proceso puede trabajar. Para ello, utilizaremos la siguiente
+		 estructura:
+		 typedef struct HeapMetadata {
+		 uint32_t size,
+		 Bool isFree
+		 }
+		 */
 
 		FILE *archivo;
 		archivo = fopen("prueba.txt", "w");
@@ -164,11 +168,11 @@ int main(void) {
 		//Hay que atacar los problemas de concurrencia que surjan.
 
 		/*Ante cualquier solicitud de acceso a la memoria principal, deberá esperar una cantidad de tiempo configurable
-		(en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
-		no se deberá esperar.*/
+		 (en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
+		 no se deberá esperar.*/
 
 		/*En caso de que un CPU solicite memoria y no se le pueda asignar por falta de espacio, se
-		deberá informar  que no hay más espacio disponible.*/
+		 deberá informar  que no hay más espacio disponible.*/
 
 		break;
 
@@ -178,7 +182,6 @@ int main(void) {
 	}
 	close(servidor);
 
-	pthread_join(hilo_operaciones, NULL);
 	pthread_join(hilo_comandos, NULL);
 
 	liberarMemoriaPrincipal();

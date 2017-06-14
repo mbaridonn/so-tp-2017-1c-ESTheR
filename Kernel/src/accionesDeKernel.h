@@ -19,7 +19,7 @@ int recibirAccionDe(int *cliente){
 	return (int)accion;
 }
 
-void *proced_script(struct sockaddr_in *direccionServidor2, t_list *listaPCBs_NEW, int *unCliente) {
+void *proced_script(int *servMemoria,t_list *listaPCBs_NEW, int *unCliente) {
 
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w");
@@ -49,10 +49,6 @@ void *proced_script(struct sockaddr_in *direccionServidor2, t_list *listaPCBs_NE
 
 	//PARA MEMORIA
 
-	conectar(&cliente2, direccionServidor2);
-	handshake(&cliente2, kernel);
-	msjConexionCon("una Memoria");
-
 	FILE * archivo2 = fopen("prueba.txt", "rb");
 	if (archivo == NULL) {
 		printf("No se pudo leer el archivo\n");
@@ -66,11 +62,11 @@ void *proced_script(struct sockaddr_in *direccionServidor2, t_list *listaPCBs_NE
 	fread(buffer, fsize2, 1, archivo2);
 
 	buffer[fsize2] = '\0';
-	if (send(cliente2, &fsize2, sizeof(u_int32_t), 0) == -1) {
+	if (send((*servMemoria), &fsize2, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando longitud del archivo\n");
 		return NULL;
 	}
-	if (send(cliente2, buffer, fsize2 + 1, 0) == -1) {
+	if (send((*servMemoria), buffer, fsize2 + 1, 0) == -1) {
 		printf("Error enviando archivo\n");
 		return NULL;
 	}
@@ -80,11 +76,11 @@ void *proced_script(struct sockaddr_in *direccionServidor2, t_list *listaPCBs_NE
 	return NULL;
 }
 
-void atenderAConsola(struct sockaddr_in *direccionServidor2,t_list *listaPCBs_NEW,int *unaConsola){
+void atenderAConsola(int *servMemoria,t_list *listaPCBs_NEW,int *unaConsola){
 	int accion = recibirAccionDe(unaConsola);
 	switch (accion){ //ACA VAN TODOS LOS CASES DE LAS DIFERENTES ACCIONES QUE PUEDE SOLICITAR CONSOLA A KERNEL
 	case startProgram:
-		proced_script(direccionServidor2, listaPCBs_NEW, unaConsola);
+		proced_script(servMemoria,listaPCBs_NEW, unaConsola);
 		break;
 	}
 }

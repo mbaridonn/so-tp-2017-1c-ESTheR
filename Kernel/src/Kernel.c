@@ -16,7 +16,6 @@
 
 #define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
-
 typedef struct {
 	int puerto;
 } t_configuracion;
@@ -45,10 +44,28 @@ void faltaDeParametros(int argc) {
 	exit(-1);
 }
 
+void conectarseConMemoria(int *servMemoria,
+	struct sockaddr_in *direccionServidor2) {
+	conectar(&servMemoria, direccionServidor2);
+	handshake(&servMemoria, kernel);
+	msjConexionCon("una Memoria");
+}
+
+u_int32_t obtenerTamanioDePagina(int *servMemoria) {
+	u_int32_t tamPaginaMemoria;
+	if (recv((*servMemoria), &tamPaginaMemoria, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo longitud del archivo\n");
+		return -1;
+	}
+	return tamPaginaMemoria;
+}
+
 int main(void) {
 
 	//Cuándo lee el archivo?
-	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
+	int client_socket[30], procesos_por_socket[30], i, procesoConectado,
+			servMemoria;
+	u_int32_t tamanioPagMemoria;
 	struct sockaddr_in direccionServidor;
 
 	t_list *listaPCBs_NEW = list_create();
@@ -66,6 +83,9 @@ int main(void) {
 	direccionServidor2.sin_family = AF_INET;
 	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor2.sin_port = htons(8125);
+	conectarseConMemoria(&servMemoria, &direccionServidor2);
+	tamanioPagMemoria = obtenerTamanioDePagina(&servMemoria);
+	printf("El tamanio recibido es: %d\n",tamanioPagMemoria);
 
 	inicializarVec(client_socket);
 	inicializarVec(procesos_por_socket);
@@ -84,7 +104,8 @@ int main(void) {
 			switch (procesoConectado) {
 			case consola:
 				msjConexionCon("una Consola\n");
-				setInformacionSockets(client_socket,procesos_por_socket,consola);
+				setInformacionSockets(client_socket, procesos_por_socket,
+						consola);
 				break;
 
 			case cpu:
@@ -92,8 +113,8 @@ int main(void) {
 				break;
 
 			case file_system:
-				 printf("Me conecte con File System!\n");
-				 break;
+				printf("Me conecte con File System!\n");
+				break;
 
 			default:
 				printf("No me puedo conectar con vos.\n");
@@ -108,24 +129,25 @@ int main(void) {
 
 		setClienteActual(socketQueTuvoActividad(client_socket));
 		i = numeroSocketQueTuvoActividad(client_socket);
-				if (clienteActualSeDesconecto()) {
-					cerrarConexionClienteActual(&direccionServidor);
-					liberarPosicion(client_socket,i);
-					liberarPosicion(procesos_por_socket,i);
-				} else {
-					int proceso = procesos_por_socket[i];
-					switch (proceso) { // ACA VAN TODOS LOS CASES DE CUANDO HAY MOVIMIENTO EN UN SOCKET PORQUE SOLICITA ALGO
-					case consola:
-						printf("Hubo movimiento en una consola\n");
-						confirmarAtencionA(&client_socket[i]);
-						atenderAConsola(&direccionServidor2,listaPCBs_NEW,&client_socket[i]);
-						break;
-					default:
-						break;
-					}
-
-				}
+		if (clienteActualSeDesconecto()) {
+			cerrarConexionClienteActual(&direccionServidor);
+			liberarPosicion(client_socket, i);
+			liberarPosicion(procesos_por_socket, i);
+		} else {
+			int proceso = procesos_por_socket[i];
+			switch (proceso) { // ACA VAN TODOS LOS CASES DE CUANDO HAY MOVIMIENTO EN UN SOCKET PORQUE SOLICITA ALGO
+			case consola:
+				printf("Hubo movimiento en una consola\n");
+				confirmarAtencionA(&client_socket[i]);
+				atenderAConsola(&servMemoria, listaPCBs_NEW,
+						&client_socket[i]);
+				break;
+			default:
+				break;
 			}
+
+		}
+	}
 
 	return 0;
 }
