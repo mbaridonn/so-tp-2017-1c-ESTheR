@@ -51,9 +51,9 @@ void conectarseConMemoria(int *servMemoria,
 	msjConexionCon("una Memoria");
 }
 
-u_int32_t obtenerTamanioDePagina(int *servMemoria) {
-	u_int32_t tamPaginaMemoria;
-	if (recv((*servMemoria), &tamPaginaMemoria, sizeof(u_int32_t), 0) == -1) {
+int obtenerTamanioDePagina(int *servMemoria) {
+	int tamPaginaMemoria;
+	if (recv((*servMemoria), &tamPaginaMemoria, sizeof(int), 0) == -1) {
 		printf("Error recibiendo longitud del archivo\n");
 		return -1;
 	}

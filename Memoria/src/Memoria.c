@@ -85,7 +85,8 @@ int main(void) {
 	int servidor;
 	int cliente;
 
-	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames);
+	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames, config->entradasCache, config->cacheXProceso
+			/*Falta reemplazo cache, ES NECESARIO?*/);
 
 	printf("Creado hilo para comandos\n");
 	pthread_t hilo_comandos;
@@ -103,7 +104,7 @@ int main(void) {
 	case kernel:
 		msjConexionCon("el Kernel");
 		printf("Creado hilo para Kernel\n");
-		send(cliente,config->tamFrame,sizeof(int),0);//Convendria que sea u_int32_t
+		send(cliente,&(config->tamFrame),sizeof(int),0);//Convendria que sea u_int32_t
 		/*pthread_t hilo_kernel;
 		if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
 			printf("Error al crear el thread de Kernel.\n");

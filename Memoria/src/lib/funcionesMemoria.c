@@ -2,32 +2,34 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <commons/collections/list.h>
 
 int tamFrame = 0;
 int cantFrames = 0;
+
+char* memoriaPrincipal;
 
 typedef struct {
 	int PID;
 	int numPag;
 } tablaPagInv;
-
 int cantFramesEstructuraAdm;
-char* memoriaPrincipal;
 tablaPagInv* estructuraAdm;	//Tiene que apuntar SIEMPRE al inicio de la tabla
 //En vez de tener varios punteros a MP se podría tener uno solo, e irlo casteando
 
 int* cantPagsPorPID; //Esta tabla NO está en MP. Se accede a través del PID de un proceso
 
-/*typedef struct {
-	int puerto;
-	int cantFrames;
-	int tamFrame;
-	int entradasCache;
-	int cacheXProceso;
-	//int reemplazoCache CONVENDRÁ USAR ENUM PARA EL ALGORITMO DE REEMPLAZO?
-	int retardoMemoria;
-} t_configuracion;
-extern t_configuracion *config;*/  //Declaración necesaria para modificar retardoMemoria en el proceso Memoria ?????
+typedef struct {
+	int PID;
+	int numPag;
+	int contenido;//POR AHORA es el nro de frame donde se encuentra la pág
+} entradaCache;
+entradaCache* memoriaCache;
+
+int entradasCache;
+int cacheXProceso;
+
+t_list* colaEntradasCache;//Necesaria para implementar el algoritmo LRU (OJO! Nunca se libera la memoria)
 
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
@@ -41,7 +43,7 @@ void *reservarMemoria(int tamanio) {
 int divisionRoundUp(int dividendo, int divisor) {
 	if (dividendo <= 0 || divisor <= 0) {
 		printf("Esta division funciona unicamente con enteros positivos\n");
-		exit(-1); //En realidad tendría más sentido que se recupere
+		exit(-1);
 	}
 	return 1 + ((dividendo - 1) / divisor);
 }
@@ -90,7 +92,37 @@ void inicializarCantPagsPorPID() {
 	}
 }
 
-void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames){
+void limpiarCache(){
+	int i;
+	for (i = 0; i < entradasCache; i++) {
+		memoriaCache[i].PID = -1; //Supongo que PID -1 significa entrada vacía
+	}
+}
+
+void dumpCache(){
+	int i;
+	for (i = 0; i < entradasCache; i++) {
+			printf("%d | %d | %d \n", memoriaCache[i].PID, memoriaCache[i].numPag, memoriaCache[i].contenido);
+			//Debería mostrar realmente el contenido, no el frame
+	}
+}
+
+void ingresarEntradaEnCache(int PID, int nroPag);
+
+void inicializarCache(){
+	memoriaCache = malloc(sizeof(entradaCache) * entradasCache);
+	limpiarCache();
+	colaEntradasCache = list_create();
+	//Comienzo pruebas
+	ingresarEntradaEnCache(1,1);
+	ingresarEntradaEnCache(1,2);
+	ingresarEntradaEnCache(1,3);
+	ingresarEntradaEnCache(1,4);
+	ingresarEntradaEnCache(1,5);
+	dumpCache();
+}
+
+void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int valorEntradasCache, int valorCacheXProceso){
 	tamFrame = valorTamFrame;
 	cantFrames = valorCantFrames;
 	int memoriaTotal = tamFrame * cantFrames;
@@ -104,16 +136,19 @@ void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames){
 	printf("cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
 
 	cantPagsPorPID = malloc(sizeof(int) * cantFrames);//REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
-	/*Se puede tener una tener una estructura adicional como ésta (que no este guardada en "memoria principal") que
-	 almacene, para cada PID, la cant de páginas que tiene asignadas??*/
 
 	inicializarCantPagsPorPID();//Pone en cero la cant de páginas de cada proceso
 	inicializarTablaPags(cantFramesEstructuraAdm);
+
+	entradasCache = valorEntradasCache;
+	cacheXProceso = valorCacheXProceso;
+	inicializarCache();
 }
 
 void liberarMemoriaPrincipal(){
 	free(memoriaPrincipal);
 	free(cantPagsPorPID);
+	free(memoriaCache);
 }
 
 int cantFramesOcupados(){
@@ -213,18 +248,19 @@ void atenderComandos() {
 			if (isInt(subcomando)){
 				retardoMemoria = atoi(subcomando);
 				//config->retardoMemoria = retardoMemoria;               CÓMO MODIFICO EL VALOR, SI NO ESTÁ EN ESTE .C??
-				printf("Retardo Memoria seteado en %d",retardoMemoria);//DESPUÉS BORRAR
+				printf("Retardo Memoria seteado en %d",retardoMemoria);
 			} else {
 				printf("El retardo tiene que ser un número entero positivo\n");
 			}
 			break;
 		case 'd':
+			//Falta dump cache y dump estructuras de memoria
 			printf("Dump de memoria:\n");
 			hexDump8Bytes(estructuraAdm, cantFrames * tamFrame);
 			break;
 		case 'f':
-			printf("Flush\n");
-			//Este comando deberá limpiar completamente el contenido de la Caché
+			limpiarCache();
+			printf("El contenido de la caché ha sido vaciado\n");
 			break;
 		case 's':
 			printf("Size:\n"
@@ -352,6 +388,56 @@ void inicializarPrograma(int PID, int cantPags) {
 	asignarPaginasAProceso(PID, cantPags);//Si asignarPaginasAProceso me manda un error, lo tendría que tratar (por ahora hay un exit)
 }
 
+int cantEntradasDeProcesoEnCache(int PID){
+	int i, cantEntradas = 0;
+	for (i = 0; i < entradasCache; i++) {
+		if(memoriaCache[i].PID == PID)
+		{
+			cantEntradas++;
+		}
+	}
+	return cantEntradas;
+}
+
+void int_destroy(int *puntero) {//Necesario para eliminar entradas de la lista
+    free(puntero);
+}
+
+void setearEntradaCache(int* entrada, int PID, int nroPag, int contenido){
+	memoriaCache[*entrada].PID = PID;
+	memoriaCache[*entrada].numPag = nroPag;
+	memoriaCache[*entrada].contenido = contenido;
+	//Tengo que reservar memoria dinámica, sino la entrada se pierde al finalizar la función
+	int* entradaALista = reservarMemoria(sizeof(int));
+	*entradaALista=*entrada;
+	list_add(colaEntradasCache, entradaALista);
+}
+
+void ingresarEntradaEnCache(int PID, int nroPag){
+	int entradaAReemplazar = -1;
+	//Si se alcanzó el máximo, hay que sustituir una pág de ese proceso
+	if(cantEntradasDeProcesoEnCache(PID) >= cacheXProceso){
+		bool esEntradaDeProceso(int *entrada) {
+			return memoriaCache[*entrada].PID == PID;
+		}
+		entradaAReemplazar = *(int*)list_find(colaEntradasCache, (void*)esEntradaDeProceso);
+		//Elimino la entradaAReemplazar de la lista
+		list_remove_and_destroy_by_condition(colaEntradasCache, (void*)esEntradaDeProceso, (void*)int_destroy);
+	} else {//Si no se alcanzó el limite, la sustitución es global.
+		//Si hay entradas libres, lo asigno ahí
+		int i;
+		for (i = 0; (entradaAReemplazar==-1) && (i<entradasCache); i++) {
+			if(memoriaCache[i].PID == -1) entradaAReemplazar = i;
+		}
+		//Sino, se corre el algoritmo de reemplazo LRU
+		if(entradaAReemplazar==-1)
+		{
+			entradaAReemplazar = *(int*)list_get(list_take_and_remove(colaEntradasCache, 1),0);//Obtengo elemento más "antiguo"
+		}
+	}
+	setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
+}
+
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	int posByteComienzoPag;
 	int tamanioRestante = 0;
@@ -429,6 +515,11 @@ void finalizarPrograma(int PID) {
 		cantPagsPorPID[PID]--; //Conviene ir decrementándolo 1 a 1 por si falla algo
 		//Borrar (físicamente?) la entrada de la estructura auxiliar que almacena, para cada PID, la cant de páginas que tiene asignadas
 		nroPag--;
+	}
+	//Elimino las páginas del proceso en caché
+	int i;
+	for (i = 0; i < entradasCache; i++) {
+		if(memoriaCache[i].PID == PID) memoriaCache[i].PID = -1;
 	}
 	printf("Se ha finalizado el proceso %d\n", PID);
 }

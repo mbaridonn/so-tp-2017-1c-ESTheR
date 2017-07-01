@@ -1,18 +1,7 @@
 #ifndef LIB_FUNCIONESMEMORIA_H_
 #define LIB_FUNCIONESMEMORIA_H_
 
-/*typedef struct {
-	int puerto;
-	int cantFrames;
-	int tamFrame;
-	int entradasCache;
-	int cacheXProceso;
-	//int reemplazoCache CONVENDRÁ USAR ENUM PARA EL ALGORITMO DE REEMPLAZO?
-	int retardoMemoria;
-} t_configuracion;
-extern t_configuracion *config;*/ //PENDIENTE!!!!
-
-void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames);
+void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int valorEntradasCache, int valorCacheXProceso);
 void liberarMemoriaPrincipal();
 void atenderComandos();
 void inicializarPrograma(int PID, int cantPags);
