@@ -107,19 +107,10 @@ void dumpCache(){
 	}
 }
 
-void ingresarEntradaEnCache(int PID, int nroPag);
-
 void inicializarCache(){
 	memoriaCache = malloc(sizeof(entradaCache) * entradasCache);
 	limpiarCache();
 	colaEntradasCache = list_create();
-	//Comienzo pruebas
-	ingresarEntradaEnCache(1,1);
-	ingresarEntradaEnCache(1,2);
-	ingresarEntradaEnCache(1,3);
-	ingresarEntradaEnCache(1,4);
-	ingresarEntradaEnCache(1,5);
-	dumpCache();
 }
 
 void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int valorEntradasCache, int valorCacheXProceso){
@@ -390,7 +381,7 @@ void inicializarPrograma(int PID, int cantPags) {
 
 int cantEntradasDeProcesoEnCache(int PID){
 	int i, cantEntradas = 0;
-	for (i = 0; i < entradasCache; i++) {
+	for (i = 0; (cantEntradas<3) && (i<entradasCache); i++) {
 		if(memoriaCache[i].PID == PID)
 		{
 			cantEntradas++;
@@ -415,30 +406,54 @@ void setearEntradaCache(int* entrada, int PID, int nroPag, int contenido){
 
 void ingresarEntradaEnCache(int PID, int nroPag){
 	int entradaAReemplazar = -1;
-	//Si se alcanzó el máximo, hay que sustituir una pág de ese proceso
-	if(cantEntradasDeProcesoEnCache(PID) >= cacheXProceso){
-		bool esEntradaDeProceso(int *entrada) {
-			return memoriaCache[*entrada].PID == PID;
+	//Si ya se encuentra en cache, se actualiza la misma entrada
+	int j;
+	for (j = 0; (entradaAReemplazar==-1) && (j<entradasCache); j++) {
+		if(memoriaCache[j].PID == PID && memoriaCache[j].numPag == nroPag) entradaAReemplazar = j;
+	}
+	if (entradaAReemplazar != -1){
+		bool esEntradaDeProcesoYPagina(int* entrada){
+			return memoriaCache[*entrada].PID == PID && memoriaCache[*entrada].numPag == nroPag;
 		}
-		entradaAReemplazar = *(int*)list_find(colaEntradasCache, (void*)esEntradaDeProceso);
-		//Elimino la entradaAReemplazar de la lista
-		list_remove_and_destroy_by_condition(colaEntradasCache, (void*)esEntradaDeProceso, (void*)int_destroy);
-	} else {//Si no se alcanzó el limite, la sustitución es global.
-		//Si hay entradas libres, lo asigno ahí
-		int i;
-		for (i = 0; (entradaAReemplazar==-1) && (i<entradasCache); i++) {
-			if(memoriaCache[i].PID == -1) entradaAReemplazar = i;
-		}
-		//Sino, se corre el algoritmo de reemplazo LRU
-		if(entradaAReemplazar==-1)
-		{
-			entradaAReemplazar = *(int*)list_get(list_take_and_remove(colaEntradasCache, 1),0);//Obtengo elemento más "antiguo"
+		list_remove_and_destroy_by_condition(colaEntradasCache, (void*)esEntradaDeProcesoYPagina, (void*)int_destroy);
+	}
+	else{
+		//Si se alcanzó el máximo, hay que sustituir una pág de ese proceso
+		if(cantEntradasDeProcesoEnCache(PID) >= cacheXProceso){
+			bool esEntradaDeProceso(int *entrada) {
+				return memoriaCache[*entrada].PID == PID;
+			}
+			entradaAReemplazar = *(int*)list_find(colaEntradasCache, (void*)esEntradaDeProceso);//Obtengo entrada más "antigua" del proceso
+			//Elimino la entradaAReemplazar de la lista
+			list_remove_and_destroy_by_condition(colaEntradasCache, (void*)esEntradaDeProceso, (void*)int_destroy);
+		} else {//Si no se alcanzó el limite, la sustitución es global.
+			//Si hay entradas libres, lo asigno ahí
+			int i;
+			for (i = 0; (entradaAReemplazar==-1) && (i<entradasCache); i++) {
+				if(memoriaCache[i].PID == -1) entradaAReemplazar = i;
+			}
+			//Sino, se corre el algoritmo de reemplazo LRU
+			if(entradaAReemplazar==-1)
+			{
+				entradaAReemplazar = *(int*)list_get(colaEntradasCache, 0);//Obtengo entrada más "antigua"
+				list_remove_and_destroy_element(colaEntradasCache, 0,(void*)int_destroy);//Y la elimino de la lista
+			}
 		}
 	}
 	setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
 }
 
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
+	//Si la página se encuentra en caché, no hace falta acceder a memoria (se omite el retardo)
+	int k, estaEnCache=-1;
+	for (k = 0; (estaEnCache==-1) && (k<entradasCache); k++) {
+			if(memoriaCache[k].PID == PID && memoriaCache[k].numPag == nroPag) estaEnCache = 1;
+	}
+	//En cualquier caso actualizo la caché, ya sea para agregar la entrada(si no está), o para actualizar el último acceso
+	ingresarEntradaEnCache(PID, nroPag);
+	if (estaEnCache!=1){
+		//sleep(retardoMemoria)    PENDIENTE!!!!
+	}
 	int posByteComienzoPag;
 	int tamanioRestante = 0;
 	int proxPag;
@@ -500,7 +515,8 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 		memoriaPrincipal[posByteComienzoPag] = buffer[i];
 		posByteComienzoPag++;
 	}
-	//Qué pasa si al escribir estoy pisando datos anteriores? Hay que chequear esto??
+	//Se agrega (o actualiza) la entrada en memoria cache
+	ingresarEntradaEnCache(PID,nroPag);
 }
 
 void finalizarPrograma(int PID) {

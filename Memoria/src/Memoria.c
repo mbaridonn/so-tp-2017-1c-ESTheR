@@ -18,7 +18,7 @@ typedef struct {
 	int tamFrame;
 	int entradasCache;
 	int cacheXProceso;
-	//int reemplazoCache CONVENDRÁ USAR ENUM PARA EL ALGORITMO DE REEMPLAZO?
+	//int reemplazoCache ES NECESARIO? Es el único algoritmo de reemplazo posible
 	int retardoMemoria;
 } t_configuracion;
 t_configuracion *config;
@@ -85,8 +85,7 @@ int main(void) {
 	int servidor;
 	int cliente;
 
-	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames, config->entradasCache, config->cacheXProceso
-			/*Falta reemplazo cache, ES NECESARIO?*/);
+	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames, config->entradasCache, config->cacheXProceso);
 
 	printf("Creado hilo para comandos\n");
 	pthread_t hilo_comandos;
