@@ -5,14 +5,22 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <commons/config.h>
+#include <commons/txt.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem"
 
 typedef struct {
 	int puerto;
+	char *puntoMontaje;
 } t_configuracion;
 t_configuracion *config;
+
+typedef struct {
+	int tamBloque;
+	int cantBloques;
+} t_configuracion_filesystem;
+t_configuracion_filesystem *configFS;
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
@@ -42,6 +50,7 @@ void *reservarMemoria(int tamanioArchivo) {
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
+	config->puntoMontaje = strdup(config_get_string_value(archivo_Modelo, "PUNTO_MONTAJE"));
 }
 
 void mostrarArchivoConfig(){
@@ -68,6 +77,43 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
 }
 
+bool validarArchivo(char* path){
+	FILE * archivo = fopen(path, "r");
+	if (!archivo){//Los directorios ya tienen que estar creados, sino falla. Para evitarlo, habría que usar mkdir (y stat)
+		return false;//ERROR DE ARCHIVO NO ENCONTRADO (LO TIENE QUE DEVOLVER AL KERNEL)
+	}
+	fclose(archivo);
+	return true;
+}
+
+void leerArchivoConfiguracionFS(){
+	char path[100];
+	strcpy(path,config->puntoMontaje);
+	char pathRelativo[22] = "Metadata/Metadata.bin";
+	strcat(path,pathRelativo);
+
+	if (access(path, F_OK) == -1) {
+		printf("No se encontró el archivo de configuración del FS\n");
+		exit(-1);
+	}
+	t_config *archivo_config_fs = config_create(path);
+	configFS = reservarMemoria(sizeof(t_configuracion_filesystem));
+	configFS->tamBloque = config_get_int_value(archivo_config_fs, "TAMANIO_BLOQUES");
+	configFS->cantBloques = config_get_int_value(archivo_config_fs, "CANTIDAD_BLOQUES");
+	config_destroy(archivo_config_fs);
+	//Falta crear bitmap
+}
+
+int tamanioArchivo(char* path){
+	FILE * archivo = fopen(path, "r");
+	if (!archivo){
+		return -1;
+	}
+	fseek(archivo, 0L, SEEK_END);
+	int tamanio = ftell(archivo);
+	fseek(archivo, 0L, SEEK_SET);
+	return tamanio;
+}
 
 int main(void) {
 	struct sockaddr_in direccionServidor;
@@ -76,6 +122,9 @@ int main(void) {
 	direccionServidor.sin_port = htons(8080);
 
 	leerArchivo();
+
+	leerArchivoConfiguracionFS();
+
 	int cliente;
 	char* buffer = malloc(LONGMAX);
 
@@ -89,6 +138,7 @@ int main(void) {
 		break;
 	default:
 		printf("No me puedo conectar con vos.\n");
+		exit(-1);
 		break;
 	}
 
