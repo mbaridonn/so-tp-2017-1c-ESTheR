@@ -107,7 +107,11 @@ int main(void) {
 	case kernel:
 		msjConexionCon("el Kernel");
 		printf("Creado hilo para Kernel\n");
-		send(cliente,&(config->tamFrame),sizeof(int),0);//Convendria que sea u_int32_t
+		if ((send(cliente,&(config->tamFrame),sizeof(int),0)) == -1){//Convendria que sea u_int32_t
+			printf("Error enviando tamaño de Frame\n");
+			exit(-1);
+		}
+
 		/*pthread_t hilo_kernel;
 		if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
 			printf("Error al crear el thread de Kernel.\n");

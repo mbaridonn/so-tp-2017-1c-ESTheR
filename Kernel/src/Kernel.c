@@ -83,7 +83,14 @@ int main(void) {
 	direccionServidor2.sin_family = AF_INET;
 	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor2.sin_port = htons(8125);
-	conectarseConMemoria(&servMemoria, &direccionServidor2);
+
+	//conectarseConMemoria(&servMemoria, &direccionServidor2);
+	//Te deshice la abstraccion de arriba porque rompia con el tamaño de Pag
+
+	conectar(&servMemoria, &direccionServidor2);
+	handshake(&servMemoria, kernel);
+	msjConexionCon("una Memoria");
+
 	tamanioPagMemoria = obtenerTamanioDePagina(&servMemoria);
 	printf("El tamanio recibido es: %d\n",tamanioPagMemoria);
 
