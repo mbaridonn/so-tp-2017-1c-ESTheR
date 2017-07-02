@@ -63,6 +63,8 @@ void *proced_script(int *servMemoria,t_list *listaPCBs_NEW, int *unCliente, int 
 	char *buffer = reservarMemoria(fsize2 + 1);
 	fread(buffer, fsize2, 1, archivo2);
 
+	//Debería enviarse un enum que le indique que va a recibir
+
 	buffer[fsize2] = '\0';
 	if (send((*servMemoria), &fsize2, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando longitud del archivo\n");

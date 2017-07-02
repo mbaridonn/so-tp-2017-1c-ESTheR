@@ -107,6 +107,8 @@ int main(void) {
 	case kernel:
 		msjConexionCon("el Kernel");
 		printf("Creado hilo para Kernel\n");
+		//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
+		//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
 		if ((send(cliente,&(config->tamFrame),sizeof(int),0)) == -1){//Convendria que sea u_int32_t
 			printf("Error enviando tamaño de Frame\n");
 			exit(-1);
@@ -118,8 +120,6 @@ int main(void) {
 			exit(-1);
 		}*/
 
-		//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
-		//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
 
 		/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
 		 el código del programa y el stack. También le enviará el código completo del Programa.

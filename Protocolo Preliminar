@@ -30,6 +30,11 @@ kernel_mem_startProcess(pid, cantPags)
 pid = id del proceso
 cantPags = cantidad de páginas necesarios para el proceso
 
+//Asignar Páginas a Proceso: Kernel nos pide que asignemos páginas a un proceso
+kernel_mem_assignPages(pid, cantPags)
+pid = id del proceso
+cantPags = cantidad de páginas a asignar al proceso
+
 //Solicitar bytes de una página: CPU nos solicita la lectura de una pagina
 cpu_mem_read(pid, numPag, offset, tamanio)
 pid = id del proceso
@@ -44,11 +49,6 @@ page = número de página (o frame??) a escribir
 offset = ???
 tamanio = ???
 buffer = página (?) a escribir en el frame
-
-//Asignar Páginas a Proceso: Kernel nos pide que asignemos páginas a un proceso
-kernel_mem_assignPages(pid, cantPags)
-pid = id del proceso
-cantPags = cantidad de páginas a asignar al proceso
 
 //Finalizar programa: Kernel nos indica que finaliza un proceso
 kernel_mem_endProcess(pid) 
