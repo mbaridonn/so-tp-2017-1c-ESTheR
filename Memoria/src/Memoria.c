@@ -72,6 +72,10 @@ void msjConexionCon(char *s) {
 			s);
 }
 
+void modificarRetardoMemoria(int nuevoRetardo){
+	config->retardoMemoria = nuevoRetardo;
+}
+
 int main(void) {
 
 	leerArchivo();
