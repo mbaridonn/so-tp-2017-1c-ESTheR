@@ -61,7 +61,7 @@ int main(void) {
 	direccionServidor.sin_port = htons(8080);
 
 	//INICIO PRUEBA ANSISOP
-	printf("Ejecutando\n");
+	/*printf("Ejecutando\n");
 	char *programa = strdup(PROGRAMA);
 	t_metadata_program *metadata = metadata_desde_literal(programa);
 	int programCounter = 0;
@@ -75,7 +75,7 @@ int main(void) {
 		programCounter++;
 	}
 	metadata_destruir(metadata);
-	printf("================\n");
+	printf("================\n");*/
 	//FIN PRUEBA ANSISOP
 
 	int cliente;
@@ -88,7 +88,13 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		printf("Me conecte con el Kernel!\n");
-		recibirMensajeDe(&cliente, buffer);
+		//recibirMensajeDe(&cliente, buffer);
+		//send((&cliente),1,sizeof(int),0);
+		int num = 0;
+		if(recv(cliente, &num, sizeof(int), 0) == -1)
+			printf("Error recibiendo el PID\n");
+		else
+			printf("Recibi el PID: %d\n",num);
 		break;
 	case memoria:
 		printf("Me conecte con Memoria!\n");

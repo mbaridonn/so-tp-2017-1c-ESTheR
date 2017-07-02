@@ -66,6 +66,7 @@ int main(void) {
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado,
 			servMemoria;
 	u_int32_t tamanioPagMemoria;
+	int fdCPU;
 	struct sockaddr_in direccionServidor;
 
 	t_list *listaPCBs_NEW = list_create();
@@ -117,6 +118,12 @@ int main(void) {
 
 			case cpu:
 				msjConexionCon("CPU");
+				fdCPU = cliente;
+				/*int num = 123;
+				if ((send(fdCPU,&num,sizeof(int),0)) == -1){
+							printf("Error enviando algo a CPU\n");
+							exit(-1);
+						}*/
 				break;
 
 			case file_system:
@@ -146,8 +153,9 @@ int main(void) {
 			case consola:
 				printf("Hubo movimiento en una consola\n");
 				confirmarAtencionA(&client_socket[i]);
+				//int CPU = 1;
 				atenderAConsola(&servMemoria, listaPCBs_NEW,
-						&client_socket[i]);
+						&client_socket[i], &fdCPU);
 				break;
 			default:
 				break;
