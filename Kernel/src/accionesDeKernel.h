@@ -88,12 +88,10 @@ void kernel_mem_start_process(int *process_id, u_int32_t *cant_pags) {
 		printf("Error enviando la cantidad de paginas\n");
 		exit(-1);
 	}
-	//printf("hola1");
-	printf("Envie el process_id: %d y Cantidad de Paginas: %d",*process_id,*cant_pags);
-	//printf("hola2");
+	printf("Envie el process_id: %d y Cantidad de Paginas: %d\n",*process_id,*cant_pags);
 }
 
-void *proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
+void proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
 	char *bufferArchivo = reservarMemoria(fsize + 1);
@@ -125,16 +123,16 @@ void *proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
 
 	if (send((*unaCPU), &serialized_buffer_index, (size_t) sizeof(int), 0)
 			< 0) {
-		printf("Send serialized_buffer_length to CPU failed");
+		printf("Send serialized_buffer_length to CPU failed\n");
 		exit(-1);
 	}
-	printf("Pcb Size to send : %d", serialized_buffer_index);
+	printf("Pcb Size to send : %d\n", serialized_buffer_index);
 	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)
 			< 0) {
-		printf("Send serialized_pcb to CPU failed");
+		printf("Send serialized_pcb to CPU failed\n");
 		exit(-1);
 	}
-	printf("Send serialized_pcb to CPU was successful");
+	printf("Send serialized_pcb to CPU was successful\n");
 	free(bufferArchivo);
 }
 
