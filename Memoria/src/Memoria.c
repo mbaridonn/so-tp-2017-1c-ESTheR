@@ -167,6 +167,7 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		msjConexionCon("el Kernel");
+		clienteKernel = &cliente;
 		printf("Creado hilo para Kernel\n");
 		//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
 		//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso

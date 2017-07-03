@@ -71,9 +71,9 @@ void escribirArchivo(char *bufferArchivo, u_int32_t fsize) {
 	fclose(archivo);
 }
 
-void esperarSenialDeMemoria(){
+void esperarSenialDeMemoria() {
 	char senial[2] = "a";
-	if(recv(servMemoria,senial,2,0) == -1){
+	if (recv(servMemoria, senial, 2, 0) == -1) {
 		printf("Error al recibir senial antes de enviar paginas\n");
 	}
 }
@@ -88,10 +88,38 @@ void kernel_mem_start_process(int *process_id, u_int32_t *cant_pags) {
 		printf("Error enviando la cantidad de paginas\n");
 		exit(-1);
 	}
-	printf("Envie el process_id: %d y Cantidad de Paginas: %d\n",*process_id,*cant_pags);
+	printf("Envie el process_id: %d y Cantidad de Paginas: %d\n", *process_id,
+			*cant_pags);
 }
 
-void proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
+u_int32_t confirmacionMemoria() {
+	u_int32_t confirmacion;
+	if (recv(servMemoria, &confirmacion, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo la confirmacion\n");
+		exit(-1);
+	}
+	return confirmacion;
+}
+
+void finalizarProceso(int process_id){
+	int aux = process_id;
+	if (send(servMemoria, &aux, sizeof(int), 0) == -1) {
+			printf("Error enviando el process_id\n");
+			exit(-1);
+	} //TODAVIA NO LO PROBAMOS, ES MAS, MEMORIA NO RECIBE EL ERROR TODAVIA JEJE.
+	list_remove(listaPCBs_NEW,process_id);
+
+}
+
+void tomarAccionSegunConfirmacion(u_int32_t confirmacion,int process_id){
+	if(confirmacion == noHayPaginas){
+		finalizarProceso(process_id);
+	}else{
+		printf("Hay paginas suficientes!\n");
+	}
+}
+
+void proced_script(int *unCliente, int *unaCPU) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
 	char *bufferArchivo = reservarMemoria(fsize + 1);
@@ -112,6 +140,8 @@ void proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
 	u_int32_t cant_pags = (divisionRoundUp(fsize, tamanioPagMemoria))
 			+ config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
+	u_int32_t confirmacion = confirmacionMemoria();
+	tomarAccionSegunConfirmacion(confirmacion,pcb->id_proceso);
 
 	//PARA CPU
 
@@ -136,11 +166,11 @@ void proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
 	free(bufferArchivo);
 }
 
-void atenderAConsola(t_list *listaPCBs_NEW, int *unaConsola, int *unaCPU) {
+void atenderAConsola(int *unaConsola, int *unaCPU) {
 	int accion = recibirAccionDe(unaConsola);
 	switch (accion) { //ACA VAN TODOS LOS CASES DE LAS DIFERENTES ACCIONES QUE PUEDE SOLICITAR CONSOLA A KERNEL
 	case startProgram:
-		proced_script(listaPCBs_NEW, unaConsola, unaCPU);
+		proced_script(unaConsola, unaCPU);
 		break;
 	}
 }

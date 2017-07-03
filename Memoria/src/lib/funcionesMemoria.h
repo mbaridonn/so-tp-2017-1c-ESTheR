@@ -10,6 +10,8 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer);
 void asignarPaginasAProceso(int PID, int pagsRequeridas);
 void finalizarPrograma(int PID);
 
+int *clienteKernel;
+
 void ejecutarOperaciones();// ES DE PRUEBA. BORRAR DESPUES
 
 #endif /* LIB_FUNCIONESMEMORIA_H_ */

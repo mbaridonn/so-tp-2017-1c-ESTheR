@@ -9,8 +9,6 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "libreriaSockets.h"
-#include "lib/list.h"
-#include "lib/pcb.h"
 #include "conexionesSelect.h"
 #include "estructurasComunes.h"
 #include "accionesDeKernel.h"
@@ -79,11 +77,11 @@ int main(void) {
 	int fdCPU;
 	struct sockaddr_in direccionServidor;
 
-	t_list *listaPCBs_NEW = list_create();
-	t_list *listaPCBs_READY = list_create();
-	t_list *listaPCBs_EXEC = list_create();
-	t_list *listaPCBs_BLOCK = list_create();
-	t_list *listaPCBs_EXIT = list_create();
+	listaPCBs_NEW= list_create();
+	listaPCBs_READY= list_create();
+	listaPCBs_EXEC= list_create();
+	listaPCBs_BLOCK= list_create();
+	listaPCBs_EXIT= list_create();
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
@@ -102,6 +100,8 @@ int main(void) {
 	inicializarVec(procesos_por_socket);
 
 	esperarConexionDe(&direccionServidor);
+
+	//habilitarConsolaKernel(); DEBERIA FUNCIONAR XD
 
 	while (1) {
 		prepararSockets(client_socket);
@@ -151,7 +151,7 @@ int main(void) {
 			case consola:
 				printf("Hubo movimiento en una consola\n");
 				confirmarAtencionA(&client_socket[i]);
-				atenderAConsola(listaPCBs_NEW,&client_socket[i], &fdCPU);
+				atenderAConsola(&client_socket[i], &fdCPU);
 				break;
 			default:
 				break;
