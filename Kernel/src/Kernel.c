@@ -17,24 +17,6 @@
 
 #define RUTA_ARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
-typedef struct {
-	int PUERTO_PROG;
-	int PUERTO_CPU;
-	char IP_MEMORIA[15];
-	int PUERTO_MEMORIA;
-	char IP_FS[15];
-	int PUERTO_FS;
-	int QUANTUM;
-	int QUANTUM_SLEEP;
-	char ALGORITMO[30];
-	int GRADO_MULTIPROG;
-	char SEM_IDS[10][30]; // Debería ser una lista alfanumerica
-	int SEM_INIT[10][30]; // Lo mismo pero numerica
-	char SHARED_VARS[10][30]; // IDEM SEM_IDS
-	int STACK_SIZE;
-
-} t_configuracion;
-t_configuracion *config;
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -95,7 +77,6 @@ int main(void) {
 
 	leerArchivo();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
-	u_int32_t tamanioPagMemoria;
 	int fdCPU;
 	struct sockaddr_in direccionServidor;
 

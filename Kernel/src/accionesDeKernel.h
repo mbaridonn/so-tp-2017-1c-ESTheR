@@ -43,6 +43,14 @@ void validarAperturaArchivo(FILE *archivo) {
 	}
 }
 
+int divisionRoundUp(int dividendo, int divisor) {
+	if (dividendo <= 0 || divisor <= 0) {
+		printf("Esta division funciona unicamente con enteros positivos\n");
+		exit(-1);
+	}
+	return 1 + ((dividendo - 1) / divisor);
+}
+
 void enviarArchivoAMemoria(char *buffer, u_int32_t tamBuffer) {
 
 	if (send(servMemoria, &tamBuffer, sizeof(u_int32_t), 0) == -1) {
@@ -64,6 +72,26 @@ void escribirArchivo(char *bufferArchivo, u_int32_t fsize) {
 	fclose(archivo);
 }
 
+void esperarSenialDeMemoria(){
+	char senial[2] = "a";
+	if(recv(servMemoria,senial,2,0) == -1){
+		printf("Error al recibir senial antes de enviar paginas\n");
+	}
+}
+
+void kernel_mem_start_process(int *process_id, u_int32_t *cant_pags) {
+	esperarSenialDeMemoria();
+	if (send(servMemoria, process_id, sizeof(int), 0) == -1) {
+		printf("Error enviando el process_id\n");
+		exit(-1);
+	}
+	if (send(servMemoria, cant_pags, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la cantidad de paginas\n");
+		exit(-1);
+	}
+	printf("Envie el process_id: %d y Cantidad de Paginas: %d",*process_id,*cant_pags);
+}
+
 void *proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
@@ -82,6 +110,9 @@ void *proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
 	//Debería enviarse un enum que le indique que va a recibir
 
 	enviarArchivoAMemoria(bufferArchivo, fsize);
+	u_int32_t cant_pags = (divisionRoundUp(fsize, tamanioPagMemoria))
+			+ config->STACK_SIZE;
+	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
 
 	//PARA CPU
 
