@@ -17,7 +17,6 @@ enum acciones{
 	startProgram
 };
 
-
 typedef struct {
 	int PUERTO_PROG;
 	int PUERTO_CPU;

@@ -17,7 +17,6 @@
 
 #define RUTA_ARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
-
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->PUERTO_PROG = config_get_int_value(archivo_Modelo, "PUERTO_PROG");

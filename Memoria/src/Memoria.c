@@ -132,8 +132,7 @@ void kernel_mem_asignarPaginas(int *cliente) {
 	enviarSenialAKernel(cliente);
 	process_id = recibir_process_id(cliente);
 	cant_pags = recibir_cant_paginas(cliente);
-	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
-			cant_pags);
+	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,cant_pags);
 	asignarPaginasAProceso(process_id,cant_pags);
 }
 
