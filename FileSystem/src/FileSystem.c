@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <commons/config.h>
 #include <commons/txt.h>
+#include <commons/bitarray.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem"
@@ -21,6 +22,8 @@ typedef struct {
 	int cantBloques;
 } t_configuracion_filesystem;
 t_configuracion_filesystem *configFS;
+
+t_bitarray *bitmap;
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
@@ -79,7 +82,7 @@ void leerArchivo() {
 
 bool validarArchivo(char* path){
 	FILE * archivo = fopen(path, "r");
-	if (!archivo){//Los directorios ya tienen que estar creados, sino falla. Para evitarlo, habría que usar mkdir (y stat)
+	if (!archivo){
 		return false;//ERROR DE ARCHIVO NO ENCONTRADO (LO TIENE QUE DEVOLVER AL KERNEL)
 	}
 	fclose(archivo);
@@ -101,7 +104,10 @@ void leerArchivoConfiguracionFS(){
 	configFS->tamBloque = config_get_int_value(archivo_config_fs, "TAMANIO_BLOQUES");
 	configFS->cantBloques = config_get_int_value(archivo_config_fs, "CANTIDAD_BLOQUES");
 	config_destroy(archivo_config_fs);
-	//Falta crear bitmap
+}
+
+void inicializarBitmap(){//DEJÉ ACÁ
+	//bitmap = bitarray_create_with_mode(char *bitarray, size_t size, bit_numbering_t mode);
 }
 
 int tamanioArchivo(char* path){
@@ -115,6 +121,33 @@ int tamanioArchivo(char* path){
 	return tamanio;
 }
 
+void crearDirectorio(char* path){
+	int i = strlen(path)-1;
+	while(path[i]!='/') i--;//i termina teniendo la posición de la última barra
+	char* directorio = strndup(path,i+1);//Se copia hasta la posición de la última barra inclusive
+	mkdir(directorio, 0700);
+	free(directorio);
+}
+
+void crearArchivo(char* pathRelativo){
+	char path[100];
+	strcpy(path,config->puntoMontaje);
+	char pathArchivos[10] = "Archivos/";
+	strcat(path,pathArchivos);
+	strcat(path,pathRelativo);
+	FILE * archivo = fopen(path, "w");
+	if (!archivo){ //Si los directorios todavía no están creados, hay que hacerlo
+		crearDirectorio(path);
+		FILE * archivo = fopen(path, "w");
+		if (!archivo){
+			printf("Error al crear archivo despúes de crear el directorio");
+			exit (-1);
+		}
+	}
+	fclose(archivo);
+	//Falta agregar contenido al archivo (tamaño 0, 1 bloque asignado)
+}
+
 int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
@@ -124,6 +157,11 @@ int main(void) {
 	leerArchivo();
 
 	leerArchivoConfiguracionFS();
+	inicializarBitmap();
+
+	//Prueba
+	crearArchivo("Pepo.bin");
+	crearArchivo("Lolo/Pepin.bin");
 
 	int cliente;
 	char* buffer = malloc(LONGMAX);
