@@ -83,7 +83,6 @@ void leerArchivo() {
 
 
 void iniciarPrograma(int *cliente) {
-	solicitarA(cliente,"Kernel");
 	int accion;
 	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
 	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
@@ -112,6 +111,7 @@ void iniciarPrograma(int *cliente) {
 			printf("No se pudo leer el archivo\n");
 			exit(-1);
 		}
+		solicitarA(cliente,"Kernel");
 		accion = startProgram;
 		informarAccion(cliente,&accion);
 	}

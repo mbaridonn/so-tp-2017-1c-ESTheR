@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <string.h>
 #include <commons/config.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -14,16 +15,45 @@
 #include "estructurasComunes.h"
 #include "accionesDeKernel.h"
 
-#define RUTA_ARCHIVO "/home/utnso/workspace/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+#define RUTA_ARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
 typedef struct {
-	int puerto;
+	int PUERTO_PROG;
+	int PUERTO_CPU;
+	char IP_MEMORIA[15];
+	int PUERTO_MEMORIA;
+	char IP_FS[15];
+	int PUERTO_FS;
+	int QUANTUM;
+	int QUANTUM_SLEEP;
+	char ALGORITMO[30];
+	int GRADO_MULTIPROG;
+	char SEM_IDS[10][30]; // Debería ser una lista alfanumerica
+	int SEM_INIT[10][30]; // Lo mismo pero numerica
+	char SHARED_VARS[10][30]; // IDEM SEM_IDS
+	int STACK_SIZE;
+
 } t_configuracion;
 t_configuracion *config;
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
+	config->PUERTO_PROG = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
+	config->PUERTO_CPU = config_get_int_value(archivo_Modelo, "PUERTO_CPU");
+	char *aux = config_get_string_value(archivo_Modelo,"IP_MEMORIA");
+	strcpy(config->IP_MEMORIA,aux);
+	config->PUERTO_MEMORIA = config_get_int_value(archivo_Modelo,"PUERTO_MEMORIA");
+	aux = config_get_string_value(archivo_Modelo,"IP_FS");
+	strcpy(config->IP_FS,aux);
+	config->PUERTO_FS = config_get_int_value(archivo_Modelo, "PUERTO_FS");
+	config->QUANTUM = config_get_int_value(archivo_Modelo, "QUANTUM");
+	config->QUANTUM_SLEEP = config_get_int_value(archivo_Modelo, "QUANTUM_SLEEP");
+	aux = config_get_string_value(archivo_Modelo,"ALGORITMO");
+	strcpy(config->ALGORITMO,aux);
+	config->GRADO_MULTIPROG = config_get_int_value(archivo_Modelo, "GRADO_MULTIPROG");
+	//FALTA SEM_IDS, SEM_INIT, SHARED_VARS
+	config->STACK_SIZE = config_get_int_value(archivo_Modelo, "STACK_SIZE");
+
 }
 
 void leerArchivo() {
@@ -34,7 +64,7 @@ void leerArchivo() {
 	t_config *archivo_config = config_create(RUTA_ARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
-	printf("Leí el archivo y extraje el puerto: %d", config->puerto);
+	printf("Leí el archivo y extraje el puerto: %d", config->PUERTO_PROG);
 }
 
 void faltaDeParametros(int argc) {
@@ -63,7 +93,7 @@ int obtenerTamanioDePagina(int *servMemoria) {
 
 int main(void) {
 
-	//Cuándo lee el archivo?
+	leerArchivo();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
 	u_int32_t tamanioPagMemoria;
 	int fdCPU;
@@ -76,14 +106,14 @@ int main(void) {
 	t_list *listaPCBs_EXIT = list_create();
 
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
+	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
 	direccionServidor.sin_port = htons(8080);
 
 	//PARA MEMORIA
 	struct sockaddr_in direccionServidor2;
 	direccionServidor2.sin_family = AF_INET;
-	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
-	direccionServidor2.sin_port = htons(8125);
+	direccionServidor2.sin_addr.s_addr = inet_addr(config->IP_MEMORIA);
+	direccionServidor2.sin_port = htons(config->PUERTO_MEMORIA);
 
 	conectarseConMemoria(&servMemoria, &direccionServidor2);
 	tamanioPagMemoria = obtenerTamanioDePagina(&servMemoria);
