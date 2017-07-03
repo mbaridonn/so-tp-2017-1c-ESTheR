@@ -17,6 +17,6 @@ enum acciones{
 	startProgram
 };
 
-int cliente, cliente2;
+int cliente, cliente2, servMemoria;
 
 #endif /* ESTRUCTURASCOMUNES_H_ */

@@ -46,8 +46,8 @@ void faltaDeParametros(int argc) {
 
 void conectarseConMemoria(int *servMemoria,
 	struct sockaddr_in *direccionServidor2) {
-	conectar(&servMemoria, direccionServidor2);
-	handshake(&servMemoria, kernel);
+	conectar(servMemoria, direccionServidor2);
+	handshake(servMemoria, kernel);
 	msjConexionCon("una Memoria");
 }
 
@@ -57,14 +57,14 @@ int obtenerTamanioDePagina(int *servMemoria) {
 		printf("Error recibiendo longitud del archivo\n");
 		return -1;
 	}
+	printf("El tamanio recibido es: %d\n",tamPaginaMemoria);
 	return tamPaginaMemoria;
 }
 
 int main(void) {
 
 	//Cuándo lee el archivo?
-	int client_socket[30], procesos_por_socket[30], i, procesoConectado,
-			servMemoria;
+	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
 	u_int32_t tamanioPagMemoria;
 	int fdCPU;
 	struct sockaddr_in direccionServidor;
@@ -85,15 +85,8 @@ int main(void) {
 	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor2.sin_port = htons(8125);
 
-	//conectarseConMemoria(&servMemoria, &direccionServidor2);
-	//Te deshice la abstraccion de arriba porque rompia con el tamaño de Pag
-
-	conectar(&servMemoria, &direccionServidor2);
-	handshake(&servMemoria, kernel);
-	msjConexionCon("una Memoria");
-
+	conectarseConMemoria(&servMemoria, &direccionServidor2);
 	tamanioPagMemoria = obtenerTamanioDePagina(&servMemoria);
-	printf("El tamanio recibido es: %d\n",tamanioPagMemoria);
 
 	inicializarVec(client_socket);
 	inicializarVec(procesos_por_socket);
@@ -154,8 +147,7 @@ int main(void) {
 				printf("Hubo movimiento en una consola\n");
 				confirmarAtencionA(&client_socket[i]);
 				//int CPU = 1;
-				atenderAConsola(&servMemoria, listaPCBs_NEW,
-						&client_socket[i], &fdCPU);
+				atenderAConsola(listaPCBs_NEW,&client_socket[i], &fdCPU);
 				break;
 			default:
 				break;
