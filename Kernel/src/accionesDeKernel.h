@@ -88,7 +88,9 @@ void kernel_mem_start_process(int *process_id, u_int32_t *cant_pags) {
 		printf("Error enviando la cantidad de paginas\n");
 		exit(-1);
 	}
+	//printf("hola1");
 	printf("Envie el process_id: %d y Cantidad de Paginas: %d",*process_id,*cant_pags);
+	//printf("hola2");
 }
 
 void *proced_script(t_list *listaPCBs_NEW, int *unCliente, int *unaCPU) {
