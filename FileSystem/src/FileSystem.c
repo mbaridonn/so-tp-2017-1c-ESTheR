@@ -4,6 +4,10 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
 #include <commons/config.h>
 #include <commons/txt.h>
 #include <commons/bitarray.h>
@@ -23,7 +27,7 @@ typedef struct {
 } t_configuracion_filesystem;
 t_configuracion_filesystem *configFS;
 
-t_bitarray *bitmap;
+t_bitarray *bitarray;
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
@@ -80,6 +84,16 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
 }
 
+int divisionRoundUp(int dividendo, int divisor) {
+	if (dividendo <= 0 || divisor <= 0) {
+		printf("Esta division funciona unicamente con enteros positivos\n");
+		exit(-1);
+	}
+	return 1 + ((dividendo - 1) / divisor);
+}
+
+//Comienzan funciones del FS
+
 bool validarArchivo(char* path){
 	FILE * archivo = fopen(path, "r");
 	if (!archivo){
@@ -106,8 +120,52 @@ void leerArchivoConfiguracionFS(){
 	config_destroy(archivo_config_fs);
 }
 
-void inicializarBitmap(){//DEJÉ ACÁ
-	//bitmap = bitarray_create_with_mode(char *bitarray, size_t size, bit_numbering_t mode);
+void crearBloques(){
+	char pathBloque[100], copiaPathBloque[100];
+	strcpy(pathBloque,config->puntoMontaje);
+	char pathRelativoBloque[22] = "Bloques/";
+	strcat(pathBloque,pathRelativoBloque);
+	int i;
+	for (i=0;i<configFS->cantBloques;i++){
+		char nombreBloque[10];
+		snprintf(nombreBloque, 10, "%d.bin", i);
+		strcpy(copiaPathBloque,pathBloque);
+		strcat(copiaPathBloque,nombreBloque);
+		FILE * bloque = fopen(copiaPathBloque, "w");
+		fclose(bloque);
+	}
+}
+
+void inicializarBitmap(){
+	char path[100];
+	strcpy(path,config->puntoMontaje);
+	char pathRelativo[22] = "Metadata/Bitmap.bin";
+	strcat(path,pathRelativo);
+	if (access(path, F_OK) == -1) {
+		printf("No se encontró el archivo bitmap del FS\n");
+		exit(-1);
+	}
+
+	int fd = open(path, O_RDWR);
+	ftruncate(fd, divisionRoundUp(configFS->cantBloques, 8));//Tiene que tener este tamaño en bytes (pone los bytes en 0?)
+	struct stat mystat;
+	if (fstat(fd, &mystat) < 0) {
+		printf("Error al establecer fstat\n");
+		close(fd);
+		exit(-1);
+	}
+	char *bitmap = (char *) mmap(0, mystat.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	if (bitmap == MAP_FAILED) {
+		printf("Error al mapear a memoria\n");
+		close(fd);
+		exit(-1);
+	}
+	bitarray = bitarray_create_with_mode(bitmap,divisionRoundUp(configFS->cantBloques, 8), LSB_FIRST);
+	/*int i;                                NECESARIO PARA PONER TODOS LOS BITS EN 0? LO HACE YA TRUNCATE?
+	for (i = 0; i < cantBloques; i++) {
+		bitarray_clean_bit(bitarray, i);
+	}*/
+	close(fd);
 }
 
 int tamanioArchivo(char* path){
@@ -121,6 +179,14 @@ int tamanioArchivo(char* path){
 	return tamanio;
 }
 
+int primerBloqueVacio(){
+	int i, bloque=-1;
+	for (i=0; (bloque == -1) && (i < configFS->cantBloques);i++){
+		if (bitarray_test_bit(bitarray,i)==0) bloque = i;
+	}
+	return bloque;
+}
+
 void crearDirectorio(char* path){
 	int i = strlen(path)-1;
 	while(path[i]!='/') i--;//i termina teniendo la posición de la última barra
@@ -130,7 +196,7 @@ void crearDirectorio(char* path){
 }
 
 void crearArchivo(char* pathRelativo){
-	char path[100];
+	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
 	strcpy(path,config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
 	strcat(path,pathArchivos);
@@ -138,14 +204,26 @@ void crearArchivo(char* pathRelativo){
 	FILE * archivo = fopen(path, "w");
 	if (!archivo){ //Si los directorios todavía no están creados, hay que hacerlo
 		crearDirectorio(path);
-		FILE * archivo = fopen(path, "w");
+		FILE * archivo = fopen(path, "w");//PARECE QUE NO FUNCIONA!!
 		if (!archivo){
 			printf("Error al crear archivo despúes de crear el directorio");
 			exit (-1);
 		}
 	}
-	fclose(archivo);
-	//Falta agregar contenido al archivo (tamaño 0, 1 bloque asignado)
+	fclose(archivo);//ROMPE CUANDO EL DIRECTORIO NO ESTÁ CREADO!!
+	//Crear File Metadata
+	t_config *fileMetadata = config_create(path);
+	char keyTamanio[8] = "TAMANIO";
+	char valorTamanio[2] = "0";
+	config_set_value(fileMetadata, keyTamanio, valorTamanio);
+	char keyBloques[8] = "BLOQUES";
+	char valorBloques[10];
+	int bloqueAAsignar = primerBloqueVacio();
+	snprintf(valorBloques, 10, "[%d]", bloqueAAsignar);
+	config_set_value(fileMetadata, keyBloques, valorBloques);
+	bitarray_set_bit(bitarray,bloqueAAsignar);
+	config_save(fileMetadata);
+	config_destroy(fileMetadata);
 }
 
 int main(void) {
@@ -157,11 +235,12 @@ int main(void) {
 	leerArchivo();
 
 	leerArchivoConfiguracionFS();
+	crearBloques();
 	inicializarBitmap();
 
 	//Prueba
-	crearArchivo("Pepo.bin");
-	crearArchivo("Lolo/Pepin.bin");
+	/*crearArchivo("Pepo.bin");
+	crearArchivo("Lolo/Pepin.bin");*/
 
 	int cliente;
 	char* buffer = malloc(LONGMAX);
@@ -179,6 +258,8 @@ int main(void) {
 		exit(-1);
 		break;
 	}
+
+	bitarray_destroy(bitarray);
 
 	close(cliente);
 
