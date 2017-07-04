@@ -92,6 +92,11 @@ int divisionRoundUp(int dividendo, int divisor) {
 	return 1 + ((dividendo - 1) / divisor);
 }
 
+int max(int a, int b){
+	if (a>b) return a;
+	else return b;
+}
+
 //Comienzan funciones del FS
 
 bool validarArchivo(char* path){
@@ -168,7 +173,7 @@ void inicializarBitmap(){
 	close(fd);
 }
 
-int tamanioArchivo(char* path){
+int tamanioArchivo(char* path){ // Está bien? O lo tendría que obtener de la metadata del archivo???
 	FILE * archivo = fopen(path, "r");
 	if (!archivo){
 		return -1;
@@ -206,7 +211,7 @@ void crearArchivo(char* pathRelativo){
 		crearDirectorio(path);
 		FILE * archivo = fopen(path, "w");//PARECE QUE NO FUNCIONA!!
 		if (!archivo){
-			printf("Error al crear archivo despúes de crear el directorio");
+			printf("Error al crear archivo despúes de crear el directorio\n");
 			exit (-1);
 		}
 	}
@@ -226,6 +231,187 @@ void crearArchivo(char* pathRelativo){
 	config_destroy(fileMetadata);
 }
 
+void borrarArchivo(char *pathRelativo){
+	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
+	strcpy(path,config->puntoMontaje);
+	char pathArchivos[10] = "Archivos/";
+	strcat(path,pathArchivos);
+	strcat(path,pathRelativo);
+
+	t_config *archivo = config_create(path);
+	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
+	int cantBloques;
+	if(tamArchivo==0) cantBloques=1;
+	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
+	char **bloquesArchivo = malloc(sizeof(char)*10*cantBloques);//Supongo que un bloque no puede tener más de 10 dígitos
+	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	int i;
+	//Liberar bloques en el Bitmap
+	for (i=0;i<cantBloques;i++){
+		bitarray_clean_bit(bitarray, atoi(bloquesArchivo[i]));
+	}
+	config_destroy(archivo);
+	//Borrar File Metadata
+	remove(path);
+	free(bloquesArchivo);
+}
+
+char* obtenerDatos(char* pathRelativo, int offset, int size){
+	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
+	strcpy(path,config->puntoMontaje);
+	char pathArchivos[10] = "Archivos/";
+	strcat(path,pathArchivos);
+	strcat(path,pathRelativo);
+
+	t_config *archivo = config_create(path);
+	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
+	if (offset >= tamArchivo){
+		printf("Se está intentando leer más allá del fin del archivo\n");
+		exit(-1);//SE DEBERIÁ DEVOLVER UN MENSAJE AL KERNEL
+	}
+	int cantBloques;
+	if(tamArchivo==0) cantBloques=1;
+	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
+	char **bloquesArchivo = malloc(sizeof(char)*10*cantBloques);//Supongo que un bloque no puede tener más de 10 dígitos
+	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+
+	int bloqueInicial = offset / configFS->tamBloque;
+	int offsetEnBloque = offset % configFS->tamBloque;
+	int sizeRestante = 0;
+
+	if (offsetEnBloque + size > configFS->tamBloque) {//Si se pasa del bloque
+		int proximoBloque = bloqueInicial + 1;
+		if (proximoBloque == cantBloques) {
+			printf("Se está intentando leer más allá del fin del archivo\n");
+			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+		}
+		sizeRestante = size - (configFS->tamBloque - offsetEnBloque);//Si hay otro bloque, me guardo el tamaño restante
+	}
+
+	char pathBloque[100];
+	strcpy(pathBloque,config->puntoMontaje);
+	char pathRelativoBloque[22] = "Bloques/";
+	strcat(pathBloque,pathRelativoBloque);
+	char nombreBloque[10];
+	snprintf(nombreBloque, 10, "%s.bin", bloquesArchivo[bloqueInicial]);
+	strcat(pathBloque,nombreBloque);
+	FILE * bloque = fopen(pathBloque, "r");
+	char *bytesLeidos = reservarMemoria(size);
+	fread(bytesLeidos,size-sizeRestante,sizeof(char),bloque);//En caso de que haya que leer más de otra pág
+	fclose(bloque);
+
+	if (sizeRestante) { //Hay que leer el resto de otro bloque
+		char *bytesRestantesLeidos = obtenerDatos(pathRelativo, offset+(size-sizeRestante), sizeRestante); //Lee lo que esta en el bloque que sigue
+		//Si obtenerDatos me manda un error, lo tendría que tratar (por ahora hay un exit)
+		int i = strlen(bytesLeidos);
+		int j = 0;
+		while (i < size) {
+			bytesLeidos[i] = bytesRestantesLeidos[j];
+			i++;
+			j++;
+		}
+		free(bytesRestantesLeidos);
+	}
+
+	config_destroy(archivo);
+	free(bloquesArchivo);
+
+	return bytesLeidos;//Habría que liberar la memoria en la función que la llame
+}
+
+int cantidadDeBloquesLibres(){
+	int i, cantBloquesLibres=0;
+	for (i=0;i<configFS->cantBloques;i++){
+		if (bitarray_test_bit(bitarray,i)==0) cantBloquesLibres++;
+	}
+	return cantBloquesLibres;
+}
+
+char *unificarString(char** bloquesArchivo){
+	char* stringUnificado;
+	//Aplanar string            DEJÉ ACÁ!!!
+	return stringUnificado;
+}
+
+void agregarBloques(t_config *archivo,int cantBloquesAAgregar){
+	if (cantBloquesAAgregar<cantidadDeBloquesLibres()){
+		printf("No hay suficientes bloques para asignar al archivo\n");
+		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE
+	}
+	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
+	int cantBloques;
+	if(tamArchivo==0) cantBloques=1;
+	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
+	char **bloquesArchivo = malloc(sizeof(char)*10*(cantBloques+cantBloquesAAgregar));//Supongo que un bloque no puede tener más de 10 dígitos
+	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	while(cantBloquesAAgregar!=0){
+		char primerBloqueLibre[9];
+		snprintf(primerBloqueLibre, 10, "%d.bin", primerBloqueVacio());
+		strcpy(bloquesArchivo[cantBloques],primerBloqueLibre);
+		bitarray_set_bit(bitarray,primerBloqueVacio());
+		cantBloques++;
+		cantBloquesAAgregar--;
+	}
+	char *strBloquesArchivoPlano = unificarString(bloquesArchivo);
+	config_set_value(archivo,"BLOQUES",strBloquesArchivoPlano);
+	config_save(archivo);
+	free(strBloquesArchivoPlano);
+}
+
+void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
+	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
+	strcpy(path,config->puntoMontaje);
+	char pathArchivos[10] = "Archivos/";
+	strcat(path,pathArchivos);
+	strcat(path,pathRelativo);
+
+	t_config *archivo = config_create(path);
+	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
+	int cantBloques;
+	if(tamArchivo==0) cantBloques=1;
+	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
+
+	//Asigno bloques extra (de ser necesario)
+	int cantBloquesNecesaria = divisionRoundUp((offset + size),configFS->tamBloque);
+	if (cantBloquesNecesaria>cantBloques){
+		agregarBloques(archivo,cantBloquesNecesaria-cantBloques);
+		//Si agregarBloques me manda un error, lo tendría que tratar (por ahora hay un exit)
+	}
+
+	int cantBloquesFinal = max(cantBloques,cantBloquesNecesaria);
+	char **bloquesArchivo = malloc(sizeof(char)*10*cantBloquesFinal);//Supongo que un bloque no puede tener más de 10 dígitos
+	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+
+	int bloqueInicial = offset / configFS->tamBloque;
+	int offsetEnBloque = offset % configFS->tamBloque;
+
+	if (offsetEnBloque + size > configFS->tamBloque) {//Si se pasa del bloque
+		int sizeRestante = size - (configFS->tamBloque - offsetEnBloque);
+		guardarDatos(pathRelativo, offset+(size-sizeRestante), sizeRestante, &buffer[size - sizeRestante]);
+		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
+	}
+
+	char pathBloque[100];
+	strcpy(pathBloque,config->puntoMontaje);
+	char pathRelativoBloque[22] = "Bloques/";
+	strcat(pathBloque,pathRelativoBloque);
+	char nombreBloque[10];
+	snprintf(nombreBloque, 10, "%s.bin", bloquesArchivo[bloqueInicial]);
+	strcat(pathBloque,nombreBloque);
+	FILE * bloque = fopen(pathBloque, "r+");
+	fwrite(buffer, sizeof(char), configFS->tamBloque-offsetEnBloque, bloque);
+	fclose(bloque);
+
+	//Actualizo tamaño del archivo
+	char tamArchivoFinal[10];
+	snprintf(buffer, 10, "%d", max(tamArchivo, offset+size));
+	config_set_value(archivo,"TAMANIO",tamArchivoFinal);
+	config_save(archivo);
+
+	config_destroy(archivo);
+	free(bloquesArchivo);
+}
+
 int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
@@ -240,7 +426,8 @@ int main(void) {
 
 	//Prueba
 	/*crearArchivo("Pepo.bin");
-	crearArchivo("Lolo/Pepin.bin");*/
+	crearArchivo("Lolo/Pepin.bin");
+	borrarArchivo("Pepo.bin");*/
 
 	int cliente;
 	char* buffer = malloc(LONGMAX);
