@@ -27,14 +27,14 @@ int* cantPagsPorPID; //Esta tabla NO está en MP. Se accede a través del PID de
 typedef struct {
 	int PID;
 	int numPag;
-	int contenido;//POR AHORA es el nro de frame donde se encuentra la pág
+	int contenido; //POR AHORA es el nro de frame donde se encuentra la pág
 } entradaCache;
 entradaCache* memoriaCache;
 
 int entradasCache;
 int cacheXProceso;
 
-t_list* colaEntradasCache;//Necesaria para implementar el algoritmo LRU (OJO! Nunca se libera la memoria)
+t_list* colaEntradasCache; //Necesaria para implementar el algoritmo LRU (OJO! Nunca se libera la memoria)
 
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
@@ -53,27 +53,30 @@ int divisionRoundUp(int dividendo, int divisor) {
 	return 1 + ((dividendo - 1) / divisor);
 }
 
-int max(int a, int b){
-	if (a>b) return a;
-	else return b;
+int max(int a, int b) {
+	if (a > b)
+		return a;
+	else
+		return b;
 }
 
-int isInt(char *string){
+int isInt(char *string) {
 	int i, stringLength = strlen(string);
-	for(i = 0; i < stringLength; i++)
-		if(isdigit(string[i]) == 0 || ispunct(string[i]) != 0)
+	for (i = 0; i < stringLength; i++)
+		if (isdigit(string[i]) == 0 || ispunct(string[i]) != 0)
 			break;
-	if(i != stringLength)
+	if (i != stringLength)
 		return 0;
 	else
 		return 1;
 }
 
-void dumpTablaDePags(){
+void dumpTablaDePags() {
 	int i;
 	printf("Frame | PID | NroPag\n");
 	for (i = 0; i < cantFrames; i++) {
-		printf("%d | %d | %d \n", i, estructuraAdm[i].PID, estructuraAdm[i].numPag);
+		printf("%d | %d | %d \n", i, estructuraAdm[i].PID,
+				estructuraAdm[i].numPag);
 	}
 }
 
@@ -97,29 +100,31 @@ void inicializarCantPagsPorPID() {
 	}
 }
 
-void limpiarCache(){
+void limpiarCache() {
 	int i;
 	for (i = 0; i < entradasCache; i++) {
 		memoriaCache[i].PID = -1; //Supongo que PID -1 significa entrada vacía
 	}
 }
 
-void dumpCache(){
+void dumpCache() {
 	int i;
 	printf("Entrada | PID | NroPag | Contenido\n");
 	for (i = 0; i < entradasCache; i++) {
-		printf("%d | %d | %d | %d \n", i, memoriaCache[i].PID, memoriaCache[i].numPag, memoriaCache[i].contenido);
+		printf("%d | %d | %d | %d \n", i, memoriaCache[i].PID,
+				memoriaCache[i].numPag, memoriaCache[i].contenido);
 		//Debería mostrar realmente el contenido, no el frame
 	}
 }
 
-void inicializarCache(){
+void inicializarCache() {
 	memoriaCache = malloc(sizeof(entradaCache) * entradasCache);
 	limpiarCache();
 	colaEntradasCache = list_create();
 }
 
-void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int valorEntradasCache, int valorCacheXProceso){
+void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames,
+		int valorEntradasCache, int valorCacheXProceso) {
 	tamFrame = valorTamFrame;
 	cantFrames = valorCantFrames;
 	int memoriaTotal = tamFrame * cantFrames;
@@ -127,14 +132,14 @@ void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int val
 	memoriaPrincipal = reservarMemoria(memoriaTotal);
 
 	int cantBytesEstructuraAdm = sizeof(tablaPagInv) * cantFrames;
-	estructuraAdm = (tablaPagInv*)memoriaPrincipal;
-	cantFramesEstructuraAdm = divisionRoundUp(cantBytesEstructuraAdm, tamFrame);//Coincide con 1er frame para procesos
+	estructuraAdm = (tablaPagInv*) memoriaPrincipal;
+	cantFramesEstructuraAdm = divisionRoundUp(cantBytesEstructuraAdm, tamFrame); //Coincide con 1er frame para procesos
 	printf("bytesEstructuraAdm: %i \n", cantBytesEstructuraAdm);
 	printf("cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
 
-	cantPagsPorPID = malloc(sizeof(int) * cantFrames);//REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
+	cantPagsPorPID = malloc(sizeof(int) * cantFrames); //REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
 
-	inicializarCantPagsPorPID();//Pone en cero la cant de páginas de cada proceso
+	inicializarCantPagsPorPID(); //Pone en cero la cant de páginas de cada proceso
 	inicializarTablaPags(cantFramesEstructuraAdm);
 
 	entradasCache = valorEntradasCache;
@@ -142,13 +147,13 @@ void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int val
 	inicializarCache();
 }
 
-void liberarMemoriaPrincipal(){
+void liberarMemoriaPrincipal() {
 	free(memoriaPrincipal);
 	free(cantPagsPorPID);
 	free(memoriaCache);
 }
 
-int cantFramesOcupados(){
+int cantFramesOcupados() {
 	int i, cantFramesOcupados = 0;
 	for (i = 0; i < cantFrames; i++) {
 		cantFramesOcupados += cantPagsPorPID[i];
@@ -156,10 +161,15 @@ int cantFramesOcupados(){
 	return cantFramesOcupados;
 }
 
-void hexDump8Bytes(void *mem, unsigned int len) {//Sacada de una página
+void hexDump8Bytes(void *mem, unsigned int len) { //Sacada de una página
 	unsigned int i, j;
 	int HEXDUMP_COLS = 8;
-	for (i = 0; i<len+ ((len % HEXDUMP_COLS) ? (HEXDUMP_COLS - len % HEXDUMP_COLS) : 0); i++) {
+	for (i = 0;
+			i
+					< len
+							+ ((len % HEXDUMP_COLS) ?
+									(HEXDUMP_COLS - len % HEXDUMP_COLS) : 0);
+			i++) {
 		/* print offset */
 		if (i % HEXDUMP_COLS == 0) {
 			printf("0x%06x: ", i);
@@ -177,7 +187,7 @@ void hexDump8Bytes(void *mem, unsigned int len) {//Sacada de una página
 				if (j >= len) /* end of block, not really printing */
 				{
 					putchar(' ');
-				} else if (isprint(((char*) mem)[j])) /* printable char */
+				} else if (isprint(((char* ) mem)[j])) /* printable char */
 				{
 					putchar(0xFF & ((char*) mem)[j]);
 				} else /* other char */
@@ -190,46 +200,47 @@ void hexDump8Bytes(void *mem, unsigned int len) {//Sacada de una página
 	}
 }
 
-void hexDump16Bytes(void *addr, int len)//Si no se usa, borrar
+void hexDump16Bytes(void *addr, int len) //Si no se usa, borrar
 {
-    int i;
-    unsigned char buff[17];
-    unsigned char *pc = (unsigned char*)addr;
-    // Process every byte in the data.
-    for (i = 0; i < len; i++) {
-        // Multiple of 16 means new line (with line offset).
-        if ((i % 16) == 0) {
-            // Just don't print ASCII for the zeroth line.
-            if (i != 0)
-                printf("  %s\n", buff);
+	int i;
+	unsigned char buff[17];
+	unsigned char *pc = (unsigned char*) addr;
+	// Process every byte in the data.
+	for (i = 0; i < len; i++) {
+		// Multiple of 16 means new line (with line offset).
+		if ((i % 16) == 0) {
+			// Just don't print ASCII for the zeroth line.
+			if (i != 0)
+				printf("  %s\n", buff);
 
-            // Output the offset.
-            printf("  %04x ", i);
-        }
-        // Now the hex code for the specific character.
-        printf(" %02x", pc[i]);
-        // And store a printable ASCII character for later.
-        if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {
-            buff[i % 16] = '.';
-        } else {
-            buff[i % 16] = pc[i];
-        }
-        buff[(i % 16) + 1] = '\0';
-    }
-    // Pad out last line if not exactly 16 characters.
-    while ((i % 16) != 0) {
-        printf("   ");
-        i++;
-    }
-    // And print the final ASCII bit.
-    printf("  %s\n", buff);
+			// Output the offset.
+			printf("  %04x ", i);
+		}
+		// Now the hex code for the specific character.
+		printf(" %02x", pc[i]);
+		// And store a printable ASCII character for later.
+		if ((pc[i] < 0x20) || (pc[i] > 0x7e)) {
+			buff[i % 16] = '.';
+		} else {
+			buff[i % 16] = pc[i];
+		}
+		buff[(i % 16) + 1] = '\0';
+	}
+	// Pad out last line if not exactly 16 characters.
+	while ((i % 16) != 0) {
+		printf("   ");
+		i++;
+	}
+	// And print the final ASCII bit.
+	printf("  %s\n", buff);
 }
 
-void dumpProcesosActivos(){
+void dumpProcesosActivos() {
 	int i;
 	printf("Proceso | CantPags\n");
 	for (i = 0; i < cantFrames; i++) {
-		if(cantPagsPorPID[i] != 0) printf("%d | %d \n", i, cantPagsPorPID[i]);
+		if (cantPagsPorPID[i] != 0)
+			printf("%d | %d \n", i, cantPagsPorPID[i]);
 	}
 }
 
@@ -250,35 +261,36 @@ void atenderComandos() {
 			printf("Especifique valor del Retardo (en milisegundos): ");
 			fgets(subcomando, 100, stdin);
 			subcomando = strtok(subcomando, "\n");
-			if (isInt(subcomando)){
+			if (isInt(subcomando)) {
 				retardoMemoria = atoi(subcomando);
 				//modificarRetardoMemoria(retardoMemoria);               //CÓMO MODIFICO EL VALOR, SI NO ESTÁ EN ESTE .C??
-				printf("Retardo Memoria seteado en %d",retardoMemoria);
+				printf("Retardo Memoria seteado en %d", retardoMemoria);
 			} else {
 				printf("El retardo tiene que ser un número entero positivo\n");
 			}
 			break;
 		case 'd':
 			//FALTA CREAR LOGS
-			printf("Dump:\n"
-					"-cache: Este comando hará un dump completo de la memoria Cache\n"
-					"-memEstr (Estructuras de memoria): Tabla de Páginas y Listado de procesos Activos\n"
-					"-memCont (Contenido de memoria): Datos almacenados en la memoria de todos los procesos o"
-						"de un proceso en particular\n"); //FALTA SEGUNDA OPCIÓN
+			printf(
+					"Dump:\n"
+							"-cache: Este comando hará un dump completo de la memoria Cache\n"
+							"-memEstr (Estructuras de memoria): Tabla de Páginas y Listado de procesos Activos\n"
+							"-memCont (Contenido de memoria): Datos almacenados en la memoria de todos los procesos o"
+							"de un proceso en particular\n"); //FALTA SEGUNDA OPCIÓN
 			fgets(subcomando, 100, stdin);
 			subcomando = strtok(subcomando, "\n");
-			if (strcmp("cache", subcomando) == 0){
+			if (strcmp("cache", subcomando) == 0) {
 				printf("Dump Cache:\n");
 				dumpCache();
-			} else if (strcmp("memEstr", subcomando) == 0){
+			} else if (strcmp("memEstr", subcomando) == 0) {
 				printf("Dump Tabla de páginas:\n");
 				dumpTablaDePags();
 				printf("Listado de Procesos Activos:\n");
 				dumpProcesosActivos();
-			} else if (strcmp("memCont", subcomando) == 0){
+			} else if (strcmp("memCont", subcomando) == 0) {
 				printf("Dump Memoria:\n");
 				hexDump8Bytes(estructuraAdm, cantFrames * tamFrame);
-			} else{
+			} else {
 				printf("Comando invalido\n");
 			}
 			break;
@@ -287,28 +299,29 @@ void atenderComandos() {
 			printf("El contenido de la caché ha sido vaciado\n");
 			break;
 		case 's':
-			printf("Size:\n"
-					"-memory: Indica el tamaño de la memoria en cantidad de frames, la cantidad de frames ocupados"
-					" y la cantidad de frames libres\n"
-					"-PID: indica el tamaño total del proceso con dicho PID\n");
+			printf(
+					"Size:\n"
+							"-memory: Indica el tamaño de la memoria en cantidad de frames, la cantidad de frames ocupados"
+							" y la cantidad de frames libres\n"
+							"-PID: indica el tamaño total del proceso con dicho PID\n");
 			fgets(subcomando, 100, stdin);
 			subcomando = strtok(subcomando, "\n");
-			if (strcmp("memory", subcomando) == 0){
+			if (strcmp("memory", subcomando) == 0) {
 				int cantFramesOcup = cantFramesOcupados();
 				printf("Cantidad de frames: %d\n", cantFrames);
 				printf("Cantidad de frames ocupados: %d\n", cantFramesOcup);
-				printf("Cantidad de frames libres: %d\n", cantFrames - cantFramesOcup);
+				printf("Cantidad de frames libres: %d\n",
+						cantFrames - cantFramesOcup);
 			} else {
 				int PID;
-				if (isInt(subcomando)){
-					PID = atoi(subcomando);//Si convierte algo que no es un int puede producir comportamiento inesperado
+				if (isInt(subcomando)) {
+					PID = atoi(subcomando); //Si convierte algo que no es un int puede producir comportamiento inesperado
 				} else {
 					printf("El PID tiene que ser un número entero positivo\n");
 				}
-				if (0<PID && PID<cantFrames){//LÍMITE SUPERIOR COMPLETAMENTE ARBITRARIO
+				if (0 < PID && PID < cantFrames) { //LÍMITE SUPERIOR COMPLETAMENTE ARBITRARIO
 					printf("El proceso ocupa %d frames\n", cantPagsPorPID[PID]);
-				}
-				else{
+				} else {
 					printf("'%s' no es un PID valido\n", subcomando);
 				}
 			}
@@ -322,11 +335,73 @@ void atenderComandos() {
 	free(subcomando);
 }
 
-void atenderKernel(){
-	printf("hola\n");
+void recibirArchivoDe(int *cliente) {
+	FILE *archivo;
+	archivo = fopen("prueba.txt", "w");
+	if (archivo == NULL) {
+		printf("No se pudo escribir el archivo\n");
+		exit(-1);
+	}
+
+	u_int32_t fsize = 0;
+	if (recv((*cliente), &fsize, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo longitud del archivo\n");
+		exit(-1);
+	}
+
+	bufferArchivo = reservarMemoria(fsize + 1);
+	if (recv((*cliente), bufferArchivo, fsize + 1, 0) == -1) {
+		printf("Error recibiendo el archivo\n");
+		exit(-1);
+	}
+	printf("%s\n\n", bufferArchivo);
+
+	fwrite(bufferArchivo, 1, fsize, archivo);
+	//free(bufferArchivo);
 }
 
-void atenderCPU(){
+void enviarSenialAKernel(int *cliente) {
+	char senial[2] = "a";
+	if (send((*cliente), senial, 2, 0) == -1) {
+		printf("Error al enviar la senial antes de asignar paginas\n");
+	}
+}
+
+int recibir_cant_paginas(int *cliente) {
+	u_int32_t cant_pags;
+	if (recv((*cliente), &cant_pags, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo la cantidad de paginas.\n");
+		return EXIT_FAILURE;
+	}
+	return cant_pags;
+}
+
+int recibir_process_id(int *cliente) {
+	int process_id;
+	if (recv((*cliente), &process_id, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el process_id\n");
+		return EXIT_FAILURE;
+	}
+	return process_id;
+}
+
+void kernel_mem_asignarPaginas(int *cliente) {
+	u_int32_t process_id, cant_pags;
+	enviarSenialAKernel(cliente);
+	process_id = recibir_process_id(cliente);
+	cant_pags = recibir_cant_paginas(cliente);
+	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
+			cant_pags);
+	asignarPaginasAProceso(process_id, cant_pags);
+}
+
+
+void atenderKernel() {
+	recibirArchivoDe(clienteKernel);
+	kernel_mem_asignarPaginas(clienteKernel);
+}
+
+void atenderCPU() {
 	printf("el FD del CPU es: %d\n", fdCPU);
 	//send(fdCPU);
 	//hacer un send a ese CPU con su codigo
@@ -338,9 +413,9 @@ int hash(int PID, int nroPag) {
 	//indiceEnLaTabla = PID;
 	//indiceEnLaTabla += nroPag;
 	//indiceEnLaTabla %= cantFrames;
-	int indiceEnLaTabla = 0.5*(PID+nroPag)*(PID+nroPag+1)+nroPag;//"Cantor pairing function" es una buena función de hash?
+	int indiceEnLaTabla = 0.5 * (PID + nroPag) * (PID + nroPag + 1) + nroPag;//"Cantor pairing function" es una buena función de hash?
 	indiceEnLaTabla %= cantFrames;
-	return max(indiceEnLaTabla,cantFramesEstructuraAdm);
+	return max(indiceEnLaTabla, cantFramesEstructuraAdm);
 	//La funcion de hash no deberia devolver un frame ocupado por la tabla de páginas
 }
 
@@ -394,11 +469,12 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 	int frameAAsignar;
 	u_int32_t aux;
 	while (nroPag < pagsRequeridas) {
-		frameAAsignar = proximoFrameLibre(hash(PID,nroPag));
+		frameAAsignar = proximoFrameLibre(hash(PID, nroPag));
 		if (frameAAsignar == -1) {	//No se encontró ninguna página libre
-			printf("Sólo se pudieron asignar %d páginas al proceso %d\n", nroPag, PID);
+			printf("Sólo se pudieron asignar %d páginas al proceso %d\n",
+					nroPag, PID);
 			aux = noHayPaginas;
-			send((*clienteKernel),&aux,sizeof(u_int32_t),0);
+			send((*clienteKernel), &aux, sizeof(u_int32_t), 0);
 			return;
 		}
 		estructuraAdm[frameAAsignar].PID = PID;
@@ -407,8 +483,8 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 		cantPagsPorPID[PID]++;
 	}
 	aux = hayPaginas;
-	send((*clienteKernel),&aux,sizeof(u_int32_t),0);
-	printf("Se pudieron asignar las páginas al proceso %d\n",PID);
+	send((*clienteKernel), &aux, sizeof(u_int32_t), 0);
+	printf("Se pudieron asignar las páginas al proceso %d\n", PID);
 }
 
 void inicializarPrograma(int PID, int cantPags) {
@@ -426,76 +502,85 @@ void inicializarPrograma(int PID, int cantPags) {
 	asignarPaginasAProceso(PID, cantPags);//Si asignarPaginasAProceso me manda un error, lo tendría que tratar (por ahora hay un exit)
 }
 
-int cantEntradasDeProcesoEnCache(int PID){
+int cantEntradasDeProcesoEnCache(int PID) {
 	int i, cantEntradas = 0;
-	for (i = 0; (cantEntradas<3) && (i<entradasCache); i++) {
-		if(memoriaCache[i].PID == PID) cantEntradas++;
+	for (i = 0; (cantEntradas < 3) && (i < entradasCache); i++) {
+		if (memoriaCache[i].PID == PID)
+			cantEntradas++;
 	}
 	return cantEntradas;
 }
 
 void int_destroy(int *puntero) {//Necesario para eliminar entradas de la lista
-    free(puntero);
+	free(puntero);
 }
 
-void setearEntradaCache(int* entrada, int PID, int nroPag, int contenido){
+void setearEntradaCache(int* entrada, int PID, int nroPag, int contenido) {
 	memoriaCache[*entrada].PID = PID;
 	memoriaCache[*entrada].numPag = nroPag;
 	memoriaCache[*entrada].contenido = contenido;
 	//Tengo que reservar memoria dinámica, sino la entrada se pierde al finalizar la función
 	int* entradaALista = reservarMemoria(sizeof(int));
-	*entradaALista=*entrada;
+	*entradaALista = *entrada;
 	list_add(colaEntradasCache, entradaALista);
 }
 
-void ingresarEntradaEnCache(int PID, int nroPag){
+void ingresarEntradaEnCache(int PID, int nroPag) {
 	int entradaAReemplazar = -1;
 	//Si ya se encuentra en cache, se actualiza la misma entrada
 	int j;
-	for (j = 0; (entradaAReemplazar==-1) && (j<entradasCache); j++) {
-		if(memoriaCache[j].PID == PID && memoriaCache[j].numPag == nroPag) entradaAReemplazar = j;
+	for (j = 0; (entradaAReemplazar == -1) && (j < entradasCache); j++) {
+		if (memoriaCache[j].PID == PID && memoriaCache[j].numPag == nroPag)
+			entradaAReemplazar = j;
 	}
-	if (entradaAReemplazar != -1){
-		bool esEntradaDeProcesoYPagina(int* entrada){
-			return memoriaCache[*entrada].PID == PID && memoriaCache[*entrada].numPag == nroPag;
+	if (entradaAReemplazar != -1) {
+		bool esEntradaDeProcesoYPagina(int* entrada) {
+			return memoriaCache[*entrada].PID == PID
+					&& memoriaCache[*entrada].numPag == nroPag;
 		}
-		list_remove_and_destroy_by_condition(colaEntradasCache, (void*)esEntradaDeProcesoYPagina, (void*)int_destroy);
-	}
-	else{
+		list_remove_and_destroy_by_condition(colaEntradasCache,
+				(void*) esEntradaDeProcesoYPagina, (void*) int_destroy);
+	} else {
 		//Si se alcanzó el máximo, hay que sustituir una pág de ese proceso
-		if(cantEntradasDeProcesoEnCache(PID) >= cacheXProceso){
+		if (cantEntradasDeProcesoEnCache(PID) >= cacheXProceso) {
 			bool esEntradaDeProceso(int *entrada) {
 				return memoriaCache[*entrada].PID == PID;
 			}
-			entradaAReemplazar = *(int*)list_find(colaEntradasCache, (void*)esEntradaDeProceso);//Obtengo entrada más "antigua" del proceso
+			entradaAReemplazar = *(int*) list_find(colaEntradasCache,
+					(void*) esEntradaDeProceso);//Obtengo entrada más "antigua" del proceso
 			//Elimino la entradaAReemplazar de la lista
-			list_remove_and_destroy_by_condition(colaEntradasCache, (void*)esEntradaDeProceso, (void*)int_destroy);
-		} else {//Si no se alcanzó el limite, la sustitución es global.
+			list_remove_and_destroy_by_condition(colaEntradasCache,
+					(void*) esEntradaDeProceso, (void*) int_destroy);
+		} else {		//Si no se alcanzó el limite, la sustitución es global.
 			//Si hay entradas libres, lo asigno ahí
 			int i;
-			for (i = 0; (entradaAReemplazar==-1) && (i<entradasCache); i++) {
-				if(memoriaCache[i].PID == -1) entradaAReemplazar = i;
+			for (i = 0; (entradaAReemplazar == -1) && (i < entradasCache);
+					i++) {
+				if (memoriaCache[i].PID == -1)
+					entradaAReemplazar = i;
 			}
 			//Sino, se corre el algoritmo de reemplazo LRU
-			if(entradaAReemplazar==-1)
-			{
-				entradaAReemplazar = *(int*)list_get(colaEntradasCache, 0);//Obtengo entrada más "antigua"
-				list_remove_and_destroy_element(colaEntradasCache, 0,(void*)int_destroy);//Y la elimino de la lista
+			if (entradaAReemplazar == -1) {
+				entradaAReemplazar = *(int*) list_get(colaEntradasCache, 0);//Obtengo entrada más "antigua"
+				list_remove_and_destroy_element(colaEntradasCache, 0,
+						(void*) int_destroy);		//Y la elimino de la lista
 			}
 		}
 	}
-	setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
+	setearEntradaCache(&entradaAReemplazar, PID, nroPag,
+			buscarPagina(PID, nroPag));
 }
 
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	//Si la página se encuentra en caché, no hace falta acceder a memoria (se omite el retardo)
-	int k, estaEnCache=-1;
-	for (k = 0; (estaEnCache==-1) && (k<entradasCache); k++) {
-		if(memoriaCache[k].PID == PID && memoriaCache[k].numPag == nroPag) estaEnCache = 1;
+	int k, estaEnCache = -1;
+	for (k = 0; (estaEnCache == -1) && (k < entradasCache); k++) {
+		if (memoriaCache[k].PID == PID && memoriaCache[k].numPag == nroPag)
+			estaEnCache = 1;
 	}
 	//En cualquier caso actualizo la caché, ya sea para agregar la entrada(si no está), o para actualizar el último acceso
 	ingresarEntradaEnCache(PID, nroPag);
-	if (estaEnCache!=1){//Es la única operación que puede tener retardo o no, por eso lo incluyo acá
+	if (estaEnCache != 1) {	//Es la única operación que puede tener retardo o no, por eso lo incluyo acá
 		//sleep(retardoMemoria);            NO TENGO EL RETARDO EN ESTE .C!!
 	}
 	int posByteComienzoPag;
@@ -504,7 +589,8 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	if (offset + tamanio > tamFrame) {
 		proxPag = proximaPagina(PID, nroPag);
 		if (proxPag == -1) {
-			printf("Se está intentando leer más allá del límite de memoria asignada\n");
+			printf(
+					"Se está intentando leer más allá del límite de memoria asignada\n");
 			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 		}
 		tamanioRestante = tamanio - (tamFrame - offset);//Si hay otra pág, me guardo el tamaño restante
@@ -541,7 +627,8 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 	if (offset + tamanio > tamFrame) {
 		int proxPag = proximaPagina(PID, nroPag);
 		if (proxPag == -1) {
-			printf("Se está intentando escribir más allá del límite de la página\n");
+			printf(
+					"Se está intentando escribir más allá del límite de la página\n");
 			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA ESCRITURA
 		}
 		int tamanioRestante = tamanio - (tamFrame - offset);
@@ -560,14 +647,14 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 		posByteComienzoPag++;
 	}
 	//Se agrega (o actualiza) la entrada en memoria cache
-	ingresarEntradaEnCache(PID,nroPag);
+	ingresarEntradaEnCache(PID, nroPag);
 }
 
 void finalizarPrograma(int PID) {
 	int nroPag = cantPagsPorPID[PID] - 1;
 	int paginaABorrar;
 	while (nroPag >= 0) {
-		if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) {//No se encontró la pagina
+		if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) { //No se encontró la pagina
 			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 		}
 		paginaABorrar = paginaABorrar / tamFrame; /*buscarPagina devuelve la pos en bytes*/
@@ -579,7 +666,8 @@ void finalizarPrograma(int PID) {
 	//Elimino las páginas del proceso en caché
 	int i;
 	for (i = 0; i < entradasCache; i++) {
-		if(memoriaCache[i].PID == PID) memoriaCache[i].PID = -1;
+		if (memoriaCache[i].PID == PID)
+			memoriaCache[i].PID = -1;
 	}
 	printf("Se ha finalizado el proceso %d\n", PID);
 }

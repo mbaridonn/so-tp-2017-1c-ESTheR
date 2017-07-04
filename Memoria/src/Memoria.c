@@ -76,65 +76,6 @@ void modificarRetardoMemoria(int nuevoRetardo) {
 	config->retardoMemoria = nuevoRetardo;
 }
 
-void recibirArchivoDe(int *cliente) {
-	FILE *archivo;
-	archivo = fopen("prueba.txt", "w");
-	if (archivo == NULL) {
-		printf("No se pudo escribir el archivo\n");
-		exit(-1);
-	}
-
-	u_int32_t fsize = 0;
-	if (recv((*cliente), &fsize, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo longitud del archivo\n");
-		exit(-1);
-	}
-
-	bufferArchivo = reservarMemoria(fsize + 1);
-	if (recv((*cliente), bufferArchivo, fsize + 1, 0) == -1) {
-		printf("Error recibiendo el archivo\n");
-		exit(-1);
-	}
-	printf("%s\n\n", bufferArchivo);
-
-	fwrite(bufferArchivo, 1, fsize, archivo);
-	//free(bufferArchivo);
-}
-
-void enviarSenialAKernel(int *cliente) {
-	char senial[2] = "a";
-	if (send((*cliente), senial, 2, 0) == -1) {
-		printf("Error al enviar la senial antes de asignar paginas\n");
-	}
-}
-
-int recibir_cant_paginas(int *cliente) {
-	u_int32_t cant_pags;
-	if (recv((*cliente), &cant_pags, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo la cantidad de paginas.\n");
-		return EXIT_FAILURE;
-	}
-	return cant_pags;
-}
-
-int recibir_process_id(int *cliente) {
-	int process_id;
-	if (recv((*cliente), &process_id, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el process_id\n");
-		return EXIT_FAILURE;
-	}
-	return process_id;
-}
-
-void kernel_mem_asignarPaginas(int *cliente) {
-	u_int32_t process_id, cant_pags;
-	enviarSenialAKernel(cliente);
-	process_id = recibir_process_id(cliente);
-	cant_pags = recibir_cant_paginas(cliente);
-	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
-			cant_pags);
-	asignarPaginasAProceso(process_id, cant_pags);
-}
 
 int main(void) {
 
@@ -163,88 +104,88 @@ int main(void) {
 		exit(-1);
 	}
 
-	while(1){
-	esperarConexion(&servidor, &direccionServidor);
-	aceptarConexion(&servidor, &cliente);
 
-	int procesoConectado = handshake(&cliente, memoria);
+	while (1) {
+		printf("Hola\n");
+		esperarConexion(&servidor, &direccionServidor);
+		aceptarConexion(&servidor, &cliente);
+		printf("Hola2\n");
 
-	switch (procesoConectado) {
-	case kernel:
-		msjConexionCon("el Kernel");
-		clienteKernel = &cliente;
-		printf("Creado hilo para Kernel\n");
-		//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
-		//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
-		if ((send(cliente, &(config->tamFrame), sizeof(int), 0)) == -1) {//Convendria que sea u_int32_t
-			printf("Error enviando tamaño de Frame\n");
-			exit(-1);
+		int procesoConectado = handshake(&cliente, memoria);
+
+		switch (procesoConectado) {
+		case kernel:
+			msjConexionCon("el Kernel");
+			clienteKernel = &cliente;
+			printf("Creado hilo para Kernel\n");
+			//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
+			//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
+			if ((send(cliente, &(config->tamFrame), sizeof(int), 0)) == -1) {//Convendria que sea u_int32_t
+				printf("Error enviando tamaño de Frame\n");
+				exit(-1);
+			}
+
+			if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+			 printf("Error al crear el thread de Kernel.\n");
+			 exit(-1);
+			 }
+
+			/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
+			 el código del programa y el stack. También le enviará el código completo del Programa.
+			 Si no se pudiera obtener espacio suficiente para algunas de las estructuras necesarias del proceso,
+			 entonces se le debe informar*/
+
+			/*
+			 Existe la posibilidad de que los procesos le soliciten al Kernel bloques de memoria dinámica.
+			 El Kernel será el encargado de administrar el ciclo de vida de estos bloques de memoria,
+			 denominados Heap, de forma tal que permita al proceso reservar y liberar bloques de forma aleatoria.
+			 VER FUNCIONAMIENTO DE MEMORIA DINÁMICA EN LA PARTE DE KERNEL
+			 */
+
+			/*
+			 Cada página dedicada a la gestión de memoria dinámica podrá almacenar uno o más bloques de
+			 datos. Para poder determinar la consistencia de los bloques de datos almacenados en una página se
+			 guardará metadata específica dentro de la misma, la que nos permitirá determinar cuáles son las
+			 secciones de memoria sobre las cuales el proceso puede trabajar. Para ello, utilizaremos la siguiente
+			 estructura:
+			 typedef struct HeapMetadata {
+			 uint32_t size,
+			 Bool isFree
+			 }
+			 */
+			break;
+
+		case cpu:
+			printf("Me conecte con CPU!\n");
+			//Por cada conexión, la Memoria creará un hilo dedicado a atenderlo, que quedará a la espera de solicitudes de operaciones.
+			//Hay que atacar los problemas de concurrencia que surjan.
+
+			fdCPU = cliente;
+
+			if (pthread_create(&hilo_cpu, NULL, atenderCPU, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+				printf("Error al crear el thread de CPU.\n");
+				exit(-1);
+			}
+
+			/*Ante cualquier solicitud de acceso a la memoria principal, deberá esperar una cantidad de tiempo configurable
+			 (en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
+			 no se deberá esperar.*/
+
+			/*En caso de que un CPU solicite memoria y no se le pueda asignar por falta de espacio, se
+			 deberá informar  que no hay más espacio disponible.*/
+
+			break;
+
+		default:
+			printf("No me puedo conectar con vos.\n");
+			break;
 		}
-
-		/*if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
-			printf("Error al crear el thread de Kernel.\n");
-			exit(-1);
-		}*/
-
-		/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
-		 el código del programa y el stack. También le enviará el código completo del Programa.
-		 Si no se pudiera obtener espacio suficiente para algunas de las estructuras necesarias del proceso,
-		 entonces se le debe informar*/
-
-		/*
-		 Existe la posibilidad de que los procesos le soliciten al Kernel bloques de memoria dinámica.
-		 El Kernel será el encargado de administrar el ciclo de vida de estos bloques de memoria,
-		 denominados Heap, de forma tal que permita al proceso reservar y liberar bloques de forma aleatoria.
-		 VER FUNCIONAMIENTO DE MEMORIA DINÁMICA EN LA PARTE DE KERNEL
-		 */
-
-		/*
-		 Cada página dedicada a la gestión de memoria dinámica podrá almacenar uno o más bloques de
-		 datos. Para poder determinar la consistencia de los bloques de datos almacenados en una página se
-		 guardará metadata específica dentro de la misma, la que nos permitirá determinar cuáles son las
-		 secciones de memoria sobre las cuales el proceso puede trabajar. Para ello, utilizaremos la siguiente
-		 estructura:
-		 typedef struct HeapMetadata {
-		 uint32_t size,
-		 Bool isFree
-		 }
-		 */
-		recibirArchivoDe(&cliente);
-		kernel_mem_asignarPaginas(&cliente);
-		break;
-
-	case cpu:
-		printf("Me conecte con CPU!\n");
-		//Por cada conexión, la Memoria creará un hilo dedicado a atenderlo, que quedará a la espera de solicitudes de operaciones.
-		//Hay que atacar los problemas de concurrencia que surjan.
-
-		fdCPU = cliente;
-
-		if (pthread_create(&hilo_cpu, NULL, atenderCPU, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
-			printf("Error al crear el thread de CPU.\n");
-			exit(-1);
-		}
-
-		/*Ante cualquier solicitud de acceso a la memoria principal, deberá esperar una cantidad de tiempo configurable
-		 (en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
-		 no se deberá esperar.*/
-
-		/*En caso de que un CPU solicite memoria y no se le pueda asignar por falta de espacio, se
-		 deberá informar  que no hay más espacio disponible.*/
-
-		break;
-
-	default:
-		printf("No me puedo conectar con vos.\n");
-		break;
+		close(servidor);
 	}
-	close(servidor);
-	}
-
 
 	/*pthread_join(hilo_comandos, NULL);
-	//pthread_join(hilo_kernel, NULL);
-	pthread_join(hilo_cpu, NULL);*/
+	 //pthread_join(hilo_kernel, NULL);
+	 pthread_join(hilo_cpu, NULL);*/
 
 	liberarMemoriaPrincipal();
 
