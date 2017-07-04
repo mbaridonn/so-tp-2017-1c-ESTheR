@@ -322,6 +322,17 @@ void atenderComandos() {
 	free(subcomando);
 }
 
+void atenderKernel(){
+	printf("hola\n");
+}
+
+void atenderCPU(){
+	printf("el FD del CPU es: %d\n", fdCPU);
+	//send(fdCPU);
+	//hacer un send a ese CPU con su codigo
+	//(en realidad deberia mandarle instruccion por instruccion y el cpu parsearla y ejecutar la respectiva primitiva)
+}
+
 int hash(int PID, int nroPag) {
 	//HASH INICIAL:
 	//indiceEnLaTabla = PID;

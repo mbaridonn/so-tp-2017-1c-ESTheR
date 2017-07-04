@@ -44,11 +44,41 @@ char * const conseguirDatosDeLaMemoria(char *prgrama,
 	return aRetornar;
 }
 
+void recibirArchivoDe(int *cliente) {
+	FILE *archivo;
+	archivo = fopen("prueba.txt", "w");
+	if (archivo == NULL) {
+		printf("No se pudo escribir el archivo\n");
+		exit(-1);
+	}
+
+	u_int32_t fsize = 0;
+	if (recv((*cliente), &fsize, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo longitud del archivo\n");
+		exit(-1);
+	}
+
+	char *bufferArchivo = reservarMemoria(fsize + 1);
+	if (recv((*cliente), bufferArchivo, fsize + 1, 0) == -1) {
+		printf("Error recibiendo el archivo\n");
+		exit(-1);
+	}
+	printf("%s\n\n", bufferArchivo);
+
+	fwrite(bufferArchivo, 1, fsize, archivo);
+	free(bufferArchivo);
+}
+
 int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor.sin_port = htons(8080);
+
+	struct sockaddr_in direccionServidor2;
+	direccionServidor2.sin_family = AF_INET;
+	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
+	direccionServidor2.sin_port = htons(8125);
 
 	//INICIO PRUEBA ANSISOP
 	/*printf("Ejecutando\n");
@@ -91,6 +121,20 @@ int main(void) {
 		free(pcb_serializado);
 
 		printf("PCB id: %d\n", incomingPCB->id_proceso);
+
+		close(cliente);
+		conectar(&cliente, &direccionServidor2);
+		int procesoConectado2 = handshake(&cliente, cpu);
+		switch (procesoConectado2) {
+			case memoria:
+				printf("Me conecte con Memoria!\n");
+				recibirArchivoDe(&cliente);
+				break;
+			default:
+				printf("No me puedo conectar con vos.\n");
+				break;
+			}
+
 		break;
 	case memoria:
 		printf("Me conecte con Memoria!\n");
@@ -100,7 +144,7 @@ int main(void) {
 		break;
 	}
 
-	close(cliente);
+
 
 	return 0;
 }

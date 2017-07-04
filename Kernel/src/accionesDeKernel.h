@@ -156,13 +156,12 @@ void proced_script(int *unCliente, int *unaCPU) {
 		printf("Send serialized_buffer_length to CPU failed\n");
 		exit(-1);
 	}
-	printf("Pcb Size to send : %d\n", serialized_buffer_index);
 	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)
 			< 0) {
 		printf("Send serialized_pcb to CPU failed\n");
 		exit(-1);
 	}
-	printf("Send serialized_pcb to CPU was successful\n");
+	printf("PCB enviado a CPU exitosamente\n");
 	free(bufferArchivo);
 }
 

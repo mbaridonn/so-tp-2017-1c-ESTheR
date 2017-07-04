@@ -76,30 +76,29 @@ void modificarRetardoMemoria(int nuevoRetardo) {
 	config->retardoMemoria = nuevoRetardo;
 }
 
-void *recibirArchivoDe(int *cliente) {
+void recibirArchivoDe(int *cliente) {
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w");
 	if (archivo == NULL) {
 		printf("No se pudo escribir el archivo\n");
-		return EXIT_FAILURE;
+		exit(-1);
 	}
 
 	u_int32_t fsize = 0;
-	//recibirMensajeDe(&cliente, buffer); NO CONVENDRÍA USAR ESA ABSTRACCIÓN??
 	if (recv((*cliente), &fsize, sizeof(u_int32_t), 0) == -1) {
 		printf("Error recibiendo longitud del archivo\n");
-		return EXIT_FAILURE;
+		exit(-1);
 	}
 
-	char *bufferArchivo = reservarMemoria(fsize + 1);
+	bufferArchivo = reservarMemoria(fsize + 1);
 	if (recv((*cliente), bufferArchivo, fsize + 1, 0) == -1) {
 		printf("Error recibiendo el archivo\n");
-		return EXIT_FAILURE;
+		exit(-1);
 	}
 	printf("%s\n\n", bufferArchivo);
 
 	fwrite(bufferArchivo, 1, fsize, archivo);
-	free(bufferArchivo);
+	//free(bufferArchivo);
 }
 
 void enviarSenialAKernel(int *cliente) {
@@ -132,8 +131,9 @@ void kernel_mem_asignarPaginas(int *cliente) {
 	enviarSenialAKernel(cliente);
 	process_id = recibir_process_id(cliente);
 	cant_pags = recibir_cant_paginas(cliente);
-	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,cant_pags);
-	asignarPaginasAProceso(process_id,cant_pags);
+	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
+			cant_pags);
+	asignarPaginasAProceso(process_id, cant_pags);
 }
 
 int main(void) {
@@ -149,16 +149,21 @@ int main(void) {
 	int servidor;
 	int cliente;
 
+	char *bufferArchivo;
+
+	pthread_t hilo_comandos, hilo_kernel, hilo_cpu;
+
 	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames,
 			config->entradasCache, config->cacheXProceso);
 
 	printf("Creado hilo para comandos\n");
-	pthread_t hilo_comandos;
+
 	if (pthread_create(&hilo_comandos, NULL, atenderComandos, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
 		printf("Error al crear el thread de comandos.\n");
 		exit(-1);
 	}
 
+	while(1){
 	esperarConexion(&servidor, &direccionServidor);
 	aceptarConexion(&servidor, &cliente);
 
@@ -176,11 +181,10 @@ int main(void) {
 			exit(-1);
 		}
 
-		/*pthread_t hilo_kernel;
-		 if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
-		 printf("Error al crear el thread de Kernel.\n");
-		 exit(-1);
-		 }*/
+		/*if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+			printf("Error al crear el thread de Kernel.\n");
+			exit(-1);
+		}*/
 
 		/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
 		 el código del programa y el stack. También le enviará el código completo del Programa.
@@ -214,6 +218,13 @@ int main(void) {
 		//Por cada conexión, la Memoria creará un hilo dedicado a atenderlo, que quedará a la espera de solicitudes de operaciones.
 		//Hay que atacar los problemas de concurrencia que surjan.
 
+		fdCPU = cliente;
+
+		if (pthread_create(&hilo_cpu, NULL, atenderCPU, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+			printf("Error al crear el thread de CPU.\n");
+			exit(-1);
+		}
+
 		/*Ante cualquier solicitud de acceso a la memoria principal, deberá esperar una cantidad de tiempo configurable
 		 (en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
 		 no se deberá esperar.*/
@@ -228,8 +239,12 @@ int main(void) {
 		break;
 	}
 	close(servidor);
+	}
 
-	pthread_join(hilo_comandos, NULL);
+
+	/*pthread_join(hilo_comandos, NULL);
+	//pthread_join(hilo_kernel, NULL);
+	pthread_join(hilo_cpu, NULL);*/
 
 	liberarMemoriaPrincipal();
 
