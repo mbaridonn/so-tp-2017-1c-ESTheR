@@ -15,6 +15,10 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
+enum accionesMemoria {
+	asignarPaginas, finalizarProceso
+};
+
 enum confirmacion {
 	noHayPaginas, hayPaginas
 };

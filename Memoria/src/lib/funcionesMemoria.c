@@ -10,6 +10,10 @@ int cantFrames = 0;
 
 char* memoriaPrincipal;
 
+enum accionesMemoria {
+	asignarPaginas, finalizarProceso
+};
+
 enum confirmacion {
 	noHayPaginas, hayPaginas
 };
@@ -395,10 +399,30 @@ void kernel_mem_asignarPaginas(int *cliente) {
 	asignarPaginasAProceso(process_id, cant_pags);
 }
 
+int accionPedidaPorKernel() {
+	int accionPedida;
+	if (recv((*clienteKernel), &accionPedida, sizeof(int), 0) == -1) {
+		printf("Error recibiendo la accion pedida\n");
+		exit(-1);
+	}
+	return accionPedida;
+}
 
 void atenderKernel() {
-	recibirArchivoDe(clienteKernel);
-	kernel_mem_asignarPaginas(clienteKernel);
+	while (1) {
+		int accionPedida = accionPedidaPorKernel();
+		enviarSenialAKernel(clienteKernel);
+		switch (accionPedida) {
+		case asignarPaginas:
+			recibirArchivoDe(clienteKernel);
+			kernel_mem_asignarPaginas(clienteKernel);
+			break;
+		case finalizarProceso:
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void atenderCPU() {

@@ -101,22 +101,32 @@ u_int32_t confirmacionMemoria() {
 	return confirmacion;
 }
 
-void finalizarProceso(int process_id){
+void finalizarUnProceso(int process_id) {
 	int aux = process_id;
 	if (send(servMemoria, &aux, sizeof(int), 0) == -1) {
-			printf("Error enviando el process_id\n");
-			exit(-1);
+		printf("Error enviando el process_id\n");
+		exit(-1);
 	} //TODAVIA NO LO PROBAMOS, ES MAS, MEMORIA NO RECIBE EL ERROR TODAVIA JEJE.
-	list_remove(listaPCBs_NEW,process_id);
+	list_remove(listaPCBs_NEW, process_id);
 
 }
 
-void tomarAccionSegunConfirmacion(u_int32_t confirmacion,int process_id){
-	if(confirmacion == noHayPaginas){
-		finalizarProceso(process_id);
-	}else{
+void tomarAccionSegunConfirmacion(u_int32_t confirmacion, int process_id) {
+	if (confirmacion == noHayPaginas) {
+		finalizarUnProceso(process_id);
+	} else {
 		printf("Hay paginas suficientes!\n");
 	}
+}
+
+void avisarAccionAMemoria(int accion) {
+	int aux = accion;
+	if (send(servMemoria, &aux, sizeof(int), 0) == -1) {
+		printf("Error enviando la accion.\n");
+		exit(-1);
+	}
+	esperarSenialDeMemoria();
+
 }
 
 void proced_script(int *unCliente, int *unaCPU) {
@@ -136,12 +146,13 @@ void proced_script(int *unCliente, int *unaCPU) {
 
 	//Debería enviarse un enum que le indique que va a recibir
 
+	avisarAccionAMemoria(asignarPaginas);
 	enviarArchivoAMemoria(bufferArchivo, fsize);
 	u_int32_t cant_pags = (divisionRoundUp(fsize, tamanioPagMemoria))
 			+ config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
 	u_int32_t confirmacion = confirmacionMemoria();
-	tomarAccionSegunConfirmacion(confirmacion,pcb->id_proceso);
+	tomarAccionSegunConfirmacion(confirmacion, pcb->id_proceso);
 
 	//PARA CPU
 
