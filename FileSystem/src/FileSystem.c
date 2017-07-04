@@ -174,7 +174,7 @@ void inicializarBitmap(){
 	close(fd);
 }
 
-int tamanioArchivo(char* path){ // Está bien? O lo tendría que obtener de la metadata del archivo???
+int tamanioArchivo(char* path){ // Está bien? O lo tendría que obtener de la metadata del archivo??? NECESARIO??
 	FILE * archivo = fopen(path, "r");
 	if (!archivo){
 		return -1;
@@ -273,8 +273,7 @@ char* obtenerDatos(char* pathRelativo, int offset, int size){
 	int cantBloques;
 	if(tamArchivo==0) cantBloques=1;
 	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
-	char **bloquesArchivo = malloc(sizeof(char)*10*cantBloques);//Supongo que un bloque no puede tener más de 10 dígitos
-	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
 
 	int bloqueInicial = offset / configFS->tamBloque;
 	int offsetEnBloque = offset % configFS->tamBloque;
@@ -299,6 +298,7 @@ char* obtenerDatos(char* pathRelativo, int offset, int size){
 	FILE * bloque = fopen(pathBloque, "r");
 	char *bytesLeidos = reservarMemoria(size);
 	fread(bytesLeidos,size-sizeRestante,sizeof(char),bloque);//En caso de que haya que leer más de otra pág
+	bytesLeidos[size-sizeRestante] = '\0';
 	fclose(bloque);
 
 	if (sizeRestante) { //Hay que leer el resto de otro bloque
@@ -308,6 +308,7 @@ char* obtenerDatos(char* pathRelativo, int offset, int size){
 		int j = 0;
 		while (i < size) {
 			bytesLeidos[i] = bytesRestantesLeidos[j];
+			bytesLeidos[i+1] = '\0';
 			i++;
 			j++;
 		}
@@ -378,13 +379,13 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 	if(tamArchivo==0) cantBloques=1;
 	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
 
-	//Asigno bloques extra (de ser necesario) SÓLO HAY QUE HACERLO EN EL PRIMER CASO
+	//Asigno bloques extra (de ser necesario)
 	int cantBloquesNecesaria = divisionRoundUp((offset + size),configFS->tamBloque);
 	if (cantBloquesNecesaria>cantBloques){
 		agregarBloques(archivo,cantBloquesNecesaria-cantBloques);
 		//Si agregarBloques me manda un error, lo tendría que tratar (por ahora hay un exit)
 		config_destroy(archivo);
-		archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios??
+		archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios
 	}
 
 	//Actualizo tamaño del archivo
@@ -393,7 +394,7 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 	config_set_value(archivo,"TAMANIO",tamArchivoFinal);
 	config_save(archivo);
 	config_destroy(archivo);
-	archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios??
+	archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios
 
 	int bloqueInicial = offset / configFS->tamBloque;
 	int offsetEnBloque = offset % configFS->tamBloque;
@@ -433,14 +434,13 @@ int main(void) {
 	crearBloques();
 	inicializarBitmap();
 
-	//Prueba
-	crearArchivo("Pepo.bin");
+	//Prueba (DESPUÉS BORRAR)
+	/*crearArchivo("Pepo.bin");
 	char* bufferPrueba = string_repeat('a', 500);
 	guardarDatos("Pepo.bin",0,500,bufferPrueba);
-	char* datosLeidos = obtenerDatos("Pepo.bin",300,10);
-	printf("%s",datosLeidos);//ROMPE!!!
-	/*crearArchivo("Lolo/Pepin.bin");
-	borrarArchivo("Pepo.bin");*/
+	char* datosLeidos = obtenerDatos("Pepo.bin",62,10);
+	printf("%s",datosLeidos);*/
+	crearArchivo("Lolo/Pepin.bin");
 
 	int cliente;
 	char* buffer = malloc(LONGMAX);
