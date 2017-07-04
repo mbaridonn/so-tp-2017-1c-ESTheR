@@ -209,14 +209,14 @@ void crearArchivo(char* pathRelativo){
 	strcat(path,pathRelativo);
 	FILE * archivo = fopen(path, "w");
 	if (!archivo){ //Si los directorios todavía no están creados, hay que hacerlo
-		crearDirectorio(path);
-		FILE * archivo = fopen(path, "w");//PARECE QUE NO FUNCIONA!!
+		crearDirectorio(path);//SÓLO FUNCIONA PARA CREAR UN SUBDIRECTORIO. SI HAY MÁS FALLA
+		archivo = fopen(path, "w");
 		if (!archivo){
 			printf("Error al crear archivo despúes de crear el directorio\n");
 			exit (-1);
 		}
 	}
-	fclose(archivo);//ROMPE CUANDO EL DIRECTORIO NO ESTÁ CREADO!!
+	fclose(archivo);
 	//Crear File Metadata
 	t_config *fileMetadata = config_create(path);
 	char keyTamanio[8] = "TAMANIO";
@@ -439,8 +439,10 @@ int main(void) {
 	char* bufferPrueba = string_repeat('a', 500);
 	guardarDatos("Pepo.bin",0,500,bufferPrueba);
 	char* datosLeidos = obtenerDatos("Pepo.bin",62,10);
-	printf("%s",datosLeidos);*/
+	printf("%s",datosLeidos);
 	crearArchivo("Lolo/Pepin.bin");
+	crearArchivo("Lalo/Lele/Las.bin"); NO FUNCIONA. SÓLO SE PUEDE CREAR UN SUBDIRECTORIO
+	*/
 
 	int cliente;
 	char* buffer = malloc(LONGMAX);
