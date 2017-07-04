@@ -1,7 +1,7 @@
 #ifndef LIB_FUNCIONESMEMORIA_H_
 #define LIB_FUNCIONESMEMORIA_H_
 
-void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int valorEntradasCache, int valorCacheXProceso);
+void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames, int valorEntradasCache, int valorCacheXProceso, int* ptrRetardoMemoria);
 void liberarMemoriaPrincipal();
 void atenderComandos();
 void atenderKernel();

@@ -95,7 +95,7 @@ int main(void) {
 	pthread_t hilo_comandos, hilo_kernel, hilo_cpu;
 
 	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames,
-			config->entradasCache, config->cacheXProceso);
+			config->entradasCache, config->cacheXProceso, &(config->retardoMemoria));
 
 	printf("Creado hilo para comandos\n");
 

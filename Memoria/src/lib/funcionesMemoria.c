@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <commons/collections/list.h>
 #include "funcionesMemoria.h"
 
 int tamFrame = 0;
 int cantFrames = 0;
+int *retardoMemoria = NULL;
 
 char* memoriaPrincipal;
 
@@ -128,9 +130,10 @@ void inicializarCache() {
 }
 
 void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames,
-		int valorEntradasCache, int valorCacheXProceso) {
+		int valorEntradasCache, int valorCacheXProceso, int *ptrRetardoMemoria) {
 	tamFrame = valorTamFrame;
 	cantFrames = valorCantFrames;
+	retardoMemoria=ptrRetardoMemoria;//Apunta a la posición de retardoMemoria en Memoria.c
 	int memoriaTotal = tamFrame * cantFrames;
 	printf("Memoria Total: %i \n", memoriaTotal);
 	memoriaPrincipal = reservarMemoria(memoriaTotal);
@@ -251,7 +254,7 @@ void dumpProcesosActivos() {
 void atenderComandos() {
 	char* lineaIngresada;
 	char* subcomando;
-	int retardoMemoria = 0;
+	int nuevoRetardoMemoria = 0;
 	lineaIngresada = reservarMemoria(100);
 	subcomando = reservarMemoria(100);
 	printf("Comandos: r(etardo), d(ump), (f)lush, (s)ize\n");
@@ -266,9 +269,9 @@ void atenderComandos() {
 			fgets(subcomando, 100, stdin);
 			subcomando = strtok(subcomando, "\n");
 			if (isInt(subcomando)) {
-				retardoMemoria = atoi(subcomando);
-				//modificarRetardoMemoria(retardoMemoria);               //CÓMO MODIFICO EL VALOR, SI NO ESTÁ EN ESTE .C??
-				printf("Retardo Memoria seteado en %d", retardoMemoria);
+				nuevoRetardoMemoria = atoi(subcomando);
+				*retardoMemoria=nuevoRetardoMemoria;
+				printf("Retardo Memoria seteado en %d", *retardoMemoria);
 			} else {
 				printf("El retardo tiene que ser un número entero positivo\n");
 			}
@@ -605,7 +608,7 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	//En cualquier caso actualizo la caché, ya sea para agregar la entrada(si no está), o para actualizar el último acceso
 	ingresarEntradaEnCache(PID, nroPag);
 	if (estaEnCache != 1) {	//Es la única operación que puede tener retardo o no, por eso lo incluyo acá
-		//sleep(retardoMemoria);            NO TENGO EL RETARDO EN ESTE .C!!
+		sleep(*retardoMemoria);
 	}
 	int posByteComienzoPag;
 	int tamanioRestante = 0;
@@ -613,8 +616,7 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	if (offset + tamanio > tamFrame) {
 		proxPag = proximaPagina(PID, nroPag);
 		if (proxPag == -1) {
-			printf(
-					"Se está intentando leer más allá del límite de memoria asignada\n");
+			printf("Se está intentando leer más allá del límite de memoria asignada\n");
 			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 		}
 		tamanioRestante = tamanio - (tamFrame - offset);//Si hay otra pág, me guardo el tamaño restante
@@ -651,13 +653,11 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 	if (offset + tamanio > tamFrame) {
 		int proxPag = proximaPagina(PID, nroPag);
 		if (proxPag == -1) {
-			printf(
-					"Se está intentando escribir más allá del límite de la página\n");
+			printf("Se está intentando escribir más allá del límite de la página\n");
 			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA ESCRITURA
 		}
 		int tamanioRestante = tamanio - (tamFrame - offset);
-		escribirPagina(PID, proxPag, 0, tamanioRestante,
-				&buffer[tamanio - tamanioRestante]);
+		escribirPagina(PID, proxPag, 0, tamanioRestante, &buffer[tamanio - tamanioRestante]);
 		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
 		//Si escribirPagina me manda un error, lo tendría que tratar (por ahora hay un exit)
 	}

@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <commons/config.h>
+#include <commons/string.h>
 #include <commons/txt.h>
 #include <commons/bitarray.h>
 #include "libreriaSockets.h"
@@ -327,14 +328,8 @@ int cantidadDeBloquesLibres(){
 	return cantBloquesLibres;
 }
 
-char *unificarString(char** bloquesArchivo){
-	char* stringUnificado;
-	//Aplanar string            DEJÉ ACÁ!!!
-	return stringUnificado;
-}
-
 void agregarBloques(t_config *archivo,int cantBloquesAAgregar){
-	if (cantBloquesAAgregar<cantidadDeBloquesLibres()){
+	if (cantBloquesAAgregar>cantidadDeBloquesLibres()){
 		printf("No hay suficientes bloques para asignar al archivo\n");
 		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE
 	}
@@ -342,20 +337,32 @@ void agregarBloques(t_config *archivo,int cantBloquesAAgregar){
 	int cantBloques;
 	if(tamArchivo==0) cantBloques=1;
 	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
-	char **bloquesArchivo = malloc(sizeof(char)*10*(cantBloques+cantBloquesAAgregar));//Supongo que un bloque no puede tener más de 10 dígitos
-	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	//Aplano string
+	int i;
+	char *strBloquesArchivoPlano = string_new();
+	string_append(&strBloquesArchivoPlano, "[");
+	//Agrego elementos antiguos
+	for (i=0;i<(cantBloques);i++){
+		string_append(&strBloquesArchivoPlano, bloquesArchivo[i]);
+		string_append(&strBloquesArchivoPlano, ",");
+	}
+	//Agrego elementos nuevos
 	while(cantBloquesAAgregar!=0){
-		char primerBloqueLibre[9];
-		snprintf(primerBloqueLibre, 10, "%d.bin", primerBloqueVacio());
-		strcpy(bloquesArchivo[cantBloques],primerBloqueLibre);
-		bitarray_set_bit(bitarray,primerBloqueVacio());
+		char primerBloqueLibre[10];
+		snprintf(primerBloqueLibre, 10, "%d", primerBloqueVacio());
+		string_append(&strBloquesArchivoPlano, primerBloqueLibre);
+		string_append(&strBloquesArchivoPlano, ",");
+		bitarray_set_bit(bitarray,primerBloqueVacio());//Marco bloque como ocupado en bitarray
 		cantBloques++;
 		cantBloquesAAgregar--;
 	}
-	char *strBloquesArchivoPlano = unificarString(bloquesArchivo);
+	strBloquesArchivoPlano[strlen(strBloquesArchivoPlano)-1] = ']';
+
 	config_set_value(archivo,"BLOQUES",strBloquesArchivoPlano);
 	config_save(archivo);
 	free(strBloquesArchivoPlano);
+	free(bloquesArchivo);
 }
 
 void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
@@ -371,16 +378,22 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 	if(tamArchivo==0) cantBloques=1;
 	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
 
-	//Asigno bloques extra (de ser necesario)
+	//Asigno bloques extra (de ser necesario) SÓLO HAY QUE HACERLO EN EL PRIMER CASO
 	int cantBloquesNecesaria = divisionRoundUp((offset + size),configFS->tamBloque);
 	if (cantBloquesNecesaria>cantBloques){
 		agregarBloques(archivo,cantBloquesNecesaria-cantBloques);
 		//Si agregarBloques me manda un error, lo tendría que tratar (por ahora hay un exit)
+		config_destroy(archivo);
+		archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios??
 	}
 
-	int cantBloquesFinal = max(cantBloques,cantBloquesNecesaria);
-	char **bloquesArchivo = malloc(sizeof(char)*10*cantBloquesFinal);//Supongo que un bloque no puede tener más de 10 dígitos
-	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	//Actualizo tamaño del archivo
+	char tamArchivoFinal[10];
+	snprintf(tamArchivoFinal, 10, "%d", max(tamArchivo, offset+size));
+	config_set_value(archivo,"TAMANIO",tamArchivoFinal);
+	config_save(archivo);
+	config_destroy(archivo);
+	archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios??
 
 	int bloqueInicial = offset / configFS->tamBloque;
 	int offsetEnBloque = offset % configFS->tamBloque;
@@ -391,6 +404,8 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
 	}
 
+	//Escribo el bloque
+	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");
 	char pathBloque[100];
 	strcpy(pathBloque,config->puntoMontaje);
 	char pathRelativoBloque[22] = "Bloques/";
@@ -401,12 +416,6 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 	FILE * bloque = fopen(pathBloque, "r+");
 	fwrite(buffer, sizeof(char), configFS->tamBloque-offsetEnBloque, bloque);
 	fclose(bloque);
-
-	//Actualizo tamaño del archivo
-	char tamArchivoFinal[10];
-	snprintf(buffer, 10, "%d", max(tamArchivo, offset+size));
-	config_set_value(archivo,"TAMANIO",tamArchivoFinal);
-	config_save(archivo);
 
 	config_destroy(archivo);
 	free(bloquesArchivo);
@@ -425,8 +434,12 @@ int main(void) {
 	inicializarBitmap();
 
 	//Prueba
-	/*crearArchivo("Pepo.bin");
-	crearArchivo("Lolo/Pepin.bin");
+	crearArchivo("Pepo.bin");
+	char* bufferPrueba = string_repeat('a', 500);
+	guardarDatos("Pepo.bin",0,500,bufferPrueba);
+	char* datosLeidos = obtenerDatos("Pepo.bin",300,10);
+	printf("%s",datosLeidos);//ROMPE!!!
+	/*crearArchivo("Lolo/Pepin.bin");
 	borrarArchivo("Pepo.bin");*/
 
 	int cliente;
