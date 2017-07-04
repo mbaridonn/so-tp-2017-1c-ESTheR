@@ -3,11 +3,16 @@
 #include <string.h>
 #include <ctype.h>
 #include <commons/collections/list.h>
+#include "funcionesMemoria.h"
 
 int tamFrame = 0;
 int cantFrames = 0;
 
 char* memoriaPrincipal;
+
+enum confirmacion {
+	noHayPaginas, hayPaginas
+};
 
 typedef struct {
 	int PID;
@@ -317,6 +322,17 @@ void atenderComandos() {
 	free(subcomando);
 }
 
+void atenderKernel(){
+	printf("hola\n");
+}
+
+void atenderCPU(){
+	printf("el FD del CPU es: %d\n", fdCPU);
+	//send(fdCPU);
+	//hacer un send a ese CPU con su codigo
+	//(en realidad deberia mandarle instruccion por instruccion y el cpu parsearla y ejecutar la respectiva primitiva)
+}
+
 int hash(int PID, int nroPag) {
 	//HASH INICIAL:
 	//indiceEnLaTabla = PID;
@@ -376,17 +392,22 @@ int proximoFrameLibre(int frameBase) {
 void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 	int nroPag = 0;
 	int frameAAsignar;
+	u_int32_t aux;
 	while (nroPag < pagsRequeridas) {
 		frameAAsignar = proximoFrameLibre(hash(PID,nroPag));
 		if (frameAAsignar == -1) {	//No se encontró ninguna página libre
 			printf("Sólo se pudieron asignar %d páginas al proceso %d\n", nroPag, PID);
-			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+			aux = noHayPaginas;
+			send((*clienteKernel),&aux,sizeof(u_int32_t),0);
+			return;
 		}
 		estructuraAdm[frameAAsignar].PID = PID;
 		estructuraAdm[frameAAsignar].numPag = nroPag;
 		nroPag++;
 		cantPagsPorPID[PID]++;
 	}
+	aux = hayPaginas;
+	send((*clienteKernel),&aux,sizeof(u_int32_t),0);
 	printf("Se pudieron asignar las páginas al proceso %d\n",PID);
 }
 

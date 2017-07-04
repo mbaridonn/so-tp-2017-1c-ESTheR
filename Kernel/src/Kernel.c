@@ -9,32 +9,11 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "libreriaSockets.h"
-#include "lib/list.h"
-#include "lib/pcb.h"
 #include "conexionesSelect.h"
 #include "estructurasComunes.h"
 #include "accionesDeKernel.h"
 
 #define RUTA_ARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
-
-typedef struct {
-	int PUERTO_PROG;
-	int PUERTO_CPU;
-	char IP_MEMORIA[15];
-	int PUERTO_MEMORIA;
-	char IP_FS[15];
-	int PUERTO_FS;
-	int QUANTUM;
-	int QUANTUM_SLEEP;
-	char ALGORITMO[30];
-	int GRADO_MULTIPROG;
-	char SEM_IDS[10][30]; // Debería ser una lista alfanumerica
-	int SEM_INIT[10][30]; // Lo mismo pero numerica
-	char SHARED_VARS[10][30]; // IDEM SEM_IDS
-	int STACK_SIZE;
-
-} t_configuracion;
-t_configuracion *config;
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -95,15 +74,14 @@ int main(void) {
 
 	leerArchivo();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
-	u_int32_t tamanioPagMemoria;
 	int fdCPU;
 	struct sockaddr_in direccionServidor;
 
-	t_list *listaPCBs_NEW = list_create();
-	t_list *listaPCBs_READY = list_create();
-	t_list *listaPCBs_EXEC = list_create();
-	t_list *listaPCBs_BLOCK = list_create();
-	t_list *listaPCBs_EXIT = list_create();
+	listaPCBs_NEW= list_create();
+	listaPCBs_READY= list_create();
+	listaPCBs_EXEC= list_create();
+	listaPCBs_BLOCK= list_create();
+	listaPCBs_EXIT= list_create();
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
@@ -122,6 +100,8 @@ int main(void) {
 	inicializarVec(procesos_por_socket);
 
 	esperarConexionDe(&direccionServidor);
+
+	//habilitarConsolaKernel(); DEBERIA FUNCIONAR XD
 
 	while (1) {
 		prepararSockets(client_socket);
@@ -171,7 +151,7 @@ int main(void) {
 			case consola:
 				printf("Hubo movimiento en una consola\n");
 				confirmarAtencionA(&client_socket[i]);
-				atenderAConsola(listaPCBs_NEW,&client_socket[i], &fdCPU);
+				atenderAConsola(&client_socket[i], &fdCPU);
 				break;
 			default:
 				break;
