@@ -303,7 +303,7 @@ char* obtenerDatos(char* pathRelativo, int offset, int size){
 
 	if (sizeRestante) { //Hay que leer el resto de otro bloque
 		char *bytesRestantesLeidos = obtenerDatos(pathRelativo, offset+(size-sizeRestante), sizeRestante); //Lee lo que esta en el bloque que sigue
-		//Si obtenerDatos me manda un error, lo tendría que tratar (por ahora hay un exit)
+		//SI obtenerDatos ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
 		int i = strlen(bytesLeidos);
 		int j = 0;
 		while (i < size) {
@@ -383,7 +383,7 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 	int cantBloquesNecesaria = divisionRoundUp((offset + size),configFS->tamBloque);
 	if (cantBloquesNecesaria>cantBloques){
 		agregarBloques(archivo,cantBloquesNecesaria-cantBloques);
-		//Si agregarBloques me manda un error, lo tendría que tratar (por ahora hay un exit)
+		//SI agregarBloques ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
 		config_destroy(archivo);
 		archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios
 	}
@@ -423,12 +423,12 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
 }
 
 int main(void) {
+	leerArchivo();
+
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
-	direccionServidor.sin_port = htons(8080);
-
-	leerArchivo();
+	direccionServidor.sin_port = htons(config->puerto);
 
 	leerArchivoConfiguracionFS();
 	crearBloques();
