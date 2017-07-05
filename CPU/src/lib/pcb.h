@@ -1,3 +1,5 @@
+//ESTE ESTA ACTUALIZADO
+
 int id_proceso_actual = 0;
 
 enum estadosProceso {
@@ -5,13 +7,16 @@ enum estadosProceso {
 };
 
 typedef struct {
+	//obligatorios por el enunciado
 	int id_proceso;
-	int estado_proceso;
-	//FALTA referencia a la tabla de archivos del proceso
-	int contador_paginas;
 	int program_counter;
-	//int stack_pointer; tipo int o tipo stack?
+	int contador_paginas;
+	//t_instructions *indice_codigo;
+	char *indice_etiquetas;
+	//t_stack *indice_stack;
 	int exit_code;
+	//adicionales
+	int estado_proceso;
 } t_pcb;
 
 void aumentarContadorPaginas(t_pcb *pcb) {

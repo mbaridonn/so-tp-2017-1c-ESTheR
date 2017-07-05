@@ -114,6 +114,12 @@ void iniciarPrograma(int *cliente) {
 		solicitarA(cliente,"Kernel");
 		accion = startProgram;
 		informarAccion(cliente,&accion);
+
+
+		time_t t = time(NULL);
+		struct tm *tm = localtime(&t);
+		printf("Fecha y hora de inicio de ejecucion:\n");
+		printf("%s\n",asctime(tm));
 	}
 
 	fseek(archivo, 0, SEEK_END);
