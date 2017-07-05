@@ -1,4 +1,6 @@
 //ESTE ESTA ACTUALIZADO
+#include <parser/metadata_program.h>
+#include "stack.h"
 
 int id_proceso_actual = 0;
 
@@ -11,9 +13,9 @@ typedef struct {
 	int id_proceso;
 	int program_counter;
 	int contador_paginas;
-	//t_instructions *indice_codigo;
+	t_intructions *indice_codigo;
 	char *indice_etiquetas;
-	//t_stack *indice_stack;
+	t_stack *indice_stack;
 	int exit_code;
 	//adicionales
 	int estado_proceso;
