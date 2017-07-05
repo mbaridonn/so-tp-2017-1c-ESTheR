@@ -119,7 +119,7 @@ void dumpCache() {
 	for (i = 0; i < entradasCache; i++) {
 		printf("%d | %d | %d | %d \n", i, memoriaCache[i].PID,
 				memoriaCache[i].numPag, memoriaCache[i].contenido);
-		//Debería mostrar realmente el contenido, no el frame
+		//DEBERÍA MOSTRAR REALMENTE EL CONTENIDO, NO EL NÚMERO DE FRAME
 	}
 }
 
