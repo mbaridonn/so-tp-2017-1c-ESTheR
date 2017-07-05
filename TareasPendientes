@@ -1,0 +1,64 @@
+Tareas pendientes:
+
+GENERAL
+-El puerto se debe leer desde el archivo de config (no tiene que estar hardcodeado).
+-Poder setear las IPs (por archivo de config?)
+
+CONSOLA
+-Consola debe recibir mensajes del programa e imprimirlos por pantalla (indicando a qué proceso pertenecen). También tiene que mostrar
+los resultados de la ejecución de un programa:
+	-Fecha y hora de inicio de ejecución
+	-Fecha y hora de fin de ejecución
+	-Cantidad de impresiones por pantalla
+	-Tiempo total de ejecución (diferencia entre tiempo de inicio y tiempo de fin))
+-Finalizar Programa: finaliza un Programa AnSISOP, terminando el thread correspondiente al PID que se desee finalizar. (LO HACE YA?)
+-Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola con el kernel, dando por muertos todos los 
+programas de manera abortiva. (LO HACE YA?)
+-Tenemos ya un hilo por programa? El kernel le envía el PID después de que consola le manda el código?
+
+FILE SYSTEM
+-Comunicación con Kernel.
+-En caso de que se soliciten datos o se intenten guardar datos en un archivo inexistente el File System deberá retornar un error de
+Archivo no encontrado.
+EXTRA-En caso de que se tengan que crear subdirectorios antes de crear el archivo, actualmente sólo se puede crear uno. Se deberían poder crear
+los que sean necesarios.
+
+MEMORIA
+-Ante cualquier solicitud de acceso a la memoria principal (excepto en lectura, que ya lo maneja), se deberá esperar una cantidad de
+tiempo configurable (en milisegundos), simulando el tiempo de acceso a memoria.
+-Atacar los problemas de concurrencia que surjan.
+-En caso de que un proceso solicite memoria y no se le pueda asignar por falta de espacio, se deberá informar al proceso que lo solicite
+(CPU o Kernel) de que no hay más espacio disponible. (LO HACE YA?)
+-Faltan crear logs cuando se hace un dump.
+-Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
+EXTRA- La cache debería almacenar el contenido de la página, no una referencia al frame. Dump cache debería mostrar el contenido de la
+página, no el número de frame.
+EXTRA- Revisar tamaño de la tabla CantPagsPorPID (en realidad debería ser una lista, no un array).
+
+CPU
+-Al recibir el PCB de un Programa para ejecutarlo, incrementará el valor del registro Program Counter del PCB y utilizará el índice de
+código para solicitar a la Memoria la próxima sentencia a ejecutar. Al recibirla, la parseará, ejecutará las operaciones requeridas,
+actualizará los valores del Programa en la Memoria, actualizará el Program Counter en el PCB y notificará al Kernel que concluyó
+su ejecución.
+-Mediante la señal SIGUSR1, se le podrá notificar a un CPU que deberá desconectarse una vez concluida la ejecución del Programa actual,
+dejando de dar servicio al sistema.
+-Al ejecutar la última sentencia, el CPU deberá notificar al Kernel que el proceso finalizó para que este se ocupe de solicitar la
+eliminación de las estructuras utilizadas por el sistema.
+-Existe la posibilidad que el Proceso CPU reciba un mensaje de excepción como resultado de una solicitud a la Memoria o al Kernel.
+En este caso la CPU deberá mostrar por pantalla un mensaje aclarando cuál fue el inconveniente que sucedió y como consecuencia del error
+se deberá finalizar el programa AnSISOP que se encuentre en ejecución.
+
+KERNEL
+-Al ser iniciado se tiene que conectar al proceso FileSystem (LO HACE YA?)
+-En cualquier momento, instancias de los Procesos CPU y Procesos Consola pueden ingresar o desconectarse del sistema, debiendo el Kernel
+responder de forma favorable e informar del cambio en la configuración del sistema.
+-La falta de Procesos CPU en el sistema es posible. En ese caso, los programas quedarán a la espera de una CPU para ser planificados.
+-Es posible que mediante la consola del Kernel se solicite la finalización de un programa. En ese caso, se deberán realizar las acciones
+solicitadas con el PCB correspondiente, cargando el código de error en el campo Exit Code, e informando al Proceso Consola correspondiente.
+-Agregar todos los campos faltantes al PCB.
+-Si no se pudiera obtener espacio suficiente en Memoria para algunas de las estructuras necesarias del proceso, entonces se le rechazará
+el acceso al sistema, informándose oportunamente en el Proceso Consola correspondiente el motivo por el cual no pudo aceptarse el
+programa en el sistema. (LO HACE YA?)
+-Implementar algoritmos FIFO y Round Robin. Para este último, debe ser configurable el valor del Quantum por archivo de configuración.
+-Capas Memoria y File System (HAY UN MONTÓN DE COSAS COMPRENDIDAS EN ESTE ÍTEM)
+-Consola de Kernel
