@@ -85,7 +85,7 @@ int hayProcesosReady() {
 	return !list_is_empty(listaPCBs_READY);
 }
 
-void enviar_un_PCB_a_CPU(t_pcb *pcb,int *unaCPU) {
+void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
 	//PARA CPU
 
 	//Serializo el PCB y lo envio a CPU
@@ -107,8 +107,19 @@ void enviar_un_PCB_a_CPU(t_pcb *pcb,int *unaCPU) {
 	printf("PCB enviado a CPU exitosamente\n");
 }
 
-int hay_CPUs_Conectadas(){
+int hay_CPUs_Conectadas() {
 	return !list_is_empty(listaCPUs);
+}
+
+cliente_CPU *obtenerCPUDesocupada() {
+	bool estaDesocupada(cliente_CPU *unaCPU) {
+		return unaCPU->libre == 1;
+	}
+	while(1){
+		if (list_any_satisfy(listaCPUs, (void*) estaDesocupada)){
+			return list_find(listaCPUs, (void*) estaDesocupada);
+		}
+	}
 }
 
 void asignarProcesosSegunFIFO() {
@@ -117,15 +128,12 @@ void asignarProcesosSegunFIFO() {
 	printf("************ Planificando segun FIFO *****************\n");
 	while (1) {
 		if (hayProcesosReady() && hay_CPUs_Conectadas()) {
-			bool estaDesocupada(cliente_CPU *unaCPU) {
-				return unaCPU->libre == 1;
-			}
-			cpuDesocupada = list_find(listaCPUs, (void*) estaDesocupada);
+			cpuDesocupada = obtenerCPUDesocupada();
 			cpuDesocupada->libre = 0;
-			pcb = list_get(listaPCBs_READY,0);
-			enviar_un_PCB_a_CPU(pcb,&cpuDesocupada->clie_CPU);
-			quitar_PCB_de_Lista(listaPCBs_READY,pcb);
-			list_add(listaPCBs_EXEC,pcb);
+			pcb = list_get(listaPCBs_READY, 0);
+			enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
+			quitar_PCB_de_Lista(listaPCBs_READY, pcb);
+			list_add(listaPCBs_EXEC, pcb);
 		}
 	}
 
