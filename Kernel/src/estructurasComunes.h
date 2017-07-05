@@ -8,7 +8,7 @@
 #ifndef ESTRUCTURASCOMUNES_H_
 #define ESTRUCTURASCOMUNES_H_
 #define MAX_CLIENTS 30
-#include <commons/collections/list.h>
+#include "lib/list.h"
 #include "lib/pcb.h"
 
 enum procesos {
@@ -26,6 +26,11 @@ enum confirmacion {
 enum acciones {
 	startProgram
 };
+
+typedef struct{
+	int clie_CPU;
+	int libre;
+} cliente_CPU;
 
 typedef struct {
 	int PUERTO_PROG;
@@ -52,6 +57,7 @@ t_list *listaPCBs_READY;
 t_list *listaPCBs_EXEC;
 t_list *listaPCBs_BLOCK;
 t_list *listaPCBs_EXIT;
+t_list *listaCPUs;
 
 int cliente, cliente2, servMemoria;
 u_int32_t tamanioPagMemoria;

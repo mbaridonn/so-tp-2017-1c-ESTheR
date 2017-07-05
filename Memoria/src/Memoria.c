@@ -106,10 +106,8 @@ int main(void) {
 
 
 	while (1) {
-		printf("Hola\n");
 		esperarConexion(&servidor, &direccionServidor);
 		aceptarConexion(&servidor, &cliente);
-		printf("Hola2\n");
 
 		int procesoConectado = handshake(&cliente, memoria);
 

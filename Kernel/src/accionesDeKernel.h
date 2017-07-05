@@ -101,27 +101,41 @@ u_int32_t confirmacionMemoria() {
 	return confirmacion;
 }
 
-void finalizarUnProceso(int process_id) {
-	int aux = process_id;
-	if (send(servMemoria, &aux, sizeof(int), 0) == -1) {
-		printf("Error enviando el process_id\n");
-		exit(-1);
-	} //TODAVIA NO LO PROBAMOS, ES MAS, MEMORIA NO RECIBE EL ERROR TODAVIA JEJE.
-	list_remove(listaPCBs_NEW, process_id);
-
+void pcb_destroy(t_pcb *puntero) {
+	free(puntero);
 }
 
-void tomarAccionSegunConfirmacion(u_int32_t confirmacion, int process_id) {
+void quitar_PCB_de_Lista(t_list *lista,t_pcb *pcb){
+	bool esElPCB(t_pcb *unPCB){
+			return unPCB->id_proceso == pcb->id_proceso;
+		}
+	list_remove_by_condition(lista,(void*) esElPCB);
+}
+
+void finalizarUnProceso(t_pcb *pcb) {
+	int process = pcb->id_proceso;
+	avisarAccionAMemoria(finalizarProceso);
+	if (send(servMemoria, &process, sizeof(int), 0) == -1) {
+		printf("Error enviando el process_id\n");
+		exit(-1);
+	}
+	quitar_PCB_de_Lista(listaPCBs_NEW,pcb);
+	list_add(listaPCBs_EXIT, pcb);
+} //ESTO NO ESTÁ PROBADO, PERO BUENO, HAY QUE TENER FE
+
+void tomarAccionSegunConfirmacion(u_int32_t confirmacion, t_pcb *pcb) {
 	if (confirmacion == noHayPaginas) {
-		finalizarUnProceso(process_id);
+		finalizarUnProceso(pcb);
 	} else {
 		printf("Hay paginas suficientes!\n");
+		quitar_PCB_de_Lista(listaPCBs_NEW,pcb);
+		list_add(listaPCBs_READY,pcb);
 	}
 }
 
 void avisarAccionAMemoria(int accion) {
-	int aux = accion;
-	if (send(servMemoria, &aux, sizeof(int), 0) == -1) {
+	u_int32_t aux = accion;
+	if (send(servMemoria, &aux, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando la accion.\n");
 		exit(-1);
 	}
@@ -129,7 +143,15 @@ void avisarAccionAMemoria(int accion) {
 
 }
 
-void proced_script(int *unCliente, int *unaCPU) {
+void avisarAConsolaSegunConfirmacion(int confirmacion, int *consola) {
+	u_int32_t conf = confirmacion;
+	if (send((*consola), &conf, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la confirmacion a consola.\n");
+		exit(-1);
+	}
+}
+
+void proced_script(int *unCliente) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
 	char *bufferArchivo = reservarMemoria(fsize + 1);
@@ -142,45 +164,22 @@ void proced_script(int *unCliente, int *unaCPU) {
 	list_add(listaPCBs_NEW, pcb);
 	//list_add(listaPCBs_NEW, crearPCB());
 
-	//PARA MEMORIA
-
-	//Debería enviarse un enum que le indique que va a recibir
-
 	avisarAccionAMemoria(asignarPaginas);
 	enviarArchivoAMemoria(bufferArchivo, fsize);
 	u_int32_t cant_pags = (divisionRoundUp(fsize, tamanioPagMemoria))
 			+ config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
 	u_int32_t confirmacion = confirmacionMemoria();
-	tomarAccionSegunConfirmacion(confirmacion, pcb->id_proceso);
-
-	//PARA CPU
-
-	//Serializo el PCB y lo envio a CPU
-	//abstraer la asquerosidad de abajo
-	void * serialized_pcb = NULL;
-	int serialized_buffer_index = 0;
-	serializar_pcb(pcb, &serialized_pcb, &serialized_buffer_index);
-
-	if (send((*unaCPU), &serialized_buffer_index, (size_t) sizeof(int), 0)
-			< 0) {
-		printf("Send serialized_buffer_length to CPU failed\n");
-		exit(-1);
-	}
-	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)
-			< 0) {
-		printf("Send serialized_pcb to CPU failed\n");
-		exit(-1);
-	}
-	printf("PCB enviado a CPU exitosamente\n");
+	tomarAccionSegunConfirmacion(confirmacion, pcb);
+	avisarAConsolaSegunConfirmacion(confirmacion, unCliente);
 	free(bufferArchivo);
 }
 
-void atenderAConsola(int *unaConsola, int *unaCPU) {
+void atenderAConsola(int *unaConsola) {
 	int accion = recibirAccionDe(unaConsola);
 	switch (accion) { //ACA VAN TODOS LOS CASES DE LAS DIFERENTES ACCIONES QUE PUEDE SOLICITAR CONSOLA A KERNEL
 	case startProgram:
-		proced_script(unaConsola, unaCPU);
+		proced_script(unaConsola);
 		break;
 	}
 }

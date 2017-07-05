@@ -411,6 +411,12 @@ int accionPedidaPorKernel() {
 	return accionPedida;
 }
 
+void kernel_mem_finalizarProceso(){
+	u_int32_t process_id;
+	process_id = recibir_process_id(clienteKernel);
+	finalizarPrograma(process_id);
+}
+
 void atenderKernel() {
 	while (1) {
 		int accionPedida = accionPedidaPorKernel();
@@ -421,6 +427,7 @@ void atenderKernel() {
 			kernel_mem_asignarPaginas(clienteKernel);
 			break;
 		case finalizarProceso:
+			kernel_mem_finalizarProceso();
 			break;
 		default:
 			break;
