@@ -8,7 +8,7 @@
 #ifndef ESTRUCTURASCOMUNES_H_
 #define ESTRUCTURASCOMUNES_H_
 #define MAX_CLIENTS 30
-#include "lib/list.h"
+#include <commons/collections/list.h>
 #include "lib/pcb.h"
 
 enum procesos {

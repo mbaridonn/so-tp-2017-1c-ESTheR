@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
@@ -85,12 +86,13 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
-void mostrarConfirmacion(int confirmacion){
+void mostrarConfirmacion(int confirmacion) {
 	u_int32_t conf = confirmacion;
-	if(conf == hayPaginas){
+	if (conf == hayPaginas) {
 		printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
-	}else{
-		printf("Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
+	} else {
+		printf(
+				"Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
 	}
 }
 
@@ -102,6 +104,26 @@ void esperarConfirmacionDeKernel(int *kernel) {
 		exit(-1);
 	}
 	mostrarConfirmacion(confirmacion);
+}
+
+void mostrarFechaHoraEjecucion() {
+	time_t t = time(NULL);
+	struct tm *tm = localtime(&t);
+	printf("%s\n", asctime(tm));
+}
+
+void esperarMensajesDeKernel(){
+	//printf("Esperando mensajes de Kernel...\n");
+}
+
+void crearHiloDelPrograma() {
+	pthread_t hilo_programa;
+	printf("Creado hilo para este programa.\n");
+	printf("Se mostrarán por pantalla las respuestas del Kernel.\n\n");
+	if (pthread_create(&hilo_programa, NULL, esperarMensajesDeKernel, NULL)) {
+		printf("Error al crear el thread de comandos.\n");
+		exit(-1);
+	}
 }
 
 void iniciarPrograma(int *cliente) {
@@ -137,10 +159,8 @@ void iniciarPrograma(int *cliente) {
 		accion = startProgram;
 		informarAccion(cliente, &accion);
 
-		time_t t = time(NULL);
- 		struct tm *tm = localtime(&t);
- 		printf("Fecha y hora de inicio de ejecucion:\n");
- 		printf("%s\n",asctime(tm));
+		printf("Fecha y hora de inicio de ejecucion:\n");
+		mostrarFechaHoraEjecucion();
 	}
 
 	fseek(archivo, 0, SEEK_END);
@@ -166,6 +186,7 @@ void iniciarPrograma(int *cliente) {
 	free(lineaIngresada);
 	free(buffer);
 
+	crearHiloDelPrograma();
 }
 
 void finalizarPrograma() {
@@ -183,6 +204,10 @@ void desconectarConsola() {
 void limpiarMensajes() {
 	system("clear");
 	printf("Consola limpiada! \n\n");
+}
+
+void crearHiloPorPrograma(int *cliente) {
+
 }
 
 void elegirComando(int *cliente) {
