@@ -172,9 +172,7 @@ void proced_script(int *unCliente) {
 
 	t_pcb *pcb = crearPCB();
 	list_add(listaPCBs_NEW, pcb);
-	printf("PID: %d\n",pcb->id_proceso);
 	int pid = pcb->id_proceso;
-	printf("PID: %d\n",pid);
 
 	avisarAccionAMemoria(asignarPaginas);
 	enviarArchivoAMemoria(bufferArchivo, fsize);

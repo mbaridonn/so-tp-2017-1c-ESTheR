@@ -107,6 +107,22 @@ void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
 	printf("PCB enviado a CPU exitosamente\n");
 }
 
+
+void cliente_CPU_destroy(cliente_CPU *puntero){
+	free(puntero);
+}
+
+
+void liberarSiEraCPU(int proceso){
+	if(proceso==cpu){
+		bool esElClienteActual(cliente_CPU *unaCPU) {
+				return unaCPU->clie_CPU == sd;
+			}
+		list_remove_and_destroy_by_condition(listaCPUs,
+						(void*) esElClienteActual, (void*) cliente_CPU_destroy);
+	}
+}
+
 int hay_CPUs_Conectadas() {
 	return !list_is_empty(listaCPUs);
 }
@@ -127,7 +143,7 @@ void asignarProcesosSegunFIFO() {
 	t_pcb *pcb;
 	printf("************ Planificando segun FIFO *****************\n");
 	while (1) {
-		if (hayProcesosReady() && hay_CPUs_Conectadas()) {
+		if (hayProcesosReady()) {
 			cpuDesocupada = obtenerCPUDesocupada();
 			cpuDesocupada->libre = 0;
 			pcb = list_get(listaPCBs_READY, 0);
@@ -236,9 +252,10 @@ int main(void) {
 		setClienteActual(socketQueTuvoActividad(client_socket));
 		i = numeroSocketQueTuvoActividad(client_socket);
 		if (clienteActualSeDesconecto()) {
-			cerrarConexionClienteActual(&direccionServidor);
+			liberarSiEraCPU(procesos_por_socket[i]);
 			liberarPosicion(client_socket, i);
 			liberarPosicion(procesos_por_socket, i);
+			cerrarConexionClienteActual(&direccionServidor);
 		} else {
 			int proceso = procesos_por_socket[i];
 			switch (proceso) { // ACA VAN TODOS LOS CASES DE CUANDO HAY MOVIMIENTO EN UN SOCKET PORQUE SOLICITA ALGO

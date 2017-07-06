@@ -12,7 +12,7 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer);
 void asignarPaginasAProceso(int PID, int pagsRequeridas);
 void finalizarPrograma(int PID);
 
-int *clienteKernel;
+int clienteKernel;
 int fdCPU;
 char *bufferArchivo;
 

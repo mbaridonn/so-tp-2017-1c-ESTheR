@@ -367,36 +367,36 @@ void recibirArchivoDe(int *cliente) {
 	//free(bufferArchivo);
 }
 
-void enviarSenialAKernel(int *cliente) {
+void enviarSenialAKernel() {
 	char senial[2] = "a";
-	if (send((*cliente), senial, 2, 0) == -1) {
+	if (send(clienteKernel, senial, 2, 0) == -1) {
 		printf("Error al enviar la senial antes de asignar paginas\n");
 	}
 }
 
-int recibir_cant_paginas(int *cliente) {
+int recibir_cant_paginas() {
 	u_int32_t cant_pags;
-	if (recv((*cliente), &cant_pags, sizeof(u_int32_t), 0) == -1) {
+	if (recv(clienteKernel, &cant_pags, sizeof(u_int32_t), 0) == -1) {
 		printf("Error recibiendo la cantidad de paginas.\n");
 		return EXIT_FAILURE;
 	}
 	return cant_pags;
 }
 
-int recibir_process_id(int *cliente) {
+int recibir_process_id() {
 	int process_id;
-	if (recv((*cliente), &process_id, sizeof(int), 0) == -1) {
+	if (recv(clienteKernel, &process_id, sizeof(int), 0) == -1) {
 		printf("Error recibiendo el process_id\n");
 		return EXIT_FAILURE;
 	}
 	return process_id;
 }
 
-void kernel_mem_asignarPaginas(int *cliente) {
+void kernel_mem_asignarPaginas() {
 	u_int32_t process_id, cant_pags;
-	enviarSenialAKernel(cliente);
-	process_id = recibir_process_id(cliente);
-	cant_pags = recibir_cant_paginas(cliente);
+	enviarSenialAKernel();
+	process_id = recibir_process_id();
+	cant_pags = recibir_cant_paginas();
 	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
 			cant_pags);
 	asignarPaginasAProceso(process_id, cant_pags);
@@ -404,7 +404,7 @@ void kernel_mem_asignarPaginas(int *cliente) {
 
 int accionPedidaPorKernel() {
 	int accionPedida;
-	if (recv((*clienteKernel), &accionPedida, sizeof(int), 0) == -1) {
+	if (recv(clienteKernel, &accionPedida, sizeof(int), 0) == -1) {
 		printf("Error recibiendo la accion pedida\n");
 		exit(-1);
 	}
@@ -420,11 +420,11 @@ void kernel_mem_finalizarProceso(){
 void atenderKernel() {
 	while (1) {
 		int accionPedida = accionPedidaPorKernel();
-		enviarSenialAKernel(clienteKernel);
+		enviarSenialAKernel();
 		switch (accionPedida) {
 		case asignarPaginas:
-			recibirArchivoDe(clienteKernel);
-			kernel_mem_asignarPaginas(clienteKernel);
+			recibirArchivoDe(&clienteKernel);
+			kernel_mem_asignarPaginas();
 			break;
 		case finalizarProceso:
 			kernel_mem_finalizarProceso();
@@ -508,7 +508,7 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 			printf("Sólo se pudieron asignar %d páginas al proceso %d\n",
 					nroPag, PID);
 			aux = noHayPaginas;
-			send((*clienteKernel), &aux, sizeof(u_int32_t), 0);
+			send(clienteKernel, &aux, sizeof(u_int32_t), 0);
 			return;
 		}
 		estructuraAdm[frameAAsignar].PID = PID;
@@ -517,7 +517,7 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 		cantPagsPorPID[PID]++;
 	}
 	aux = hayPaginas;
-	send((*clienteKernel), &aux, sizeof(u_int32_t), 0);
+	send(clienteKernel, &aux, sizeof(u_int32_t), 0);
 	printf("Se pudieron asignar las páginas al proceso %d\n", PID);
 }
 
