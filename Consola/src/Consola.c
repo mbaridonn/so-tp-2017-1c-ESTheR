@@ -126,6 +126,15 @@ void crearHiloDelPrograma() {
 	}
 }
 
+void recibirPID(int *cliente){
+	u_int32_t pid;
+	if (recv((*cliente), &pid, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo el PID\n");
+		exit(-1);
+	}
+	printf("PID: %d asignado a ese programa\n\n",pid);
+}
+
 void iniciarPrograma(int *cliente) {
 	int accion;
 	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
@@ -182,11 +191,11 @@ void iniciarPrograma(int *cliente) {
 	printf("El archivo se envió correctamente\n\n");
 
 	esperarConfirmacionDeKernel(cliente);
+	recibirPID(cliente);
+	crearHiloDelPrograma();
 
 	free(lineaIngresada);
 	free(buffer);
-
-	crearHiloDelPrograma();
 }
 
 void finalizarPrograma() {
@@ -204,10 +213,6 @@ void desconectarConsola() {
 void limpiarMensajes() {
 	system("clear");
 	printf("Consola limpiada! \n\n");
-}
-
-void crearHiloPorPrograma(int *cliente) {
-
 }
 
 void elegirComando(int *cliente) {

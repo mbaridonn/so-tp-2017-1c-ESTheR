@@ -151,6 +151,16 @@ void avisarAConsolaSegunConfirmacion(int confirmacion, int *consola) {
 	}
 }
 
+void enviarPIDaConsola(int pid, int *consola){
+	//este int tambien es u_int_32_t?
+	u_int32_t p_id = pid;
+	if (send((*consola), &p_id, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando el pid a consola.\n");
+		exit(-1);
+	}
+	printf("PID: %d \n",p_id);
+}
+
 void proced_script(int *unCliente) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
@@ -162,7 +172,9 @@ void proced_script(int *unCliente) {
 
 	t_pcb *pcb = crearPCB();
 	list_add(listaPCBs_NEW, pcb);
-	//list_add(listaPCBs_NEW, crearPCB());
+	printf("PID: %d\n",pcb->id_proceso);
+	int pid = pcb->id_proceso;
+	printf("PID: %d\n",pid);
 
 	avisarAccionAMemoria(asignarPaginas);
 	enviarArchivoAMemoria(bufferArchivo, fsize);
@@ -172,6 +184,9 @@ void proced_script(int *unCliente) {
 	u_int32_t confirmacion = confirmacionMemoria();
 	tomarAccionSegunConfirmacion(confirmacion, pcb);
 	avisarAConsolaSegunConfirmacion(confirmacion, unCliente);
+
+	enviarPIDaConsola(pid,unCliente);
+
 	free(bufferArchivo);
 }
 
