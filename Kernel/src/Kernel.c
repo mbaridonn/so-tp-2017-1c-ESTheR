@@ -171,10 +171,125 @@ void planificar() {
 void abrirHiloPlanificador() {
 	pthread_t hilo_comandos;
 	if (pthread_create(&hilo_comandos, NULL, planificar, NULL)) {
-		printf("Error al crear el thread de comandos.\n");
+		printf("Error al crear el thread de planificación.\n");
 		exit(-1);
 	}
 }
+
+void limpiarMensajes() {
+	system("clear");
+	printf("Consola limpiada! \n\n");
+}
+
+void list_read_id(t_list *listaProcesos){
+	int i = 0;
+	t_pcb *pcb;
+	if(list_size(listaProcesos)==0){
+		printf("Actualmente no hay\n");
+	}
+	while(i < list_size(listaProcesos)){
+		pcb = list_get(listaProcesos,i);
+		printf("%d/n",pcb->id_proceso);
+		i++;
+	}
+}
+
+void habilitarConsolaKernel() {
+	char* lineaIngresada;
+	char* subcomando = reservarMemoria(100);
+	lineaIngresada = reservarMemoria(100);
+	subcomando = reservarMemoria(100);
+	int seguirAbierto = 1;
+	do {
+	printf("Comandos: (l)istado procesos, (i)nfo proceso, (t)abla global, \n "
+		             "(g)rado multiprogramación, (f)inalizar proceso, (d)etener planificación\n"
+		             "(c)lear\n");
+
+		char comando;
+		fgets(lineaIngresada, 100, stdin);
+		comando = lineaIngresada[0];
+		switch (comando) {
+		case 'l':
+			printf("Listado de procesos:\n"
+							"-System: Todos los del Sistema\n"
+							"-New: Cola de Nuevos\n"
+							"-Ready: Cola de Listos\n"
+							"-Exec: Cola de Ejecución\n"
+							"-Block: Cola de Bloqueados\n"
+							"-Exit: Cola de Terminados\n");
+			fgets(subcomando, 100, stdin);
+			subcomando = strtok(subcomando, "\n");
+			if (strcmp("System", subcomando) == 0) {
+				printf("Procesos del Sistema:\n");
+				list_read_id(listaPCBs_NEW);
+				list_read_id(listaPCBs_READY);
+				list_read_id(listaPCBs_EXEC);
+				list_read_id(listaPCBs_BLOCK);
+				list_read_id(listaPCBs_EXIT);
+
+			} else if (strcmp("New", subcomando) == 0) {
+				printf("Lista de procesos Nuevos:\n");
+				list_read_id(listaPCBs_NEW);
+
+			} else if (strcmp("Ready", subcomando) == 0) {
+				printf("Lista de procesos Listos:\n");
+				list_read_id(listaPCBs_READY);
+
+			} else if (strcmp("Exec", subcomando) == 0) {
+				printf("Lista de procesos Ejecución:\n");
+				list_read_id(listaPCBs_EXEC);
+
+			} else if (strcmp("Block", subcomando) == 0) {
+				printf("Lista de procesos Bloqueados:\n");
+				list_read_id(listaPCBs_BLOCK);
+
+			} else if (strcmp("Exit", subcomando) == 0) {
+				printf("Lista de procesos Terminados:\n");
+				list_read_id(listaPCBs_EXIT);
+
+			} else {
+				printf("Comando invalido\n");
+			}
+
+			break;
+		case 'i':
+			printf("Info");
+
+			break;
+		case 't':
+			printf("Tabla Global:");
+
+			break;
+		case 'g':
+			printf("Ingrese el nuevo grado de multiprogramación: ");
+			char *opcion = reservarMemoria(100);
+			fgets(opcion, 100, stdin);
+			config->GRADO_MULTIPROG = atoi(opcion);
+			printf("El nuevo grado de multiprogramación es: %s\n", opcion);
+			free(opcion);
+			break;
+		case 'f':
+
+			printf("Proceso Finalizado");
+
+				break;
+		case 'd':
+
+			printf("Ejecición detenida");
+
+				break;
+		case 'c':
+			limpiarMensajes();
+				break;
+		default:
+			printf("'%c' no es un comando valido\n", comando);
+			break;
+		}
+	} 	while(seguirAbierto);
+	free(lineaIngresada);
+	free(subcomando);
+}
+
 
 int main(void) {
 
@@ -208,7 +323,7 @@ int main(void) {
 
 	esperarConexionDe(&direccionServidor);
 
-	//habilitarConsolaKernel(); DEBERIA FUNCIONAR XD
+	habilitarConsolaKernel();
 	abrirHiloPlanificador();
 
 	while (1) {
