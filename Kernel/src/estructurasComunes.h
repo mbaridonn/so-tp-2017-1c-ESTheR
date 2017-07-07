@@ -19,6 +19,10 @@ enum accionesMemoria {
 	asignarPaginas, finalizarProceso
 };
 
+enum accionesCPU{
+	cpuLibre
+};
+
 enum confirmacion {
 	noHayPaginas, hayPaginas
 };
@@ -58,6 +62,8 @@ t_list *listaPCBs_EXEC;
 t_list *listaPCBs_BLOCK;
 t_list *listaPCBs_EXIT;
 t_list *listaCPUs;
+
+u_int32_t planificacionActivada = 1;
 
 int cliente, cliente2, servMemoria;
 u_int32_t tamanioPagMemoria;

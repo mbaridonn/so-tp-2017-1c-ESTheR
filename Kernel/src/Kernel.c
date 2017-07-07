@@ -132,8 +132,12 @@ cliente_CPU *obtenerCPUDesocupada() {
 		return unaCPU->libre == 1;
 	}
 	while(1){
-		if (list_any_satisfy(listaCPUs, (void*) estaDesocupada)){
-			return list_find(listaCPUs, (void*) estaDesocupada);
+		if(planificacionActivada){
+			if (list_any_satisfy(listaCPUs, (void*) estaDesocupada)){
+				return list_find(listaCPUs, (void*) estaDesocupada);
+			}
+		}else{
+			return NULL;
 		}
 	}
 }
@@ -143,8 +147,9 @@ void asignarProcesosSegunFIFO() {
 	t_pcb *pcb;
 	printf("************ Planificando segun FIFO *****************\n");
 	while (1) {
-		if (hayProcesosReady()) {
+		if (hayProcesosReady() && planificacionActivada) {
 			cpuDesocupada = obtenerCPUDesocupada();
+			if(cpuDesocupada==NULL)break;
 			cpuDesocupada->libre = 0;
 			pcb = list_get(listaPCBs_READY, 0);
 			enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
@@ -192,6 +197,13 @@ void list_read_id(t_list *listaProcesos){
 		printf("%d/n",pcb->id_proceso);
 		i++;
 	}
+}
+
+cliente_CPU *obtenerClienteCPUSegunFD(int fd){
+	bool tieneEsteFD(cliente_CPU *c){
+		 return c->clie_CPU == fd;
+	}
+	return list_find(listaCPUs, (void*) tieneEsteFD);
 }
 
 void habilitarConsolaKernel() {
@@ -270,12 +282,12 @@ void habilitarConsolaKernel() {
 			break;
 		case 'f':
 
-			printf("Proceso Finalizado");
+			printf("Proceso Finalizado\n");
 
 				break;
 		case 'd':
-
-			printf("Ejecición detenida");
+			planificacionActivada = 0;
+			printf("Planificación detenida\n");
 
 				break;
 		case 'c':
@@ -290,12 +302,19 @@ void habilitarConsolaKernel() {
 	free(subcomando);
 }
 
+void abrirHiloConsolaKernel(){
+	pthread_t hilo_consola_kernel;
+	if(pthread_create(&hilo_consola_kernel,NULL,habilitarConsolaKernel,NULL)){
+		printf("Error al crear el thread de Consola para Kernel.\n");
+		exit(-1);
+	}
+}
+
 
 int main(void) {
 
 	leerArchivo();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
-	int fdCPU;
 	struct sockaddr_in direccionServidor;
 
 	listaPCBs_NEW = list_create();
@@ -323,7 +342,7 @@ int main(void) {
 
 	esperarConexionDe(&direccionServidor);
 
-	habilitarConsolaKernel();
+	abrirHiloConsolaKernel();
 	abrirHiloPlanificador();
 
 	while (1) {
@@ -378,6 +397,12 @@ int main(void) {
 				printf("Hubo movimiento en una consola\n");
 				confirmarAtencionA(&client_socket[i]);
 				atenderAConsola(&client_socket[i]);
+				break;
+			case cpu:
+				printf("Hubo movimiento en una CPU\n");
+				cliente_CPU *cpu = obtenerClienteCPUSegunFD(client_socket[i]);
+				confirmarAtencionA(&client_socket[i]);
+				atenderACPU(cpu);
 				break;
 			default:
 				break;

@@ -112,6 +112,16 @@ void quitar_PCB_de_Lista(t_list *lista,t_pcb *pcb){
 	list_remove_by_condition(lista,(void*) esElPCB);
 }
 
+void avisarAccionAMemoria(int accion) {
+	u_int32_t aux = accion;
+	if (send(servMemoria, &aux, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la accion.\n");
+		exit(-1);
+	}
+	esperarSenialDeMemoria();
+
+}
+
 void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
 	avisarAccionAMemoria(finalizarProceso);
@@ -131,16 +141,6 @@ void tomarAccionSegunConfirmacion(u_int32_t confirmacion, t_pcb *pcb) {
 		quitar_PCB_de_Lista(listaPCBs_NEW,pcb);
 		list_add(listaPCBs_READY,pcb);
 	}
-}
-
-void avisarAccionAMemoria(int accion) {
-	u_int32_t aux = accion;
-	if (send(servMemoria, &aux, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la accion.\n");
-		exit(-1);
-	}
-	esperarSenialDeMemoria();
-
 }
 
 void avisarAConsolaSegunConfirmacion(int confirmacion, int *consola) {
@@ -193,6 +193,19 @@ void atenderAConsola(int *unaConsola) {
 	switch (accion) { //ACA VAN TODOS LOS CASES DE LAS DIFERENTES ACCIONES QUE PUEDE SOLICITAR CONSOLA A KERNEL
 	case startProgram:
 		proced_script(unaConsola);
+		break;
+	default:
+		break;
+	}
+}
+
+void atenderACPU(cliente_CPU *unaCPU){
+	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
+	switch(accion){
+	case cpuLibre:
+		unaCPU->libre = 1;
+		break;
+	default:
 		break;
 	}
 }
