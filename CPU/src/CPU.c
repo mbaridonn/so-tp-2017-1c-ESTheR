@@ -8,8 +8,14 @@
 #include "lib/primitivasAnSISOP.h"
 #include "lib/pcb.h"
 
+int serv_kernel,serv_memoria;
+
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
+};
+
+enum accionesCPU{
+	cpuLibre
 };
 
 AnSISOP_funciones functions = { .AnSISOP_definirVariable = definirVariable,
@@ -69,6 +75,21 @@ void recibirArchivoDe(int *cliente) {
 	free(bufferArchivo);
 }
 
+void solicitarA(int *cliente, char *nombreCli) {
+	char a[2] = "a";
+	send((*cliente), a, 2, 0);
+	printf("Esperando atencion de %s..\n", nombreCli);
+	recv((*cliente), a, 2, 0);
+}
+
+void cpu_kernel_aviso_desocupada(){
+	solicitarA(&serv_kernel,"Kernel");
+	u_int32_t accion = cpuLibre;
+	if(send(serv_kernel,&accion,sizeof(u_int32_t),0)==-1){
+		printf("Error enviando aviso de liberado a Kernel.\n");
+	}
+}
+
 int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
@@ -97,12 +118,13 @@ int main(void) {
 	 metadata_destruir(metadata);
 	 printf("================\n");*/
 	//FIN PRUEBA ANSISOP
-	int cliente;
-	char* buffer = malloc(LONGMAX);
 
-	conectar(&cliente, &direccionServidor);
+	char* buffer = reservarMemoria(LONGMAX);
+	free(buffer); //Encontre esto sin usar, lo dejo aca por si al final lo van a usar. Puse el free para que se acuerden de liberarlo.
 
-	int procesoConectado = handshake(&cliente, cpu);
+	conectar(&serv_kernel, &direccionServidor);
+
+	int procesoConectado = handshake(&serv_kernel, cpu);
 
 	switch (procesoConectado) {
 	case kernel:
@@ -110,10 +132,10 @@ int main(void) {
 		//RECIBO PCB Y LO DESERIALIZO
 		void* tmp_buff = calloc(1, sizeof(int));
 		int pcb_size = 0, pcb_size_index = 0;
-		recv(cliente, tmp_buff, sizeof(int), 0);
+		recv(serv_kernel, tmp_buff, sizeof(int), 0);
 		deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
 		void *pcb_serializado = calloc(1, (size_t) pcb_size);
-		recv(cliente, pcb_serializado, (size_t) pcb_size, 0);
+		recv(serv_kernel, pcb_serializado, (size_t) pcb_size, 0);
 		int pcb_serializado_index = 0;
 		t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
 		deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
@@ -122,13 +144,12 @@ int main(void) {
 
 		printf("PCB id: %d\n", incomingPCB->id_proceso);
 
-		close(cliente);
-		conectar(&cliente, &direccionServidor2);
-		int procesoConectado2 = handshake(&cliente, cpu);
+		conectar(&serv_memoria, &direccionServidor2);
+		int procesoConectado2 = handshake(&serv_memoria, cpu);
 		switch (procesoConectado2) {
 			case memoria:
 				printf("Me conecte con Memoria!\n");
-				recibirArchivoDe(&cliente);
+				recibirArchivoDe(&serv_memoria);
 				break;
 			default:
 				printf("No me puedo conectar con vos.\n");

@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
@@ -21,20 +22,24 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
-enum acciones{
+enum acciones {
 	startProgram
 };
 
-void informarAccion(int *cliente,int *accion){
+enum confirmacionMem {
+	noHayPaginas, hayPaginas
+};
+
+void informarAccion(int *cliente, int *accion) {
 	u_int32_t acc = (*accion);
-	send((*cliente),&acc,sizeof(u_int32_t),0);
+	send((*cliente), &acc, sizeof(u_int32_t), 0);
 }
 
-void solicitarA(int *cliente,char *nombreCli){
+void solicitarA(int *cliente, char *nombreCli) {
 	char a[2] = "a";
-	send((*cliente),a,2,0);
-	printf("Esperando atencion de %s..\n",nombreCli);
-	recv((*cliente),a,2,0);
+	send((*cliente), a, 2, 0);
+	printf("Esperando atencion de %s..\n", nombreCli);
+	recv((*cliente), a, 2, 0);
 }
 void msjConexionCon(char *s) {
 	printf(
@@ -81,6 +86,54 @@ void leerArchivo() {
 	printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
+void mostrarConfirmacion(int confirmacion) {
+	u_int32_t conf = confirmacion;
+	if (conf == hayPaginas) {
+		printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
+	} else {
+		printf(
+				"Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
+	}
+}
+
+void esperarConfirmacionDeKernel(int *kernel) {
+	u_int32_t confirmacion;
+	printf("Esperando la confirmacion de Kernel..\n");
+	if (recv((*kernel), &confirmacion, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo la confirmacion de parte de Kernel.\n");
+		exit(-1);
+	}
+	mostrarConfirmacion(confirmacion);
+}
+
+void mostrarFechaHoraEjecucion() {
+	time_t t = time(NULL);
+	struct tm *tm = localtime(&t);
+	printf("%s\n", asctime(tm));
+}
+
+void esperarMensajesDeKernel(){
+	//printf("Esperando mensajes de Kernel...\n");
+}
+
+void crearHiloDelPrograma() {
+	pthread_t hilo_programa;
+	printf("Creado hilo para este programa.\n");
+	printf("Se mostrarán por pantalla las respuestas del Kernel.\n\n");
+	if (pthread_create(&hilo_programa, NULL, esperarMensajesDeKernel, NULL)) {
+		printf("Error al crear el thread de comandos.\n");
+		exit(-1);
+	}
+}
+
+void recibirPID(int *cliente){
+	u_int32_t pid;
+	if (recv((*cliente), &pid, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo el PID\n");
+		exit(-1);
+	}
+	printf("PID: %d asignado a ese programa\n\n",pid);
+}
 
 void iniciarPrograma(int *cliente) {
 	int accion;
@@ -111,9 +164,12 @@ void iniciarPrograma(int *cliente) {
 			printf("No se pudo leer el archivo\n");
 			exit(-1);
 		}
-		solicitarA(cliente,"Kernel");
+		solicitarA(cliente, "Kernel");
 		accion = startProgram;
-		informarAccion(cliente,&accion);
+		informarAccion(cliente, &accion);
+
+		printf("Fecha y hora de inicio de ejecucion:\n");
+		mostrarFechaHoraEjecucion();
 	}
 
 	fseek(archivo, 0, SEEK_END);
@@ -134,9 +190,12 @@ void iniciarPrograma(int *cliente) {
 	}
 	printf("El archivo se envió correctamente\n\n");
 
+	esperarConfirmacionDeKernel(cliente);
+	recibirPID(cliente);
+	crearHiloDelPrograma();
+
 	free(lineaIngresada);
 	free(buffer);
-
 }
 
 void finalizarPrograma() {

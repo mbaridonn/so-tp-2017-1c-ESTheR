@@ -106,17 +106,15 @@ int main(void) {
 
 
 	while (1) {
-		printf("Hola\n");
 		esperarConexion(&servidor, &direccionServidor);
 		aceptarConexion(&servidor, &cliente);
-		printf("Hola2\n");
 
 		int procesoConectado = handshake(&cliente, memoria);
 
 		switch (procesoConectado) {
 		case kernel:
 			msjConexionCon("el Kernel");
-			clienteKernel = &cliente;
+			clienteKernel = cliente;
 			printf("Creado hilo para Kernel\n");
 			//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
 			//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
