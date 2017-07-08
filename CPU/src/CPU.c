@@ -3,10 +3,15 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <parser/metadata_program.h>
+#include <commons/config.h>
 #include "libreriaSockets.h"
 #include "lib/primitivasAnSISOP.h"
 #include "lib/pcb.h"
+
+#define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
 int serv_kernel,serv_memoria;
 
@@ -17,6 +22,12 @@ enum procesos {
 enum accionesCPU{
 	cpuLibre
 };
+
+typedef struct {
+	int puertoKernel;
+	int puertoMemoria;
+} t_configuracion;
+t_configuracion *config;
 
 AnSISOP_funciones functions = { .AnSISOP_definirVariable = definirVariable,
 		.AnSISOP_obtenerPosicionVariable = obtenerPosicionVariable,
@@ -41,6 +52,34 @@ static const char* PROGRAMA = //Programa de prueba para AnSISOP
 				"a = b + 12\n"
 				"end\n"
 				"\n";
+
+
+void settearVariables(t_config *archivo_Modelo) {
+	config = reservarMemoria(sizeof(t_configuracion));
+	config->puertoKernel = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
+	config->puertoMemoria = config_get_int_value(archivo_Modelo, "PUERTO_MEMORIA");
+}
+
+void mostrarArchivoConfig(){
+	 FILE *f;
+	 f=fopen(RUTAARCHIVO,"r");
+	 int c;
+	 printf("------------------------------------------\n");
+	 while ((c = fgetc (f)) != EOF) putchar(c);
+	 printf("\n");
+	 printf("------------------------------------------\n");
+}
+
+void leerArchivo() {
+	if (access(RUTAARCHIVO, F_OK) == -1) {
+		printf("No se encontró el Archivo\n");
+		exit(-1);
+	}
+	t_config *archivo_config = config_create(RUTAARCHIVO);
+	settearVariables(archivo_config);
+	config_destroy(archivo_config);
+	mostrarArchivoConfig();
+}
 
 //Función de prueba para AnSISOP
 char * const conseguirDatosDeLaMemoria(char *prgrama,
@@ -91,15 +130,17 @@ void cpu_kernel_aviso_desocupada(){
 }
 
 int main(void) {
+	leerArchivo();
+
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
-	direccionServidor.sin_port = htons(8080);
+	direccionServidor.sin_port = htons(config->puertoKernel/*8080*/);
 
 	struct sockaddr_in direccionServidor2;
 	direccionServidor2.sin_family = AF_INET;
 	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
-	direccionServidor2.sin_port = htons(8125);
+	direccionServidor2.sin_port = htons(config->puertoMemoria/*8125*/);
 
 	//INICIO PRUEBA ANSISOP
 	/*printf("Ejecutando\n");
