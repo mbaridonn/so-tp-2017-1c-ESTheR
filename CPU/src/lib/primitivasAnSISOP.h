@@ -1,5 +1,6 @@
 #ifndef CPU_SRC_LIB_PRIMITIVASANSISOP_H_
 #define CPU_SRC_LIB_PRIMITIVASANSISOP_H_
+//#define ANSISOP_VAR_SIZE 4
 
 #include <parser/metadata_program.h>
 #include <parser/parser.h>
