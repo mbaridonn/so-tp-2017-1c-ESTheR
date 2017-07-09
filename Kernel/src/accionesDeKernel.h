@@ -12,6 +12,7 @@
 #define FALSE 0
 #define TRUE 1
 
+
 int recibirAccionDe(int *cliente) {
 	u_int32_t accion;
 	recv((*cliente), &accion, sizeof(u_int32_t), 0);
@@ -169,15 +170,14 @@ void proced_script(int *unCliente) {
 	recibirArchivoDe(unCliente, bufferArchivo, fsize);
 	printf("%s\n\n", bufferArchivo);
 	escribirArchivo(bufferArchivo, fsize);
-
-	t_pcb *pcb = crearPCB();
+	u_int32_t cant_pags_script = divisionRoundUp(fsize, tamanioPagMemoria);
+	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script);
 	list_add(listaPCBs_NEW, pcb);
 	int pid = pcb->id_proceso;
 
 	avisarAccionAMemoria(asignarPaginas);
 	enviarArchivoAMemoria(bufferArchivo, fsize);
-	u_int32_t cant_pags = (divisionRoundUp(fsize, tamanioPagMemoria))
-			+ config->STACK_SIZE;
+	u_int32_t cant_pags = cant_pags_script + config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
 	u_int32_t confirmacion = confirmacionMemoria();
 	tomarAccionSegunConfirmacion(confirmacion, pcb);

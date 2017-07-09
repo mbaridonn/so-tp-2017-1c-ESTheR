@@ -12,17 +12,16 @@ typedef struct {
 	//obligatorios por el enunciado
 	int id_proceso;
 	int program_counter;
-	int contador_paginas;
+	int cant_paginas_de_codigo;
 	t_intructions *indice_codigo;
 	char *indice_etiquetas;
+	int cant_instrucciones;
 	t_stack *indice_stack;
 	int exit_code;
-	//adicionales
-	int estado_proceso;
 } t_pcb;
 
-void aumentarContadorPaginas(t_pcb *pcb) {
-	pcb->contador_paginas++;
+void aumentarProgramCounter(t_pcb *pcb) {
+	pcb->program_counter++;
 }
 
 void *reservarMemoria(int tamanioArchivo) {
@@ -34,34 +33,19 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
-t_pcb *crearPCB() {
+t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script) {
 	t_pcb *punteroPCB;
 	punteroPCB = reservarMemoria(sizeof(t_pcb));
 	punteroPCB->id_proceso = ++id_proceso_actual;
-	punteroPCB->estado_proceso = NEW;
-	//ver bien cuales de abajo se asignan en 0 al inicio o no
-	punteroPCB->contador_paginas = 0;
+	t_metadata_program *metadata = metadata_desde_literal(bufferScript);
+	punteroPCB->indice_codigo = metadata->instrucciones_serializado;
+	punteroPCB->cant_instrucciones = metadata->instrucciones_size;
+	punteroPCB->indice_etiquetas = NULL;
+	punteroPCB->indice_stack = reservarMemoria(sizeof(t_stack));
+	punteroPCB->cant_paginas_de_codigo = cant_pags_script;
 	punteroPCB->program_counter = 0;
-	//punteroPCB->stack_pointer = 0;
-	punteroPCB->exit_code = 0;
+	punteroPCB->exit_code = 0; //En realidad 0 significa que termino bien.
 	return punteroPCB;
-}
-
-void serializar_pcb(t_pcb *pcb, void **buffer, int *buffer_size) {
-	//CHEQUEAR cuales son sizeof(int) o sizeof(uint32_t)
-	serializar_data(&pcb->id_proceso, sizeof(int), buffer, buffer_size);
-	serializar_data(&pcb->program_counter, sizeof(uint32_t), buffer, buffer_size);
-	serializar_data(&pcb->contador_paginas, sizeof(int), buffer, buffer_size);
-	serializar_data(&pcb->estado_proceso, sizeof(int), buffer, buffer_size);
-	serializar_data(&pcb->exit_code, sizeof(int), buffer, buffer_size);
-}
-
-void deserializar_pcb(t_pcb **pcb, void *data_serializada, int *indice_data_serializada) {
-	deserializar_data(&(*pcb)->id_proceso, sizeof(int), data_serializada, indice_data_serializada);
-	deserializar_data(&(*pcb)->program_counter, sizeof(int), data_serializada, indice_data_serializada);
-	deserializar_data(&(*pcb)->contador_paginas, sizeof(int), data_serializada, indice_data_serializada);
-	deserializar_data(&(*pcb)->estado_proceso, sizeof(int), data_serializada, indice_data_serializada);
-	deserializar_data(&(*pcb)->exit_code, sizeof(int), data_serializada, indice_data_serializada);
 }
 
 int serializar_data(void *object, int nBytes, void **buffer, int *lastIndex) {
@@ -79,10 +63,50 @@ int serializar_data(void *object, int nBytes, void **buffer, int *lastIndex) {
 
 }
 
+void serialize_t_instructions(t_intructions *intructions, void **buffer, int *buffer_size) {
+    serializar_data(&intructions->start, sizeof(t_puntero_instruccion), buffer, buffer_size);
+    serializar_data(&intructions->offset, sizeof(int), buffer, buffer_size);
+}
+
+void serialize_instrucciones(t_intructions *instrucciones, int instrucciones_size, void **buffer, int *buffer_size) {
+    int indice = 0;
+    for(indice = 0; indice < instrucciones_size ; indice++) {
+        serialize_t_instructions(instrucciones+indice, buffer, buffer_size);
+    }
+}
+
+void serializar_pcb(t_pcb *pcb, void **buffer, int *buffer_size) { //FALTA SERIALIZAR ETIQUETAS
+	//CHEQUEAR cuales son sizeof(int) o sizeof(uint32_t)
+	serializar_data(&pcb->id_proceso, sizeof(int), buffer, buffer_size);
+	serializar_data(&pcb->program_counter, sizeof(uint32_t), buffer, buffer_size);
+	serializar_data(&pcb->cant_paginas_de_codigo, sizeof(int), buffer, buffer_size);
+	serialize_instrucciones(pcb->indice_codigo, pcb->cant_instrucciones, buffer, buffer_size);
+	serializar_data(&pcb->exit_code, sizeof(int), buffer, buffer_size);
+}
+
 int deserializar_data(void *object, int nBytes, void *serialized_data, int *lastIndex) {
     if(memcpy(object, serialized_data + *lastIndex, nBytes) == NULL) {
         return -2;
     }
     *lastIndex = *lastIndex + nBytes;
     return 0;
+}
+
+void deserialize_instrucciones(t_intructions **instrucciones, int instrucciones_size, void **serialized_data, int *serialized_data_size) {
+    *instrucciones = calloc(instrucciones_size, sizeof(t_intructions));
+    int indice = 0;
+    //instrucciones_size tiene la cantidad de instrucciones cargadas
+    for(indice = 0; indice < instrucciones_size; indice ++) {
+        deserializar_data(&(*instrucciones+indice)->start, sizeof(t_puntero_instruccion), serialized_data, serialized_data_size);
+        deserializar_data(&(*instrucciones+indice)->offset, sizeof(int), serialized_data, serialized_data_size);
+    }
+}
+
+void deserializar_pcb(t_pcb **pcb, void *data_serializada, int *indice_data_serializada) {
+	deserializar_data(&(*pcb)->id_proceso, sizeof(int), data_serializada, indice_data_serializada);
+	deserializar_data(&(*pcb)->program_counter, sizeof(int), data_serializada, indice_data_serializada);
+	deserializar_data(&(*pcb)->cant_paginas_de_codigo, sizeof(int), data_serializada, indice_data_serializada);
+	deserializar_data(&(*pcb)->cant_instrucciones, sizeof(int), data_serializada, indice_data_serializada);
+	deserialize_instrucciones(&(*pcb)->indice_codigo, (*pcb)->cant_instrucciones, data_serializada, indice_data_serializada);
+	deserializar_data(&(*pcb)->exit_code, sizeof(int), data_serializada, indice_data_serializada);
 }

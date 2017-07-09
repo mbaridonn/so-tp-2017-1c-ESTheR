@@ -143,7 +143,7 @@ int main(void) {
 	direccionServidor2.sin_port = htons(config->puertoMemoria/*8125*/);
 
 	//INICIO PRUEBA ANSISOP
-	/*printf("Ejecutando\n");
+	printf("Ejecutando\n");
 	 char *programa = strdup(PROGRAMA);
 	 t_metadata_program *metadata = metadata_desde_literal(programa);
 	 int programCounter = 0;
@@ -157,7 +157,7 @@ int main(void) {
 	 programCounter++;
 	 }
 	 metadata_destruir(metadata);
-	 printf("================\n");*/
+	 printf("================\n");
 	//FIN PRUEBA ANSISOP
 
 	char* buffer = reservarMemoria(LONGMAX);
@@ -183,7 +183,8 @@ int main(void) {
 		free(tmp_buff);
 		free(pcb_serializado);
 
-		printf("PCB id: %d\n", incomingPCB->id_proceso);
+		printf("ID: %d\nProgam_Counter: %d\nCant_Paginas_De_Codigo: %d\nExit_Code: %d\n",incomingPCB->id_proceso,incomingPCB->program_counter,incomingPCB->cant_paginas_de_codigo,incomingPCB->exit_code);
+
 
 		conectar(&serv_memoria, &direccionServidor2);
 		int procesoConectado2 = handshake(&serv_memoria, cpu);
