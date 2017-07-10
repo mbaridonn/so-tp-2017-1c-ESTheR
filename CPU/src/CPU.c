@@ -19,8 +19,12 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
-enum accionesCPU{
+enum accionesCPUKernel{
 	cpuLibre
+};
+
+enum accionesCPUMemoria{
+	cpu_mem_leer, cpu_mem_escribir
 };
 
 typedef struct {
@@ -43,16 +47,6 @@ AnSISOP_kernel kernel_functions = { .AnSISOP_wait = wait, .AnSISOP_signal =
 		.AnSISOP_abrir = abrir, .AnSISOP_borrar = borrar, .AnSISOP_cerrar =
 				cerrar, .AnSISOP_moverCursor = moverCursor, .AnSISOP_escribir =
 				escribir, .AnSISOP_leer = leer };
-
-static const char* PROGRAMA = //Programa de prueba para AnSISOP
-		"begin\n"
-				"variables a, b\n"
-				"a = 3\n"
-				"b = 5\n"
-				"a = b + 12\n"
-				"end\n"
-				"\n";
-
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
@@ -81,12 +75,37 @@ void leerArchivo() {
 	mostrarArchivoConfig();
 }
 
-//Función de prueba para AnSISOP
-char * const conseguirDatosDeLaMemoria(char *prgrama,
-		t_puntero_instruccion inicioDeLaInstruccion, t_size tamanio) {
-	char *aRetornar = calloc(1, 100);
-	memcpy(aRetornar, prgrama + inicioDeLaInstruccion, tamanio);
-	return aRetornar;
+//Funciones CPU
+
+void esperarSenialDeMemoria() {
+	char senial[2] = "a";
+	if (recv(serv_memoria, senial, 2, 0) == -1) {
+		printf("Error al recibir senial antes de enviar paginas\n");
+	}
+}
+
+void avisarAccionAMemoria(int accion) {
+	u_int32_t aux = accion;
+	if (send(serv_memoria, &aux, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la accion.\n");
+		exit(-1);
+	}
+	esperarSenialDeMemoria();
+}
+
+char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio){
+	char* instruccion = reservarMemoria(tamanio);
+	avisarAccionAMemoria(cpu_mem_leer);
+	//Uso la misma función, aunque estoy pasando parámetros
+	avisarAccionAMemoria(PID);
+	avisarAccionAMemoria(nroPag);
+	avisarAccionAMemoria(offset);
+	avisarAccionAMemoria(tamanio);
+	if (recv(serv_memoria, instruccion, tamanio, 0) == -1) {
+		printf("Error al recibir instrucción de Memoria\n");
+	}
+	printf("Instruccion recibida: %s\n", instruccion);
+	return instruccion;
 }
 
 void recibirArchivoDe(int *cliente) {
@@ -143,21 +162,21 @@ int main(void) {
 	direccionServidor2.sin_port = htons(config->puertoMemoria/*8125*/);
 
 	//INICIO PRUEBA ANSISOP
-	printf("Ejecutando\n");
+	/*printf("Ejecutando\n");
 	 char *programa = strdup(PROGRAMA);
 	 t_metadata_program *metadata = metadata_desde_literal(programa);
 	 int programCounter = 0;
 	 while(!terminoElPrograma()){
 	 char* const linea = conseguirDatosDeLaMemoria(programa,
-	 metadata->instrucciones_serializado[programCounter].start,
-	 metadata->instrucciones_serializado[programCounter].offset);
+	 	 metadata->instrucciones_serializado[programCounter].start,
+	 	 metadata->instrucciones_serializado[programCounter].offset);
 	 printf("\t Evaluando -> %s", linea);
 	 analizadorLinea(linea, &functions, &kernel_functions);
 	 free(linea);
 	 programCounter++;
 	 }
 	 metadata_destruir(metadata);
-	 printf("================\n");
+	 printf("================\n");*/
 	//FIN PRUEBA ANSISOP
 
 	char* buffer = reservarMemoria(LONGMAX);
@@ -183,15 +202,23 @@ int main(void) {
 		free(tmp_buff);
 		free(pcb_serializado);
 
-		printf("ID: %d\nProgam_Counter: %d\nCant_Paginas_De_Codigo: %d\nExit_Code: %d\n",incomingPCB->id_proceso,incomingPCB->program_counter,incomingPCB->cant_paginas_de_codigo,incomingPCB->exit_code);
-
+		printf("PCB id: %d\n", incomingPCB->id_proceso);
+		printf("PCB start instruccion %d: %d\n",incomingPCB->program_counter, incomingPCB->indice_codigo[incomingPCB->program_counter].start);
+		printf("PCB offset instruccion %d: %d\n",incomingPCB->program_counter, incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
 
 		conectar(&serv_memoria, &direccionServidor2);
 		int procesoConectado2 = handshake(&serv_memoria, cpu);
 		switch (procesoConectado2) {
 			case memoria:
 				printf("Me conecte con Memoria!\n");
-				recibirArchivoDe(&serv_memoria);
+				//Solicito siguiente instruccion
+				char* instruccion = conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0/*Las páginas de código son las primeras en memoria*/,
+						incomingPCB->indice_codigo[incomingPCB->program_counter].start,
+						incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
+				//analizadorLinea(instruccion, &functions, &kernel_functions);
+				incomingPCB->program_counter++;
+				free(instruccion);
+				//ESTOY EJECUTANDO UNA ÚNICA INSTRUCCIÓN
 				break;
 			default:
 				printf("No me puedo conectar con vos.\n");

@@ -158,9 +158,7 @@ int main(void) {
 			//Por cada conexión, la Memoria creará un hilo dedicado a atenderlo, que quedará a la espera de solicitudes de operaciones.
 			//Hay que atacar los problemas de concurrencia que surjan.
 
-			fdCPU = cliente;
-
-			if (pthread_create(&hilo_cpu, NULL, atenderCPU, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
+			if (pthread_create(&hilo_cpu, NULL, atenderCPU, cliente)) {
 				printf("Error al crear el thread de CPU.\n");
 				exit(-1);
 			}

@@ -120,7 +120,6 @@ void avisarAccionAMemoria(int accion) {
 		exit(-1);
 	}
 	esperarSenialDeMemoria();
-
 }
 
 void finalizarUnProceso(t_pcb *pcb) {
@@ -167,6 +166,7 @@ void proced_script(int *unCliente) {
 	u_int32_t fsize = recibirTamArchivo(unCliente);
 	char *bufferArchivo = reservarMemoria(fsize + 1);
 
+	//Recibe archivo de consola
 	recibirArchivoDe(unCliente, bufferArchivo, fsize);
 	printf("%s\n\n", bufferArchivo);
 	escribirArchivo(bufferArchivo, fsize);
@@ -175,11 +175,14 @@ void proced_script(int *unCliente) {
 	list_add(listaPCBs_NEW, pcb);
 	int pid = pcb->id_proceso;
 
-	avisarAccionAMemoria(asignarPaginas);
-	enviarArchivoAMemoria(bufferArchivo, fsize);
+	//Envia archivo a Memoria
+	avisarAccionAMemoria(asignarPaginas);//FALTA SLEEP
 	u_int32_t cant_pags = cant_pags_script + config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
 	u_int32_t confirmacion = confirmacionMemoria();
+	enviarArchivoAMemoria(bufferArchivo, fsize);
+	esperarSenialDeMemoria();
+
 	tomarAccionSegunConfirmacion(confirmacion, pcb);
 	avisarAConsolaSegunConfirmacion(confirmacion, unCliente);
 

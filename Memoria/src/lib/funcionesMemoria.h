@@ -13,7 +13,6 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas);
 void finalizarPrograma(int PID);
 
 int clienteKernel;
-int fdCPU;
 char *bufferArchivo;
 
 void ejecutarOperaciones();// ES DE PRUEBA. BORRAR DESPUES

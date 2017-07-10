@@ -12,8 +12,12 @@ int *retardoMemoria = NULL;
 
 char* memoriaPrincipal;
 
-enum accionesMemoria {
+enum accionesMemoriaKernel{
 	asignarPaginas, finalizarProceso
+};
+
+enum accionesCPUMemoria{
+	cpu_mem_leer, cpu_mem_escribir
 };
 
 enum confirmacion {
@@ -342,7 +346,7 @@ void atenderComandos() {
 	free(subcomando);
 }
 
-void recibirArchivoDe(int *cliente) {
+void recibirArchivoDe(int *cliente, int PID) {
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w");
 	if (archivo == NULL) {
@@ -364,7 +368,9 @@ void recibirArchivoDe(int *cliente) {
 	printf("%s\n\n", bufferArchivo);
 
 	fwrite(bufferArchivo, 1, fsize, archivo);
-	//free(bufferArchivo);
+	escribirPagina(PID,0,0,fsize,bufferArchivo);
+
+	free(bufferArchivo);
 }
 
 void enviarSenialAKernel() {
@@ -400,6 +406,9 @@ void kernel_mem_asignarPaginas() {
 	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
 			cant_pags);
 	asignarPaginasAProceso(process_id, cant_pags);
+
+	recibirArchivoDe(&clienteKernel, process_id);
+	enviarSenialAKernel();
 }
 
 int accionPedidaPorKernel() {
@@ -422,8 +431,7 @@ void atenderKernel() {
 		int accionPedida = accionPedidaPorKernel();
 		enviarSenialAKernel();
 		switch (accionPedida) {
-		case asignarPaginas:
-			recibirArchivoDe(&clienteKernel);
+		case asignarPaginas://Asigna páginas y escribe archivo en Memoria
 			kernel_mem_asignarPaginas();
 			break;
 		case finalizarProceso:
@@ -435,11 +443,66 @@ void atenderKernel() {
 	}
 }
 
-void atenderCPU() {
+void enviarSenialACPU(int fdCPU){
+	char senial[2] = "a";
+	if (send(fdCPU, senial, 2, 0) == -1) {
+		printf("Error al enviar la senial antes de asignar paginas\n");
+		exit(-1);
+	}
+}
+
+void leerYEnviarInstruccionACPU(int fdCPU){
+	int PID, nroPag, offset, tamanio;
+	if (recv(fdCPU, &PID, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el PID\n");
+		exit(-1);
+	}
+	enviarSenialACPU(fdCPU);
+	if (recv(fdCPU, &nroPag, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el nroPag\n");
+		exit(-1);
+	}
+	enviarSenialACPU(fdCPU);
+	if (recv(fdCPU, &offset, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el offset\n");
+		exit(-1);
+	}
+	enviarSenialACPU(fdCPU);
+	if (recv(fdCPU, &tamanio, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el tamanio\n");
+		exit(-1);
+	}
+	enviarSenialACPU(fdCPU);
+	char* instruccion = leerPagina(PID,nroPag,offset,tamanio);
+	instruccion[tamanio+1]='\0';//SEGFAULT
+	printf("Ejecuto comando: leerPagina(%d,%d,%d,%d)\n",PID,nroPag,offset,tamanio);
+	printf("Lei la instruccion %s\n", instruccion);
+	if (send(fdCPU, instruccion, tamanio, 0) == -1) {
+		printf("Error al enviar la senial antes de asignar paginas\n");
+		exit(-1);
+	}
+}
+
+void atenderCPU(int fdCPU) {
 	printf("el FD del CPU es: %d\n", fdCPU);
-	//send(fdCPU);
-	//hacer un send a ese CPU con su codigo
-	//(en realidad deberia mandarle instruccion por instruccion y el cpu parsearla y ejecutar la respectiva primitiva)
+	while (1) {
+		int accionPedida;
+		if (recv(fdCPU, &accionPedida, sizeof(int), 0) == -1) {
+			printf("Error recibiendo la accion pedida\n");
+			exit(-1);
+		}
+		printf("Recibi la accion %d\n",accionPedida);
+		enviarSenialACPU(fdCPU);
+		switch (accionPedida) {
+		case cpu_mem_leer:
+			leerYEnviarInstruccionACPU(fdCPU);
+			break;
+		case cpu_mem_escribir:
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 int hash(int PID, int nroPag) {
