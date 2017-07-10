@@ -1,4 +1,3 @@
-//ESTE ESTA ACTUALIZADO
 #include <parser/metadata_program.h>
 #include "stack.h"
 
@@ -9,7 +8,6 @@ enum estadosProceso {
 };
 
 typedef struct {
-	//obligatorios por el enunciado
 	int id_proceso;
 	int program_counter;
 	int cant_instrucciones;
@@ -19,10 +17,6 @@ typedef struct {
 	t_stack *indice_stack;
 	char *indice_etiquetas;
 } t_pcb;
-
-void aumentarProgramCounter(t_pcb *pcb) {
-	pcb->program_counter++;
-}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);

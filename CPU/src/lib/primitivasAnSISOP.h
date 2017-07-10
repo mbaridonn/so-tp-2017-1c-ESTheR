@@ -5,9 +5,7 @@
 #include <parser/metadata_program.h>
 #include <parser/parser.h>
 
-/** PROTOTIPO PRIMITIVAS ANSISOP **/
-/*bool esArgumento(t_nombre_variable identificador_variable);
-registroStack* reg_stack_create();
+/*registroStack* reg_stack_create();
 void restaurarContextoDeEjecucion();*/
 
 t_puntero definirVariable(t_nombre_variable identificador_variable);

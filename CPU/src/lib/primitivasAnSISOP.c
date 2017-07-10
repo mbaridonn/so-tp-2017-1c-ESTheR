@@ -1,33 +1,82 @@
+#include <ctype.h>
+#include <parser/parser.h>
+#include "pcb.h"
 #include "primitivasAnSISOP.h"
 
-//DEFINICIONES DE PRUEBA
-static const int CONTENIDO_VARIABLE = 20;
-static const int POSICION_MEMORIA = 0x10;
-bool termino = false;
+#define TAM_VARIABLE 4
 
-/*//FUNCIONES EXTRA
+//VALORES A INICIALIZAR
+t_pcb* pcbAEjecutar;
+int stackSize;
+int tamPag;
+
+//FUNCIONES EXTRA
+
+void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag){
+	pcbAEjecutar = _pcbAEjecutar;
+	stackSize = _stackSize;
+	tamPag = _tamPag;
+}
+
 bool esArgumento(t_nombre_variable identificador_variable){
-	if(isdigit(identificador_variable)){
-		return true;
-	}else{
-		return false;
-	}
-}*/
+	return isdigit(identificador_variable);
+}
 
 //PRIMITIVAS
+
 t_puntero definirVariable(t_nombre_variable var_nombre){
-	printf("definir la variable %c\n", var_nombre);
-	return POSICION_MEMORIA;
+
+	//FALTA STACK POINTER !!
+	if((pcbAEjecutar->stackPointer+4) > (stackSize * tamPag)){
+		printf("StackOverflow. Se finaliza el proceso\n");
+		//huboStackOver = true; (!!)
+		return -1;
+	}
+
+	int pagina = pcbAEjecutar->stackPointer / tamPag;
+	int offset = pcbAEjecutar->stackPointer % tamPag;
+
+	t_stack_entry* lineaStack;
+	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
+		lineaStack = stack_entry_create()/*t_stack_create()*/;
+		list_add(pcbAEjecutar->indice_stack->elements, lineaStack);
+	}else{
+		lineaStack = list_get(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
+	}
+
+	if(!esArgumento(var_nombre)){ // Es una variable
+		printf("ANSISOP_definirVariable %c", var_nombre);
+		t_var* nuevaVar = malloc(sizeof(t_var));
+		nuevaVar->var_id = var_nombre;
+		nuevaVar->page_number = pagina;
+		nuevaVar->offset = offset;
+		nuevaVar->tamanio = TAM_VARIABLE;
+		list_add(lineaStack->vars, nuevaVar);
+	}
+	else{ // Es un argumento.
+		printf("ANSISOP_definirVariable (argumento) %c", var_nombre);
+		t_arg* nuevoArg = malloc(sizeof(t_var));
+		nuevoArg->page_number = pagina;
+		nuevoArg->offset = offset;
+		nuevoArg->tamanio = TAM_VARIABLE;
+		list_add(lineaStack->args, nuevoArg);
+	}
+
+	int posAbsoluta = pcbActual->stackPointer;
+	pcbActual->stackPointer += TAM_VARIABLE;
+	printf("Posicion relativa de %c: %d %d %d", var_nombre, pagina, offset, TAM_VARIABLE);
+	printf("Posicion absoluta de %c: %i", var_nombre, posAbsoluta);
+	return posAbsoluta;
 }
 
 t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 	printf("Obtener posicion de %c\n", var_nombre);
-	return POSICION_MEMORIA;
+	return 0;
 }
 
 t_valor_variable dereferenciar(t_puntero direccion_variable){
-	printf("Dereferenciar %d y su valor es: %d\n", direccion_variable, CONTENIDO_VARIABLE);
-	return CONTENIDO_VARIABLE;
+	printf("Dereferenciar %d y su valor es: %d\n", direccion_variable, 0);
+	return 0;
 }
 /*
 t_valor_variable dereferenciar(t_puntero direccion_variable) {
@@ -101,19 +150,14 @@ void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar){
 }
 
 void finalizar(void){
-	termino = true;
-	printf("Finalizar\n");
-}
 
-bool terminoElPrograma(void){//FUNCION DE PRUEBA
-	return termino;
 }
 
 void retornar(t_valor_variable var_retorno){
 
 }
 
-
+//OPERACIONES DE KERNEL
 
 void wait(t_nombre_semaforo identificador_semaforo){
 

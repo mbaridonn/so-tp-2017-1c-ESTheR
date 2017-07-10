@@ -1,4 +1,3 @@
-//ESTE ESTA ACTUALIZADO
 #include <parser/metadata_program.h>
 #include "stack.h"
 
@@ -9,20 +8,15 @@ enum estadosProceso {
 };
 
 typedef struct {
-	//obligatorios por el enunciado
 	int id_proceso;
 	int program_counter;
+	int cant_instrucciones;
+	int exit_code;
 	int cant_paginas_de_codigo;
 	t_intructions *indice_codigo;
-	char *indice_etiquetas;
-	int cant_instrucciones;
 	t_stack *indice_stack;
-	int exit_code;
+	char *indice_etiquetas;
 } t_pcb;
-
-void aumentarProgramCounter(t_pcb *pcb) {
-	pcb->program_counter++;
-}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
@@ -65,7 +59,7 @@ int serializar_data(void *object, int nBytes, void **buffer, int *lastIndex) {
 
 void serialize_t_instructions(t_intructions *intructions, void **buffer, int *buffer_size) {
     serializar_data(&intructions->start, sizeof(t_puntero_instruccion), buffer, buffer_size);
-    serializar_data(&intructions->offset, sizeof(int), buffer, buffer_size);
+    serializar_data(&intructions->offset, sizeof(t_size), buffer, buffer_size);
 }
 
 void serialize_instrucciones(t_intructions *instrucciones, int instrucciones_size, void **buffer, int *buffer_size) {
@@ -78,8 +72,9 @@ void serialize_instrucciones(t_intructions *instrucciones, int instrucciones_siz
 void serializar_pcb(t_pcb *pcb, void **buffer, int *buffer_size) { //FALTA SERIALIZAR ETIQUETAS
 	//CHEQUEAR cuales son sizeof(int) o sizeof(uint32_t)
 	serializar_data(&pcb->id_proceso, sizeof(int), buffer, buffer_size);
-	serializar_data(&pcb->program_counter, sizeof(uint32_t), buffer, buffer_size);
+	serializar_data(&pcb->program_counter, sizeof(int/*uint32_t*/), buffer, buffer_size);
 	serializar_data(&pcb->cant_paginas_de_codigo, sizeof(int), buffer, buffer_size);
+	serializar_data(&pcb->cant_instrucciones, sizeof(int), buffer, buffer_size);
 	serialize_instrucciones(pcb->indice_codigo, pcb->cant_instrucciones, buffer, buffer_size);
 	serializar_data(&pcb->exit_code, sizeof(int), buffer, buffer_size);
 }
@@ -107,6 +102,6 @@ void deserializar_pcb(t_pcb **pcb, void *data_serializada, int *indice_data_seri
 	deserializar_data(&(*pcb)->program_counter, sizeof(int), data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->cant_paginas_de_codigo, sizeof(int), data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->cant_instrucciones, sizeof(int), data_serializada, indice_data_serializada);
-	deserialize_instrucciones(&(*pcb)->indice_codigo, (*pcb)->cant_instrucciones, data_serializada, indice_data_serializada);
+    deserialize_instrucciones(&(*pcb)->indice_codigo, (*pcb)->cant_instrucciones, data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->exit_code, sizeof(int), data_serializada, indice_data_serializada);
 }
