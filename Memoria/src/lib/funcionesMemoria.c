@@ -473,14 +473,15 @@ void leerYEnviarInstruccionACPU(int fdCPU){
 		exit(-1);
 	}
 	enviarSenialACPU(fdCPU);
-	char* instruccion = leerPagina(PID,nroPag,offset,tamanio);
-	instruccion[tamanio+1]='\0';//SEGFAULT
 	printf("Ejecuto comando: leerPagina(%d,%d,%d,%d)\n",PID,nroPag,offset,tamanio);
-	printf("Lei la instruccion %s\n", instruccion);
+	char* instruccion = leerPagina(PID,nroPag,offset,tamanio);
+	//instruccion[tamanio+1]='\0';//NO ROMPE, PERO ESTOY ACCEDIENDO A UNA POSICION NO RESERVADA
+	//printf("Lei la instruccion '%s''\n", instruccion);
 	if (send(fdCPU, instruccion, tamanio, 0) == -1) {
 		printf("Error al enviar la senial antes de asignar paginas\n");
 		exit(-1);
 	}
+	free(instruccion);
 }
 
 void atenderCPU(int fdCPU) {

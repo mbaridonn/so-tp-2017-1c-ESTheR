@@ -218,7 +218,7 @@ int main(void) {
 				//analizadorLinea(instruccion, &functions, &kernel_functions);
 				incomingPCB->program_counter++;
 				free(instruccion);
-				//ESTOY EJECUTANDO UNA ÚNICA INSTRUCCIÓN
+				//ANTES DE DESCONECTAR LA CPU, HAY QUE ENVIARLE UN MENSAJE A MEMORIA PARA QUE MATE EL HILO (Y NO ROMPA)
 				break;
 			default:
 				printf("No me puedo conectar con vos.\n");
