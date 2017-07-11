@@ -36,14 +36,12 @@ int add_ret_var(t_stack_entry ** stack_entry, t_ret_var *ret_var) {
  */
 int add_arg(t_stack_entry ** stack_entry, t_arg *arg) {
 	void * aux_buffer = NULL;
-	aux_buffer = realloc((*stack_entry)->args,
-			((*stack_entry)->cant_args + 1) * sizeof(t_arg));
+	aux_buffer = realloc((*stack_entry)->args, ((*stack_entry)->cant_args + 1) * sizeof(t_arg));
 	if (aux_buffer == NULL) {
 		return ERROR;
 	}
 	(*stack_entry)->args = aux_buffer;
-	if (memcpy(((*stack_entry)->args + (*stack_entry)->cant_args), arg,
-			sizeof(t_arg)) == NULL) {
+	if (memcpy(((*stack_entry)->args + (*stack_entry)->cant_args), arg, sizeof(t_arg)) == NULL) {
 		return ERROR;
 	}
 	(*stack_entry)->cant_args++;
@@ -63,8 +61,7 @@ int add_var(t_stack_entry ** stack_entry, t_var *var) {
 		return ERROR;
 	}
 	(*stack_entry)->vars = aux_buffer;
-	if (memcpy(((*stack_entry)->vars + (*stack_entry)->cant_vars), var,
-			sizeof(t_var)) == NULL) {
+	if (memcpy(((*stack_entry)->vars + (*stack_entry)->cant_vars), var, sizeof(t_var)) == NULL) {
 		return ERROR;
 	}
 	(*stack_entry)->cant_vars++;

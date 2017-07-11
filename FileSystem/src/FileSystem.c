@@ -19,7 +19,7 @@
 int clienteKernel;
 
 enum accionesFS{
-	k_fs_validar_archivo
+	k_fs_validar_archivo, k_fs_crear_archivo, k_fs_borrar_archivo, k_fs_leer_archivo, k_fs_escribir_archivo
 };
 
 typedef struct {
@@ -117,7 +117,7 @@ int max(int a, int b) {
 bool validarArchivo(char* path) {
 	FILE * archivo = fopen(path, "r");
 	if (!archivo) {
-		return false; //ERROR DE ARCHIVO NO ENCONTRADO (LO TIENE QUE DEVOLVER AL KERNEL)
+		return false;
 	}
 	fclose(archivo);
 	return true;
@@ -477,24 +477,75 @@ char *recibirPath(){
 		printf("Error recibiendo el tamanio del Path\n");
 		exit(-1);
 	}
-	path = reservarMemoria(tamPath);
+	path = reservarMemoria(tamPath*sizeof(char));
 	enviarSenialAKernel();
 	if (recv(clienteKernel, &tamPath, sizeof(int), 0) == -1) {
 			printf("Error recibiendo el tamanio del Path\n");
 			exit(-1);
 	}
-
+	return path;
 }
 
 
 void atenderKernel() {
 	while (1) {
+		char* path;
 		int accionPedida = accionPedidaPorKernel();
 		enviarSenialAKernel();
 		switch (accionPedida) {
 		case k_fs_validar_archivo:
-			recibirPath();
+		{
+			path = recibirPath();
+			bool existe = validarArchivo(path);//POR QUÉ NO PUEDO DECLARAR EL CHAR* EN EL CASE PERO EL BOOL SI??
+			if (send(clienteKernel, &existe, sizeof(bool), 0) == -1) {
+				printf("Error enviando si el archivo existe\n");
+				exit(-1);
+			}
+			free(path);
 			break;
+		}
+		case k_fs_crear_archivo:
+			path = recibirPath();
+			crearArchivo(path);
+			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+			break;
+		case k_fs_borrar_archivo:
+			path = recibirPath();
+			borrarArchivo(path);
+			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+			break;
+		case k_fs_leer_archivo:
+		{
+			path = recibirPath();
+			int offset, size;
+			offset = accionPedidaPorKernel();//Uso accionPedidaPorKernel para recibir parámetro
+			enviarSenialAKernel();
+			size = accionPedidaPorKernel();//Uso accionPedidaPorKernel para recibir parámetro
+			enviarSenialAKernel();
+			char* bytesLeidos = obtenerDatos(path, offset, size);
+			if (send(clienteKernel, bytesLeidos, size, 0) == -1) {//TENGO QUE ESPERAR MÁS??
+				printf("Error enviando el archivo leido\n");
+				exit(-1);
+			}
+			break;
+		}
+		case k_fs_escribir_archivo:
+		{
+			path = recibirPath();
+			int offset, size;
+			offset = accionPedidaPorKernel();//Uso accionPedidaPorKernel para recibir parámetro
+			enviarSenialAKernel();
+			size = accionPedidaPorKernel();//Uso accionPedidaPorKernel para recibir parámetro
+			enviarSenialAKernel();
+			char* buffer = reservarMemoria(size);
+			if (recv(clienteKernel, buffer, size, 0) == -1) {
+				printf("Error recibiendo los bytes a escribir\n");
+				exit(-1);
+			}
+			guardarDatos(path,offset,size,buffer);
+			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+			break;
+		}
 		default:
 			break;
 		}

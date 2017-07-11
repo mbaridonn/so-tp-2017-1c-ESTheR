@@ -1,4 +1,5 @@
 #include "CapaFS.h"
+#include "accionesDeKernel.h"
 
 entradaTablaArchivosGlobal tablaArchivosGlobal[CANT_ARCH_TABLA_ARCH];
 entradaTablaArchivosDeProceso tablasDeArchivosDeProcesos[CANT_PROC_TABLA_ARCH][CANT_ARCH_TABLA_ARCH];
@@ -37,13 +38,21 @@ void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas fl
 	if(flags.escritura) string_append(&strFlags, "w");
 
 	bool existeArchivo;
-	enviarAccionAFS(k_fs_validar_archivo);
-	enviarPathAFS(direccion);//Enviar mensaje a FS: existeArchivo = validarArchivo(char* path);
+	//Enviar mensaje a FS: existeArchivo = validarArchivo(char* path);
+	avisarAccionAFS(k_fs_validar_archivo);
+	enviarPathAFS(direccion);
+	if (recv(servFS, &existeArchivo, sizeof(bool), 0) == -1) {
+		printf("Error recibiendo si el archivo existe\n");
+		exit(-1);
+	}
 	if(!existeArchivo){
 		if(string_contains(strFlags,"c")){//El archivo fue abierto en modo creación
 			//Enviar mensaje a FS: crearArchivo(direccion);
+			avisarAccionAFS(k_fs_crear_archivo);
+			enviarPathAFS(direccion);
+			//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		} else {
-			//Enviar mensaje a CPU: El programa intentó acceder a un archivo que no existe (Exit Code -2)
+			//Enviar mensaje a CPU: El programa intentó acceder a un archivo que no existe (Exit Code -2) (PENDIENTE!!)
 			return;
 		}
 	}
@@ -94,7 +103,8 @@ void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas fl
 	tablasDeArchivosDeProcesos[PID][j].offset = 0;
 
 	u_int32_t fileDescriptor = j+3;//Las primeras 3 posiciones de la tabla de archivos del proceso están reservadas (!)
-	//Devolver FD a la CPU
+
+	//Devolver FD a la CPU   (PENDIENTE!!)
 
 	free(strFlags);
 }
@@ -154,10 +164,13 @@ void borrarArchivo(int PID, u_int32_t fileDescriptor){
 
 	if(tablaArchivosGlobal[fdGlobal].contadorAperturas==1){
 		//Enviar mensaje a FS: borrarArchivo(tablaArchivosGlobal[fdGlobal].nombreArchivo);
+		avisarAccionAFS(k_fs_borrar_archivo);
+		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
+		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		cerrarArchivo(PID,fileDescriptor);
 	} else {
 		printf("El archivo no puede ser borrado, ya que está abierto por otro proceso\n");
-		exit(-1); //SE DEBERÍA ENVIAR UN MENSAJE AL CPU
+		exit(-1); //SE DEBERÍA ENVIAR UN MENSAJE AL CPU       (PENDIENTE!!)
 	}
 }
 
@@ -180,7 +193,7 @@ void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/i
 	tablasDeArchivosDeProcesos[PID][posicionReal].offset = posicion;
 }
 
-void leerArchivo(int PID, u_int32_t fileDescriptor,/*t_puntero*/u_int32_t informacion, /*t_valor_variable*/int tamanio){
+void leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio){
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
@@ -200,13 +213,22 @@ void leerArchivo(int PID, u_int32_t fileDescriptor,/*t_puntero*/u_int32_t inform
 		int fdGlobal = tablasDeArchivosDeProcesos[PID][posicionReal].fdGlobal;
 		/*Enviar mensaje a FS: informacion(?) = obtenerDatos(tablaArchivosGlobal[fdGlobal].nombreArchivo,
 		  			tablasDeArchivosDeProcesos[PID][posicionReal].offset, tamanio);*/
-		//DÓNDE SE GUARDA LA INFORMACIÓN LEÍDA??
+		avisarAccionAFS(k_fs_leer_archivo);
+		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
+		avisarAccionAFS(tablasDeArchivosDeProcesos[PID][posicionReal].offset);//Uso avisarAccion para pasar parámetro
+		avisarAccionAFS(tamanio);//Uso avisarAccion para pasar parámetro
+		char* bytesLeidos;
+		if (recv(servFS, bytesLeidos, tamanio, 0) == -1) {
+			printf("Error recibiendo el archivo leido\n");
+			exit(-1);
+		}
+		//Enviar mensaje a CPU con los bytesLeidos, para que lo almacene en su puntero informacion (PENDIENTE!!)
 	} else {
-		//Enviar mensaje a CPU: El programa intentó leer un archivo sin permisos (Exit Code -3)
+		//Enviar mensaje a CPU: El programa intentó leer un archivo sin permisos (Exit Code -3)  (PENDIENTE!!)
 	}
 }
 
-void escribirArchivo(int PID, u_int32_t fileDescriptor, /*char*?*/void* informacion, /*t_valor_variable*/int tamanio){
+void escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio){
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
@@ -226,7 +248,17 @@ void escribirArchivo(int PID, u_int32_t fileDescriptor, /*char*?*/void* informac
 		int fdGlobal = tablasDeArchivosDeProcesos[PID][posicionReal].fdGlobal;
 		/*Enviar mensaje a FS: guardarDatos(tablaArchivosGlobal[fdGlobal].nombreArchivo,
 		  			tablasDeArchivosDeProcesos[PID][posicionReal].offset, tamanio, informacion);*/
+		avisarAccionAFS(k_fs_escribir_archivo);
+		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
+		avisarAccionAFS(tablasDeArchivosDeProcesos[PID][posicionReal].offset);//Uso avisarAccion para pasar parámetro
+		avisarAccionAFS(tamanio);//Uso avisarAccion para pasar parámetro
+		//bytesAEscribir SE TIENE QUE OBTENER EN CPU, LEYENDO DE MEMORIA "tamanio" DE BYTES DESDE "informacion" (PENDIENTE!!)
+		if (send(servFS, bytesAEscribir, tamanio, 0) == -1) {
+			printf("Error enviando los bytes a escribir.\n");
+			exit(-1);
+		}
+		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 	} else {
-		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)
+		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)   (PENDIENTE!!)
 	}
 }

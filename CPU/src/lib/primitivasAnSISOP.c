@@ -40,17 +40,6 @@ bool terminoElPrograma(void){
 	return terminoPrograma;
 }
 
-/*t_puntero_instruccion busquedaEtiqueta(t_nombre_etiqueta etiqueta){
-	for (int i = 0; i < pcbAEjecutar->etiquetas_size; ++i) {
-		if(strcmp(pcbAEjecutar->indice_etiquetas[i].name, etiqueta) == 0){
-			return pcbAEjecutar->indice_etiquetas[i].PC;
-		} else {
-			return -1;   //ESTÁ BIEN ESTO??
-		}
-	}
-	return -1;
-}*/
-
 //PRIMITIVAS
 
 t_puntero definirVariable(t_nombre_variable var_nombre){
@@ -80,7 +69,7 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 		nuevaVar->tamanio = TAM_VARIABLE;
 		add_var(&lineaStack, nuevaVar);
 	}
-	else{ // Es un argumento.
+	else{ // Es un argumento
 		printf("ANSISOP_definirVariable (argumento) %c \n", var_nombre);
 		t_arg* nuevoArg = malloc(sizeof(t_var));
 		nuevoArg->page_number = pagina;
@@ -128,7 +117,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		if((var_nombre-'0') > contexto->cant_args/*list_size(contexto->args)*/){
 			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR
 		}else{
-			t_var* argumento =  &contexto->args[var_nombre-'0'];
+			t_arg* argumento =  &contexto->args[var_nombre-'0'];
 			//EL ARGUMENTO X TIENE QUE ESTAR NECESARIAMENTE EN LA POSICIÓN X??
 			posicionAbsoluta = argumento->page_number * tamPag + argumento->offset;
 		}
@@ -168,7 +157,8 @@ void asignar(t_puntero direccion_variable, t_valor_variable valor){
 
 void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
 	printf("ANSISOP_irALabel %s\n", nombre_etiqueta);
-	t_puntero_instruccion numeroInstr; //= busquedaEtiqueta(nombre_etiqueta);//PENDIENTE
+	t_puntero_instruccion numeroInstr = metadata_buscar_etiqueta(nombre_etiqueta, pcbAEjecutar->indice_etiquetas, pcbAEjecutar->etiquetas_size);
+	//busquedaEtiqueta(nombre_etiqueta); NECESARIO??
 	printf("Numero de instruccion: %d", numeroInstr);
 	if(numeroInstr == -1){
 		printf("No se encontro la etiqueta\n");
@@ -201,19 +191,19 @@ void finalizar(void){
 	printf("ANSISOP_finalizar\n");
 	//Obtengo contexto quitado de la lista y lo limpio.
 	t_stack_entry* contexto = list_remove(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
-	int i;
+	//int i;
 	if(contexto != NULL){
 		pcbAEjecutar->stackPointer -= TAM_VARIABLE * (contexto->cant_args + contexto->cant_vars); // Disminuyo stackPointer del pcb
 		if(pcbAEjecutar->stackPointer >= 0){
-			for(i=0; i<contexto->cant_args; i++){ // Limpio lista de argumentos del contexto
+			/*for(i=0; i<contexto->cant_args; i++){ // Limpio lista de argumentos del contexto   NECESARIO??
 				free(list_remove(contexto->args,i));
 			}
 			for(i=0; i<contexto->cant_vars; i++){
 				free(list_remove(contexto->vars, i));
-			}
+			}*/
 		}
-		list_destroy(contexto->args);
-		list_destroy(contexto->vars);
+		free(contexto->args);//list_destroy(contexto->args);
+		free(contexto->vars);//list_destroy(contexto->vars);
 	}
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
 		terminoPrograma = true;

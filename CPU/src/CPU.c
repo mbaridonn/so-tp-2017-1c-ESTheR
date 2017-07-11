@@ -163,8 +163,7 @@ int main(void) {
 	direccionServidor2.sin_port = htons(config->puertoMemoria/*8125*/);
 
 	//INICIO PRUEBA ANSISOP
-	/*printf("Ejecutando\n");
-	 char *programa = strdup(PROGRAMA);
+	/*char *programa = strdup(PROGRAMA);
 	 t_metadata_program *metadata = metadata_desde_literal(programa);
 	 int programCounter = 0;
 	 while(!terminoElPrograma()){
@@ -176,12 +175,8 @@ int main(void) {
 	 free(linea);
 	 programCounter++;
 	 }
-	 metadata_destruir(metadata);
-	 printf("================\n");*/
+	 metadata_destruir(metadata);*/
 	//FIN PRUEBA ANSISOP
-
-	char* buffer = reservarMemoria(LONGMAX);
-	free(buffer); //Encontre esto sin usar, lo dejo aca por si al final lo van a usar. Puse el free para que se acuerden de liberarlo.
 
 	conectar(&serv_kernel, &direccionServidor);
 
@@ -190,7 +185,7 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		printf("Me conecte con el Kernel!\n");
-		//RECIBO PCB Y LO DESERIALIZO
+		//Recibo PCB y lo deserializo
 		void* tmp_buff = calloc(1, sizeof(int));
 		int pcb_size = 0, pcb_size_index = 0;
 		recv(serv_kernel, tmp_buff, sizeof(int), 0);
@@ -206,6 +201,8 @@ int main(void) {
 		printf("PCB id: %d\n", incomingPCB->id_proceso);
 		printf("PCB start instruccion %d: %d\n",incomingPCB->program_counter, incomingPCB->indice_codigo[incomingPCB->program_counter].start);
 		printf("PCB offset instruccion %d: %d\n",incomingPCB->program_counter, incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
+
+		//FALTA inicializarPrimitivasANSISOP(pcbAEjecutar, stackSize, tamPag);  !!!
 
 		conectar(&serv_memoria, &direccionServidor2);
 		int procesoConectado2 = handshake(&serv_memoria, cpu);
@@ -230,15 +227,10 @@ int main(void) {
 			}
 
 		break;
-	case memoria:
-		printf("Me conecte con Memoria!\n");
-		break;
 	default:
 		printf("No me puedo conectar con vos.\n");
 		break;
 	}
-
-
 
 	return 0;
 }

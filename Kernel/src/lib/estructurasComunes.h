@@ -1,22 +1,16 @@
-/*
- * estructurasComunes.h
- *
- *  Created on: 31/5/2017
- *      Author: utnso
- */
-
 #ifndef ESTRUCTURASCOMUNES_H_
 #define ESTRUCTURASCOMUNES_H_
-#define MAX_CLIENTS 30
+
+#include <sys/types.h>
 #include <commons/collections/list.h>
-#include "pcb.h"
+#define MAX_CLIENTS 30
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
 enum accionesFS{
-	k_fs_validar_archivo
+	k_fs_validar_archivo, k_fs_crear_archivo, k_fs_borrar_archivo, k_fs_leer_archivo, k_fs_escribir_archivo
 };
 
 enum accionesMemoria {
@@ -55,7 +49,6 @@ typedef struct {
 	int SEM_INIT[10][30]; // Lo mismo pero numerica
 	char SHARED_VARS[10][30]; // IDEM SEM_IDS
 	int STACK_SIZE;
-
 } t_configuracion;
 
 t_configuracion *config;
@@ -66,8 +59,6 @@ t_list *listaPCBs_EXEC;
 t_list *listaPCBs_BLOCK;
 t_list *listaPCBs_EXIT;
 t_list *listaCPUs;
-
-u_int32_t planificacionActivada = 1;
 
 int cliente, cliente2, servMemoria, servFS;
 u_int32_t tamanioPagMemoria;
