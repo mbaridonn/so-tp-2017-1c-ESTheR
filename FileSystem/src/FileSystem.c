@@ -16,6 +16,12 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem"
 
+int clienteKernel;
+
+enum accionesFS{
+	k_fs_validar_archivo
+};
+
 typedef struct {
 	int puerto;
 	char *puntoMontaje;
@@ -34,12 +40,16 @@ enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
-void msjConexionCon(char *s){
-	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+void msjConexionCon(char *s) {
+	printf(
+			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
+			s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
 int nuevohandshake(int *cliente, int proceso) {
-	char unProceso[2]; unProceso[0] = '0' + proceso; unProceso[1] = '\0';
+	char unProceso[2];
+	unProceso[0] = '0' + proceso;
+	unProceso[1] = '\0';
 	char procesoAConocer[2];
 	send((*cliente), unProceso, 2, 0);
 	recv((*cliente), procesoAConocer, 2, 0);
@@ -58,18 +68,20 @@ void *reservarMemoria(int tamanioArchivo) {
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
-	config->puntoMontaje = strdup(config_get_string_value(archivo_Modelo, "PUNTO_MONTAJE"));
+	config->puntoMontaje = strdup(
+			config_get_string_value(archivo_Modelo, "PUNTO_MONTAJE"));
 }
 
-void mostrarArchivoConfig(){
-	 FILE *f;
+void mostrarArchivoConfig() {
+	FILE *f;
 
-	 f=fopen(RUTAARCHIVO,"r");
-	 int c;
-	 printf("------------------------------------------\n");
-	 while ((c = fgetc (f)) != EOF) putchar(c);
-	 printf("\n");
-	 printf("------------------------------------------\n");
+	f = fopen(RUTAARCHIVO, "r");
+	int c;
+	printf("------------------------------------------\n");
+	while ((c = fgetc(f)) != EOF)
+		putchar(c);
+	printf("\n");
+	printf("------------------------------------------\n");
 
 }
 
@@ -93,27 +105,29 @@ int divisionRoundUp(int dividendo, int divisor) {
 	return 1 + ((dividendo - 1) / divisor);
 }
 
-int max(int a, int b){
-	if (a>b) return a;
-	else return b;
+int max(int a, int b) {
+	if (a > b)
+		return a;
+	else
+		return b;
 }
 
 //Comienzan funciones del FS
 
-bool validarArchivo(char* path){
+bool validarArchivo(char* path) {
 	FILE * archivo = fopen(path, "r");
-	if (!archivo){
-		return false;//ERROR DE ARCHIVO NO ENCONTRADO (LO TIENE QUE DEVOLVER AL KERNEL)
+	if (!archivo) {
+		return false; //ERROR DE ARCHIVO NO ENCONTRADO (LO TIENE QUE DEVOLVER AL KERNEL)
 	}
 	fclose(archivo);
 	return true;
 }
 
-void leerArchivoConfiguracionFS(){
+void leerArchivoConfiguracionFS() {
 	char path[100];
-	strcpy(path,config->puntoMontaje);
+	strcpy(path, config->puntoMontaje);
 	char pathRelativo[22] = "Metadata/Metadata.bin";
-	strcat(path,pathRelativo);
+	strcat(path, pathRelativo);
 
 	if (access(path, F_OK) == -1) {
 		printf("No se encontró el archivo de configuración del FS\n");
@@ -121,62 +135,66 @@ void leerArchivoConfiguracionFS(){
 	}
 	t_config *archivo_config_fs = config_create(path);
 	configFS = reservarMemoria(sizeof(t_configuracion_filesystem));
-	configFS->tamBloque = config_get_int_value(archivo_config_fs, "TAMANIO_BLOQUES");
-	configFS->cantBloques = config_get_int_value(archivo_config_fs, "CANTIDAD_BLOQUES");
+	configFS->tamBloque = config_get_int_value(archivo_config_fs,
+			"TAMANIO_BLOQUES");
+	configFS->cantBloques = config_get_int_value(archivo_config_fs,
+			"CANTIDAD_BLOQUES");
 	config_destroy(archivo_config_fs);
 }
 
-void crearBloques(){
+void crearBloques() {
 	char pathBloque[100], copiaPathBloque[100];
-	strcpy(pathBloque,config->puntoMontaje);
+	strcpy(pathBloque, config->puntoMontaje);
 	char pathRelativoBloque[22] = "Bloques/";
-	strcat(pathBloque,pathRelativoBloque);
+	strcat(pathBloque, pathRelativoBloque);
 	int i;
-	for (i=0;i<configFS->cantBloques;i++){
+	for (i = 0; i < configFS->cantBloques; i++) {
 		char nombreBloque[10];
 		snprintf(nombreBloque, 10, "%d.bin", i);
-		strcpy(copiaPathBloque,pathBloque);
-		strcat(copiaPathBloque,nombreBloque);
+		strcpy(copiaPathBloque, pathBloque);
+		strcat(copiaPathBloque, nombreBloque);
 		FILE * bloque = fopen(copiaPathBloque, "w");
 		fclose(bloque);
 	}
 }
 
-void inicializarBitmap(){
+void inicializarBitmap() {
 	char path[100];
-	strcpy(path,config->puntoMontaje);
+	strcpy(path, config->puntoMontaje);
 	char pathRelativo[22] = "Metadata/Bitmap.bin";
-	strcat(path,pathRelativo);
+	strcat(path, pathRelativo);
 	if (access(path, F_OK) == -1) {
 		printf("No se encontró el archivo bitmap del FS\n");
 		exit(-1);
 	}
 
 	int fd = open(path, O_RDWR);
-	ftruncate(fd, divisionRoundUp(configFS->cantBloques, 8));//Tiene que tener este tamaño en bytes (pone los bytes en 0?)
+	ftruncate(fd, divisionRoundUp(configFS->cantBloques, 8)); //Tiene que tener este tamaño en bytes (pone los bytes en 0?)
 	struct stat mystat;
 	if (fstat(fd, &mystat) < 0) {
 		printf("Error al establecer fstat\n");
 		close(fd);
 		exit(-1);
 	}
-	char *bitmap = (char *) mmap(0, mystat.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	char *bitmap = (char *) mmap(0, mystat.st_size, PROT_READ | PROT_WRITE,
+	MAP_PRIVATE, fd, 0);
 	if (bitmap == MAP_FAILED) {
 		printf("Error al mapear a memoria\n");
 		close(fd);
 		exit(-1);
 	}
-	bitarray = bitarray_create_with_mode(bitmap,divisionRoundUp(configFS->cantBloques, 8), LSB_FIRST);
+	bitarray = bitarray_create_with_mode(bitmap,
+			divisionRoundUp(configFS->cantBloques, 8), LSB_FIRST);
 	/*int i;                                NECESARIO PARA PONER TODOS LOS BITS EN 0? LO HACE YA TRUNCATE?
-	for (i = 0; i < cantBloques; i++) {
-		bitarray_clean_bit(bitarray, i);
-	}*/
+	 for (i = 0; i < cantBloques; i++) {
+	 bitarray_clean_bit(bitarray, i);
+	 }*/
 	close(fd);
 }
 
-int tamanioArchivo(char* path){ // Está bien? O lo tendría que obtener de la metadata del archivo??? NECESARIO??
+int tamanioArchivo(char* path) { // Está bien? O lo tendría que obtener de la metadata del archivo??? NECESARIO??
 	FILE * archivo = fopen(path, "r");
-	if (!archivo){
+	if (!archivo) {
 		return -1;
 	}
 	fseek(archivo, 0L, SEEK_END);
@@ -185,35 +203,37 @@ int tamanioArchivo(char* path){ // Está bien? O lo tendría que obtener de la m
 	return tamanio;
 }
 
-int primerBloqueVacio(){
-	int i, bloque=-1;
-	for (i=0; (bloque == -1) && (i < configFS->cantBloques);i++){
-		if (bitarray_test_bit(bitarray,i)==0) bloque = i;
+int primerBloqueVacio() {
+	int i, bloque = -1;
+	for (i = 0; (bloque == -1) && (i < configFS->cantBloques); i++) {
+		if (bitarray_test_bit(bitarray, i) == 0)
+			bloque = i;
 	}
 	return bloque;
 }
 
-void crearDirectorio(char* path){
-	int i = strlen(path)-1;
-	while(path[i]!='/') i--;//i termina teniendo la posición de la última barra
-	char* directorio = strndup(path,i+1);//Se copia hasta la posición de la última barra inclusive
+void crearDirectorio(char* path) {
+	int i = strlen(path) - 1;
+	while (path[i] != '/')
+		i--; //i termina teniendo la posición de la última barra
+	char* directorio = strndup(path, i + 1); //Se copia hasta la posición de la última barra inclusive
 	mkdir(directorio, 0700);
 	free(directorio);
 }
 
-void crearArchivo(char* pathRelativo){
+void crearArchivo(char* pathRelativo) {
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
-	strcpy(path,config->puntoMontaje);
+	strcpy(path, config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
-	strcat(path,pathArchivos);
-	strcat(path,pathRelativo);
+	strcat(path, pathArchivos);
+	strcat(path, pathRelativo);
 	FILE * archivo = fopen(path, "w");
-	if (!archivo){ //Si los directorios todavía no están creados, hay que hacerlo
-		crearDirectorio(path);//SÓLO FUNCIONA PARA CREAR UN SUBDIRECTORIO. SI HAY MÁS FALLA
+	if (!archivo) { //Si los directorios todavía no están creados, hay que hacerlo
+		crearDirectorio(path); //SÓLO FUNCIONA PARA CREAR UN SUBDIRECTORIO. SI HAY MÁS FALLA
 		archivo = fopen(path, "w");
-		if (!archivo){
+		if (!archivo) {
 			printf("Error al crear archivo despúes de crear el directorio\n");
-			exit (-1);
+			exit(-1);
 		}
 	}
 	fclose(archivo);
@@ -227,28 +247,30 @@ void crearArchivo(char* pathRelativo){
 	int bloqueAAsignar = primerBloqueVacio();
 	snprintf(valorBloques, 10, "[%d]", bloqueAAsignar);
 	config_set_value(fileMetadata, keyBloques, valorBloques);
-	bitarray_set_bit(bitarray,bloqueAAsignar);
+	bitarray_set_bit(bitarray, bloqueAAsignar);
 	config_save(fileMetadata);
 	config_destroy(fileMetadata);
 }
 
-void borrarArchivo(char *pathRelativo){
+void borrarArchivo(char *pathRelativo) {
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
-	strcpy(path,config->puntoMontaje);
+	strcpy(path, config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
-	strcat(path,pathArchivos);
-	strcat(path,pathRelativo);
+	strcat(path, pathArchivos);
+	strcat(path, pathRelativo);
 
 	t_config *archivo = config_create(path);
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
 	int cantBloques;
-	if(tamArchivo==0) cantBloques=1;
-	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
-	char **bloquesArchivo = malloc(sizeof(char)*10*cantBloques);//Supongo que un bloque no puede tener más de 10 dígitos
-	bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	if (tamArchivo == 0)
+		cantBloques = 1;
+	else
+		cantBloques = divisionRoundUp(tamArchivo, configFS->tamBloque);
+	char **bloquesArchivo = malloc(sizeof(char) * 10 * cantBloques); //Supongo que un bloque no puede tener más de 10 dígitos
+	bloquesArchivo = config_get_array_value(archivo, "BLOQUES"); //Devuelve una array de c-strings
 	int i;
 	//Liberar bloques en el Bitmap
-	for (i=0;i<cantBloques;i++){
+	for (i = 0; i < cantBloques; i++) {
 		bitarray_clean_bit(bitarray, atoi(bloquesArchivo[i]));
 	}
 	config_destroy(archivo);
@@ -257,58 +279,61 @@ void borrarArchivo(char *pathRelativo){
 	free(bloquesArchivo);
 }
 
-char* obtenerDatos(char* pathRelativo, int offset, int size){
+char* obtenerDatos(char* pathRelativo, int offset, int size) {
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
-	strcpy(path,config->puntoMontaje);
+	strcpy(path, config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
-	strcat(path,pathArchivos);
-	strcat(path,pathRelativo);
+	strcat(path, pathArchivos);
+	strcat(path, pathRelativo);
 
 	t_config *archivo = config_create(path);
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
-	if (offset >= tamArchivo){
+	if (offset >= tamArchivo) {
 		printf("Se está intentando leer más allá del fin del archivo\n");
-		exit(-1);//SE DEBERIÁ DEVOLVER UN MENSAJE AL KERNEL
+		exit(-1); //SE DEBERIÁ DEVOLVER UN MENSAJE AL KERNEL
 	}
 	int cantBloques;
-	if(tamArchivo==0) cantBloques=1;
-	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
-	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	if (tamArchivo == 0)
+		cantBloques = 1;
+	else
+		cantBloques = divisionRoundUp(tamArchivo, configFS->tamBloque);
+	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES"); //Devuelve una array de c-strings
 
 	int bloqueInicial = offset / configFS->tamBloque;
 	int offsetEnBloque = offset % configFS->tamBloque;
 	int sizeRestante = 0;
 
-	if (offsetEnBloque + size > configFS->tamBloque) {//Si se pasa del bloque
+	if (offsetEnBloque + size > configFS->tamBloque) { //Si se pasa del bloque
 		int proximoBloque = bloqueInicial + 1;
 		if (proximoBloque == cantBloques) {
 			printf("Se está intentando leer más allá del fin del archivo\n");
-			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 		}
-		sizeRestante = size - (configFS->tamBloque - offsetEnBloque);//Si hay otro bloque, me guardo el tamaño restante
+		sizeRestante = size - (configFS->tamBloque - offsetEnBloque); //Si hay otro bloque, me guardo el tamaño restante
 	}
 
 	char pathBloque[100];
-	strcpy(pathBloque,config->puntoMontaje);
+	strcpy(pathBloque, config->puntoMontaje);
 	char pathRelativoBloque[22] = "Bloques/";
-	strcat(pathBloque,pathRelativoBloque);
+	strcat(pathBloque, pathRelativoBloque);
 	char nombreBloque[10];
 	snprintf(nombreBloque, 10, "%s.bin", bloquesArchivo[bloqueInicial]);
-	strcat(pathBloque,nombreBloque);
+	strcat(pathBloque, nombreBloque);
 	FILE * bloque = fopen(pathBloque, "r");
 	char *bytesLeidos = reservarMemoria(size);
-	fread(bytesLeidos,size-sizeRestante,sizeof(char),bloque);//En caso de que haya que leer más de otra pág
-	bytesLeidos[size-sizeRestante] = '\0';
+	fread(bytesLeidos, size - sizeRestante, sizeof(char), bloque); //En caso de que haya que leer más de otra pág
+	bytesLeidos[size - sizeRestante] = '\0';
 	fclose(bloque);
 
 	if (sizeRestante) { //Hay que leer el resto de otro bloque
-		char *bytesRestantesLeidos = obtenerDatos(pathRelativo, offset+(size-sizeRestante), sizeRestante); //Lee lo que esta en el bloque que sigue
+		char *bytesRestantesLeidos = obtenerDatos(pathRelativo,
+				offset + (size - sizeRestante), sizeRestante); //Lee lo que esta en el bloque que sigue
 		//SI obtenerDatos ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
 		int i = strlen(bytesLeidos);
 		int j = 0;
 		while (i < size) {
 			bytesLeidos[i] = bytesRestantesLeidos[j];
-			bytesLeidos[i+1] = '\0';
+			bytesLeidos[i + 1] = '\0';
 			i++;
 			j++;
 		}
@@ -318,142 +343,187 @@ char* obtenerDatos(char* pathRelativo, int offset, int size){
 	config_destroy(archivo);
 	free(bloquesArchivo);
 
-	return bytesLeidos;//Habría que liberar la memoria en la función que la llame
+	return bytesLeidos;	//Habría que liberar la memoria en la función que la llame
 }
 
-int cantidadDeBloquesLibres(){
-	int i, cantBloquesLibres=0;
-	for (i=0;i<configFS->cantBloques;i++){
-		if (bitarray_test_bit(bitarray,i)==0) cantBloquesLibres++;
+int cantidadDeBloquesLibres() {
+	int i, cantBloquesLibres = 0;
+	for (i = 0; i < configFS->cantBloques; i++) {
+		if (bitarray_test_bit(bitarray, i) == 0)
+			cantBloquesLibres++;
 	}
 	return cantBloquesLibres;
 }
 
-void agregarBloques(t_config *archivo,int cantBloquesAAgregar){
-	if (cantBloquesAAgregar>cantidadDeBloquesLibres()){
+void agregarBloques(t_config *archivo, int cantBloquesAAgregar) {
+	if (cantBloquesAAgregar > cantidadDeBloquesLibres()) {
 		printf("No hay suficientes bloques para asignar al archivo\n");
-		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE
+		exit(-1);		//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE
 	}
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
 	int cantBloques;
-	if(tamArchivo==0) cantBloques=1;
-	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
-	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");//Devuelve una array de c-strings
+	if (tamArchivo == 0)
+		cantBloques = 1;
+	else
+		cantBloques = divisionRoundUp(tamArchivo, configFS->tamBloque);
+	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");	//Devuelve una array de c-strings
 	//Aplano string
 	int i;
 	char *strBloquesArchivoPlano = string_new();
 	string_append(&strBloquesArchivoPlano, "[");
 	//Agrego elementos antiguos
-	for (i=0;i<(cantBloques);i++){
+	for (i = 0; i < (cantBloques); i++) {
 		string_append(&strBloquesArchivoPlano, bloquesArchivo[i]);
 		string_append(&strBloquesArchivoPlano, ",");
 	}
 	//Agrego elementos nuevos
-	while(cantBloquesAAgregar!=0){
+	while (cantBloquesAAgregar != 0) {
 		char primerBloqueLibre[10];
 		snprintf(primerBloqueLibre, 10, "%d", primerBloqueVacio());
 		string_append(&strBloquesArchivoPlano, primerBloqueLibre);
 		string_append(&strBloquesArchivoPlano, ",");
-		bitarray_set_bit(bitarray,primerBloqueVacio());//Marco bloque como ocupado en bitarray
+		bitarray_set_bit(bitarray, primerBloqueVacio());//Marco bloque como ocupado en bitarray
 		cantBloques++;
 		cantBloquesAAgregar--;
 	}
-	strBloquesArchivoPlano[strlen(strBloquesArchivoPlano)-1] = ']';
+	strBloquesArchivoPlano[strlen(strBloquesArchivoPlano) - 1] = ']';
 
-	config_set_value(archivo,"BLOQUES",strBloquesArchivoPlano);
+	config_set_value(archivo, "BLOQUES", strBloquesArchivoPlano);
 	config_save(archivo);
 	free(strBloquesArchivoPlano);
 	free(bloquesArchivo);
 }
 
-void guardarDatos(char* pathRelativo, int offset, int size, char* buffer){
+void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
-	strcpy(path,config->puntoMontaje);
+	strcpy(path, config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
-	strcat(path,pathArchivos);
-	strcat(path,pathRelativo);
+	strcat(path, pathArchivos);
+	strcat(path, pathRelativo);
 
 	t_config *archivo = config_create(path);
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
 	int cantBloques;
-	if(tamArchivo==0) cantBloques=1;
-	else cantBloques = divisionRoundUp(tamArchivo,configFS->tamBloque);
+	if (tamArchivo == 0)
+		cantBloques = 1;
+	else
+		cantBloques = divisionRoundUp(tamArchivo, configFS->tamBloque);
 
 	//Asigno bloques extra (de ser necesario)
-	int cantBloquesNecesaria = divisionRoundUp((offset + size),configFS->tamBloque);
-	if (cantBloquesNecesaria>cantBloques){
-		agregarBloques(archivo,cantBloquesNecesaria-cantBloques);
+	int cantBloquesNecesaria = divisionRoundUp((offset + size),
+			configFS->tamBloque);
+	if (cantBloquesNecesaria > cantBloques) {
+		agregarBloques(archivo, cantBloquesNecesaria - cantBloques);
 		//SI agregarBloques ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
 		config_destroy(archivo);
-		archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios
+		archivo = config_create(path); //Necesito cargarlo de nuevo para poder ver los cambios
 	}
 
 	//Actualizo tamaño del archivo
 	char tamArchivoFinal[10];
-	snprintf(tamArchivoFinal, 10, "%d", max(tamArchivo, offset+size));
-	config_set_value(archivo,"TAMANIO",tamArchivoFinal);
+	snprintf(tamArchivoFinal, 10, "%d", max(tamArchivo, offset + size));
+	config_set_value(archivo, "TAMANIO", tamArchivoFinal);
 	config_save(archivo);
 	config_destroy(archivo);
-	archivo = config_create(path);//Necesito cargarlo de nuevo para poder ver los cambios
+	archivo = config_create(path); //Necesito cargarlo de nuevo para poder ver los cambios
 
 	int bloqueInicial = offset / configFS->tamBloque;
 	int offsetEnBloque = offset % configFS->tamBloque;
 
-	if (offsetEnBloque + size > configFS->tamBloque) {//Si se pasa del bloque
+	if (offsetEnBloque + size > configFS->tamBloque) { //Si se pasa del bloque
 		int sizeRestante = size - (configFS->tamBloque - offsetEnBloque);
-		guardarDatos(pathRelativo, offset+(size-sizeRestante), sizeRestante, &buffer[size - sizeRestante]);
+		guardarDatos(pathRelativo, offset + (size - sizeRestante), sizeRestante,
+				&buffer[size - sizeRestante]);
 		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
 	}
 
 	//Escribo el bloque
 	char **bloquesArchivo = config_get_array_value(archivo, "BLOQUES");
 	char pathBloque[100];
-	strcpy(pathBloque,config->puntoMontaje);
+	strcpy(pathBloque, config->puntoMontaje);
 	char pathRelativoBloque[22] = "Bloques/";
-	strcat(pathBloque,pathRelativoBloque);
+	strcat(pathBloque, pathRelativoBloque);
 	char nombreBloque[10];
 	snprintf(nombreBloque, 10, "%s.bin", bloquesArchivo[bloqueInicial]);
-	strcat(pathBloque,nombreBloque);
+	strcat(pathBloque, nombreBloque);
 	FILE * bloque = fopen(pathBloque, "r+");
-	fwrite(buffer, sizeof(char), configFS->tamBloque-offsetEnBloque, bloque);
+	fwrite(buffer, sizeof(char), configFS->tamBloque - offsetEnBloque, bloque);
 	fclose(bloque);
 
 	config_destroy(archivo);
 	free(bloquesArchivo);
 }
 
+void enviarSenialAKernel() {
+	char senial[2] = "a";
+	if (send(clienteKernel, senial, 2, 0) == -1) {
+		printf("Error al enviar la senial\n");
+	}
+}
+
+int accionPedidaPorKernel() {
+	int accionPedida;
+	if (recv(clienteKernel, &accionPedida, sizeof(int), 0) == -1) {
+		printf("Error recibiendo la accion pedida\n");
+		exit(-1);
+	}
+	return accionPedida;
+}
+
+char *recibirPath(){
+	int tamPath;
+	char *path;
+	if (recv(clienteKernel, &tamPath, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el tamanio del Path\n");
+		exit(-1);
+	}
+	path = reservarMemoria(tamPath);
+	enviarSenialAKernel();
+	if (recv(clienteKernel, &tamPath, sizeof(int), 0) == -1) {
+			printf("Error recibiendo el tamanio del Path\n");
+			exit(-1);
+	}
+
+}
+
+
+void atenderKernel() {
+	while (1) {
+		int accionPedida = accionPedidaPorKernel();
+		enviarSenialAKernel();
+		switch (accionPedida) {
+		case k_fs_validar_archivo:
+			recibirPath();
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+
 int main(void) {
 	leerArchivo();
+
+	leerArchivoConfiguracionFS();
+	crearBloques();
+	inicializarBitmap();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
 	direccionServidor.sin_port = htons(config->puerto);
 
-	leerArchivoConfiguracionFS();
-	crearBloques();
-	inicializarBitmap();
+	int servidor;
 
-	//Prueba (DESPUÉS BORRAR)
-	/*crearArchivo("Pepo.bin");
-	char* bufferPrueba = string_repeat('a', 500);
-	guardarDatos("Pepo.bin",0,500,bufferPrueba);
-	char* datosLeidos = obtenerDatos("Pepo.bin",62,10);
-	printf("%s",datosLeidos);
-	crearArchivo("Lolo/Pepin.bin");
-	crearArchivo("Lalo/Lele/Las.bin"); NO FUNCIONA. SÓLO SE PUEDE CREAR UN SUBDIRECTORIO
-	*/
+	esperarConexion(&servidor, &direccionServidor);
+	aceptarConexion(&servidor, &clienteKernel);
 
-	int cliente;
-	char* buffer = malloc(LONGMAX);
-
-	conectar(&cliente, &direccionServidor);
-
-	int procesoConectado = nuevohandshake(&cliente, file_system);
+	int procesoConectado = handshake(&clienteKernel, file_system);
 	switch (procesoConectado) {
 	case kernel:
 		msjConexionCon("Kernel");
-		recibirMensajeDe(&cliente, buffer);
+		atenderKernel();
 		break;
 	default:
 		printf("No me puedo conectar con vos.\n");
@@ -463,7 +533,7 @@ int main(void) {
 
 	bitarray_destroy(bitarray);
 
-	close(cliente);
+	close(clienteKernel);
 
 	return 0;
 }

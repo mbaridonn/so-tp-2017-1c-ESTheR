@@ -1,41 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <commons/string.h>
-#include <commons/collections/list.h>
-
-#define CANT_PROC_TABLA_ARCH 100 //ES DEMASIADO? OCUPA MUCHA MEMORIA?
-#define CANT_ARCH_TABLA_ARCH 200 //ES DEMASIADO? OCUPA MUCHA MEMORIA?
-
-//DESDE ACÁ NO COPIAR
-
-void *reservarMemoria(int tamanio) {
-	void *puntero = malloc(tamanio);
-	if (puntero == NULL) {
-		printf("No hay más espacio\n");
-		exit(-1);
-	}
-	return puntero;
-}
-
-typedef struct{
-	bool lectura;
-	bool escritura;
-	bool creacion;
-} t_banderas;
-
-//HASTA ACÁ NO COPIAR
-
-typedef struct{
-	char* nombreArchivo;
-	int contadorAperturas;
-} entradaTablaArchivosGlobal;
-
-typedef struct{
-	char* flags;
-	u_int32_t fdGlobal;
-	int offset;
-} entradaTablaArchivosDeProceso;
+#include "CapaFS.h"
 
 entradaTablaArchivosGlobal tablaArchivosGlobal[CANT_ARCH_TABLA_ARCH];
 entradaTablaArchivosDeProceso tablasDeArchivosDeProcesos[CANT_PROC_TABLA_ARCH][CANT_ARCH_TABLA_ARCH];
@@ -54,14 +17,28 @@ void inicializarTablasDeArchivos(){
 	}
 }
 
+void enviarPathAFS(char *path){
+	int tamPath = strlen(path)+1;
+	if (send(servFS, &tamPath, sizeof(int), 0) == -1) {
+		printf("Error enviando la longitud del Path\n");
+		exit(-1);
+	}
+	esperarSenialDeFS();
+	if (send(servFS, path, tamPath, 0) == -1) {
+		printf("Error enviando el Path\n");
+		exit(-1);
+	}
+}
+
 void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags){
 	char* strFlags = string_new();
 	if(flags.creacion) string_append(&strFlags, "c");
 	if(flags.lectura) string_append(&strFlags, "r");
 	if(flags.escritura) string_append(&strFlags, "w");
 
-	bool existeArchivo = true; //VALOR DE PRUEBA, DESPUÉS BORRAR
-	//Enviar mensaje a FS: existeArchivo = validarArchivo(char* path);
+	bool existeArchivo;
+	enviarAccionAFS(k_fs_validar_archivo);
+	enviarPathAFS(direccion);//Enviar mensaje a FS: existeArchivo = validarArchivo(char* path);
 	if(!existeArchivo){
 		if(string_contains(strFlags,"c")){//El archivo fue abierto en modo creación
 			//Enviar mensaje a FS: crearArchivo(direccion);
@@ -70,6 +47,7 @@ void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas fl
 			return;
 		}
 	}
+
 
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
@@ -251,20 +229,4 @@ void escribirArchivo(int PID, u_int32_t fileDescriptor, /*char*?*/void* informac
 	} else {
 		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)
 	}
-}
-
-int main(void) {
-	inicializarTablasDeArchivos();
-
-	//PRUEBAS
-	/*t_banderas flags;
-	flags.creacion=false;
-	flags.escritura=true;
-	flags.lectura=true;
-	abrirArchivo(90, "Pepin.bin", flags);
-	cerrarArchivo(90,3);*/
-
-	//AL ELIMINAR UN PROCESO, HABRÍA QUE ELIMINAR SU TABLA DE ARCHIVOS DE tablasDeArchivosDeProcesos
-
-	return EXIT_SUCCESS;
 }

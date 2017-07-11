@@ -1,7 +1,6 @@
-begin\n
-variables a, b\n
-a = 3\n
-b = 5\n
-a = b + 12\n
-end\n
-\n
+begin
+variables a, b
+a = 3
+b = 5
+a = b + 12
+end

@@ -9,10 +9,14 @@
 #define ESTRUCTURASCOMUNES_H_
 #define MAX_CLIENTS 30
 #include <commons/collections/list.h>
-#include "lib/pcb.h"
+#include "pcb.h"
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
+};
+
+enum accionesFS{
+	k_fs_validar_archivo
 };
 
 enum accionesMemoria {
@@ -65,7 +69,7 @@ t_list *listaCPUs;
 
 u_int32_t planificacionActivada = 1;
 
-int cliente, cliente2, servMemoria;
+int cliente, cliente2, servMemoria, servFS;
 u_int32_t tamanioPagMemoria;
 
 #endif /* ESTRUCTURASCOMUNES_H_ */

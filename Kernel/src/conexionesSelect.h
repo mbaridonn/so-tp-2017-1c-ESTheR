@@ -9,7 +9,7 @@
 #define CONEXIONESSELECT_H_
 
 #include <arpa/inet.h>
-#include "estructurasComunes.h"
+#include "lib/estructurasComunes.h"
 #define FALSE 0
 #define TRUE 1
 

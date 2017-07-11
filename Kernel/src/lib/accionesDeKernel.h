@@ -64,18 +64,17 @@ void enviarArchivoAMemoria(char *buffer, u_int32_t tamBuffer) {
 	printf("El archivo se envió correctamente\n");
 }
 
-void escribirArchivo(char *bufferArchivo, u_int32_t fsize) {
-	FILE *archivo;
-	archivo = fopen("prueba.txt", "w");
-	validarAperturaArchivo(archivo);
-	fwrite(bufferArchivo, 1, fsize, archivo);
-	fclose(archivo);
-}
-
 void esperarSenialDeMemoria() {
 	char senial[2] = "a";
 	if (recv(servMemoria, senial, 2, 0) == -1) {
 		printf("Error al recibir senial antes de enviar paginas\n");
+	}
+}
+
+void esperarSenialDeFS() {
+	char senial[2] = "a";
+	if (recv(servFS, senial, 2, 0) == -1) {
+		printf("Error al recibir senial de FS\n");
 	}
 }
 
@@ -122,6 +121,15 @@ void avisarAccionAMemoria(int accion) {
 	esperarSenialDeMemoria();
 }
 
+void avisarAccionAFS(int accion) {
+	u_int32_t aux = accion;
+	if (send(servFS, &aux, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la accion.\n");
+		exit(-1);
+	}
+	esperarSenialDeFS();
+}
+
 void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
 	avisarAccionAMemoria(finalizarProceso);
@@ -131,6 +139,8 @@ void finalizarUnProceso(t_pcb *pcb) {
 	}
 	quitar_PCB_de_Lista(listaPCBs_NEW,pcb);
 	list_add(listaPCBs_EXIT, pcb);
+	if(false);
+	//AL ELIMINAR UN PROCESO, HABRÍA QUE ELIMINAR SU TABLA DE ARCHIVOS DE tablasDeArchivosDeProcesos
 } //ESTO NO ESTÁ PROBADO, PERO BUENO, HAY QUE TENER FE
 
 void tomarAccionSegunConfirmacion(u_int32_t confirmacion, t_pcb *pcb) {

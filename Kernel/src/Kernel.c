@@ -10,8 +10,9 @@
 #include <pthread.h>
 #include "libreriaSockets.h"
 #include "conexionesSelect.h"
-#include "estructurasComunes.h"
-#include "accionesDeKernel.h"
+#include "lib/accionesDeKernel.h"
+#include "lib/CapaFS.h"
+
 
 #define RUTA_ARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
 
@@ -38,7 +39,7 @@ void settearVariables(t_config *archivo_Modelo) {
 
 }
 
-void leerArchivo() {
+void leerArchivoConfig() {
 	if (access(RUTA_ARCHIVO, F_OK) == -1) {
 		printf("No se encontró el Archivo \n");
 		exit(-1);
@@ -61,6 +62,13 @@ void conectarseConMemoria(int *servMemoria,
 	conectar(servMemoria, direccionServidor2);
 	handshake(servMemoria, kernel);
 	msjConexionCon("una Memoria");
+}
+
+void conectarseConFS(int *servFS,
+		struct sockaddr_in *direccionServidorFS) {
+	conectar(servFS, direccionServidorFS);
+	handshake(servFS, kernel);
+	msjConexionCon("un FileSystem");
 }
 
 int obtenerTamanioDePagina(int *servMemoria) {
@@ -313,6 +321,8 @@ void abrirHiloConsolaKernel(){
 
 int main(void) {
 
+	inicializarTablasDeArchivos();
+
 	/*char* PROGRAMA =
 		"begin\n"
 		"variables a, b\n"
@@ -333,7 +343,7 @@ int main(void) {
 	deserializar_pcb(&incomingPCB, serialized_pcb, &pcb_serializado_index);
 	exit(0);*/
 
-	leerArchivo();
+	leerArchivoConfig();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
 	struct sockaddr_in direccionServidor;
 
@@ -354,8 +364,16 @@ int main(void) {
 	direccionServidor2.sin_addr.s_addr = inet_addr(config->IP_MEMORIA);
 	direccionServidor2.sin_port = htons(config->PUERTO_MEMORIA);
 
+	//PARA FileSystem
+	struct sockaddr_in direccionServidorFS;
+	direccionServidorFS.sin_family = AF_INET;
+	direccionServidorFS.sin_addr.s_addr = inet_addr(config->IP_FS);
+	direccionServidorFS.sin_port = htons(config->PUERTO_FS);
+
 	conectarseConMemoria(&servMemoria, &direccionServidor2);
 	tamanioPagMemoria = obtenerTamanioDePagina(&servMemoria);
+
+	conectarseConFS(&servFS,&direccionServidorFS);
 
 	inicializarVec(client_socket);
 	inicializarVec(procesos_por_socket);

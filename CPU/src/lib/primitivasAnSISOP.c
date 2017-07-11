@@ -25,16 +25,16 @@ bool esArgumento(t_nombre_variable identificador_variable){
 	return isdigit(identificador_variable);
 }
 
-t_stack_entry* stack_entry_create_and_initialize(){
+/*t_stack_entry* stack_entry_create_and_initialize(){
 	t_stack_entry* stackEntry = calloc(1, sizeof(t_stack_entry));
-	stackEntry->args = list_create();
-	stackEntry->vars = list_create();
+	stackEntry->args = NULL;//stackEntry->args = list_create();
+	stackEntry->vars = NULL;//stackEntry->vars = list_create();
 	stackEntry->ret_pos = -1;
 	stackEntry->ret_vars->offset = 0;
 	stackEntry->ret_vars->page_number = 0;
 	stackEntry->ret_vars->tamanio = 0;
 	return stackEntry;
-}
+}*/
 
 bool terminoElPrograma(void){
 	return terminoPrograma;
@@ -65,7 +65,7 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 
 	t_stack_entry* lineaStack;
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
-		lineaStack = stack_entry_create_and_initialize();
+		lineaStack = stack_entry_create();
 		list_add(pcbAEjecutar->indice_stack->elements, lineaStack);
 	}else{
 		lineaStack = list_get(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
@@ -78,7 +78,7 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 		nuevaVar->page_number = pagina;
 		nuevaVar->offset = offset;
 		nuevaVar->tamanio = TAM_VARIABLE;
-		list_add(lineaStack->vars, nuevaVar);
+		add_var(&lineaStack, nuevaVar);
 	}
 	else{ // Es un argumento.
 		printf("ANSISOP_definirVariable (argumento) %c \n", var_nombre);
@@ -86,7 +86,7 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 		nuevoArg->page_number = pagina;
 		nuevoArg->offset = offset;
 		nuevoArg->tamanio = TAM_VARIABLE;
-		list_add(lineaStack->args, nuevoArg);
+		add_arg(&lineaStack, nuevoArg);
 	}
 
 	int posAbsoluta = pcbAEjecutar->stackPointer;
@@ -111,7 +111,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		bool notFound = true;
 		int i;
 		for(i=0; i < contexto->cant_vars/*list_size(contexto->vars)*/; i++){
-			var_local = list_get(contexto->vars, i);
+			var_local = &contexto->vars[i];
 			if(var_local->var_id == var_nombre){
 				notFound = false;
 				break;
@@ -128,7 +128,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		if((var_nombre-'0') > contexto->cant_args/*list_size(contexto->args)*/){
 			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR
 		}else{
-			t_var* argumento = list_get(contexto->args, var_nombre-'0');
+			t_var* argumento =  &contexto->args[var_nombre-'0'];
 			//EL ARGUMENTO X TIENE QUE ESTAR NECESARIAMENTE EN LA POSICIÓN X??
 			posicionAbsoluta = argumento->page_number * tamPag + argumento->offset;
 		}
@@ -179,7 +179,7 @@ void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
 
 void llamarSinRetorno(t_nombre_etiqueta etiqueta){
 	printf("ANSISOP_llamarSinRetorno %s\n", etiqueta);
-	t_stack_entry* nuevaLineaStack = stack_entry_create_and_initialize();
+	t_stack_entry* nuevaLineaStack = stack_entry_create();
 	nuevaLineaStack->ret_pos = pcbAEjecutar->program_counter;
 	list_add(pcbAEjecutar->indice_stack->elements, nuevaLineaStack);
 	irAlLabel(etiqueta);
@@ -188,7 +188,7 @@ void llamarSinRetorno(t_nombre_etiqueta etiqueta){
 void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar){
 	printf("ANSISOP_llamarConRetorno (etiqueta: %s, retornar: %d)\n", etiqueta, donde_retornar);
 	t_stack_entry* nuevaLineaStackEjecucionActual;
-	nuevaLineaStackEjecucionActual = stack_entry_create_and_initialize();
+	nuevaLineaStackEjecucionActual = stack_entry_create();
 	nuevaLineaStackEjecucionActual->ret_vars->page_number = donde_retornar / tamPag;
 	nuevaLineaStackEjecucionActual->ret_vars->offset = donde_retornar % tamPag;
 	nuevaLineaStackEjecucionActual->ret_vars->tamanio = TAM_VARIABLE;
@@ -203,12 +203,12 @@ void finalizar(void){
 	t_stack_entry* contexto = list_remove(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
 	int i;
 	if(contexto != NULL){
-		pcbAEjecutar->stackPointer -= TAM_VARIABLE * (list_size(contexto->args) + list_size(contexto->vars)); // Disminuyo stackPointer del pcb
+		pcbAEjecutar->stackPointer -= TAM_VARIABLE * (contexto->cant_args + contexto->cant_vars); // Disminuyo stackPointer del pcb
 		if(pcbAEjecutar->stackPointer >= 0){
-			for(i=0; i<list_size(contexto->args); i++){ // Limpio lista de argumentos del contexto
+			for(i=0; i<contexto->cant_args; i++){ // Limpio lista de argumentos del contexto
 				free(list_remove(contexto->args,i));
 			}
-			for(i=0; i<list_size(contexto->vars); i++){
+			for(i=0; i<contexto->cant_vars; i++){
 				free(list_remove(contexto->vars, i));
 			}
 		}
