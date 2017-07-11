@@ -213,12 +213,15 @@ int main(void) {
 			case memoria:
 				printf("Me conecte con Memoria!\n");
 				//Solicito siguiente instruccion
-				char* instruccion = conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0/*Las páginas de código son las primeras en memoria*/,
+				char* instruccion;
+				while(!terminoElPrograma()){//ESTO SERÍA SOLO PARA FIFO
+					instruccion = conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0/*Las páginas de código son las primeras en memoria*/,
 						incomingPCB->indice_codigo[incomingPCB->program_counter].start,
 						incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
-				//analizadorLinea(instruccion, &functions, &kernel_functions);
-				incomingPCB->program_counter++;
-				free(instruccion);
+					analizadorLinea(instruccion, &functions, &kernel_functions);
+					incomingPCB->program_counter++;
+					free(instruccion);
+				}
 				//ANTES DE DESCONECTAR LA CPU, HAY QUE ENVIARLE UN MENSAJE A MEMORIA PARA QUE MATE EL HILO (Y NO ROMPA)
 				break;
 			default:

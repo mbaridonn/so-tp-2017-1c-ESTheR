@@ -17,7 +17,7 @@ void irAlLabel(t_nombre_etiqueta t_nombre_etiqueta);
 void llamarSinRetorno(t_nombre_etiqueta etiqueta);
 void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar);
 void finalizar(void);
-bool terminoElPrograma(void);//FUNCION DE PRUEBA
+bool terminoElPrograma(void);
 void retornar(t_valor_variable retorno);
 
 void wait(t_nombre_semaforo identificador_semaforo);

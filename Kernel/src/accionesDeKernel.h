@@ -171,7 +171,7 @@ void proced_script(int *unCliente) {
 	printf("%s\n\n", bufferArchivo);
 	escribirArchivo(bufferArchivo, fsize);
 	u_int32_t cant_pags_script = divisionRoundUp(fsize, tamanioPagMemoria);
-	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script);
+	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script,tamanioPagMemoria);
 	list_add(listaPCBs_NEW, pcb);
 	int pid = pcb->id_proceso;
 

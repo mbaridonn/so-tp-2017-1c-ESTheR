@@ -5,6 +5,8 @@
 
 #define TAM_VARIABLE 4
 
+bool terminoPrograma;
+
 //VALORES A INICIALIZAR
 t_pcb* pcbAEjecutar;
 int stackSize;
@@ -16,6 +18,7 @@ void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tam
 	pcbAEjecutar = _pcbAEjecutar;
 	stackSize = _stackSize;
 	tamPag = _tamPag;
+	terminoPrograma = false;
 }
 
 bool esArgumento(t_nombre_variable identificador_variable){
@@ -33,12 +36,16 @@ t_stack_entry* stack_entry_create_and_initialize(){
 	return stackEntry;
 }
 
-/*t_puntero_instruccion busquedaEtiqueta(t_nombre_etiqueta etiqueta){          PENDIENTE!!
-	for (int i = 0; i < pcbAEjecutar->tags; ++i) {
+bool terminoElPrograma(void){
+	return terminoPrograma;
+}
+
+/*t_puntero_instruccion busquedaEtiqueta(t_nombre_etiqueta etiqueta){
+	for (int i = 0; i < pcbAEjecutar->etiquetas_size; ++i) {
 		if(strcmp(pcbAEjecutar->indice_etiquetas[i].name, etiqueta) == 0){
 			return pcbAEjecutar->indice_etiquetas[i].PC;
 		} else {
-			return -1;   ESTÁ BIEN ESTO??
+			return -1;   //ESTÁ BIEN ESTO??
 		}
 	}
 	return -1;
@@ -47,8 +54,6 @@ t_stack_entry* stack_entry_create_and_initialize(){
 //PRIMITIVAS
 
 t_puntero definirVariable(t_nombre_variable var_nombre){
-
-	//FALTA STACK POINTER !!
 	if((pcbAEjecutar->stackPointer+4) > (stackSize * tamPag)){
 		printf("StackOverflow. Se finaliza el proceso\n");
 		//huboStackOver = true; (!!)
@@ -105,7 +110,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		t_var* var_local;
 		bool notFound = true;
 		int i;
-		for(i=0; i < list_size(contexto->vars); i++){
+		for(i=0; i < contexto->cant_vars/*list_size(contexto->vars)*/; i++){
 			var_local = list_get(contexto->vars, i);
 			if(var_local->var_id == var_nombre){
 				notFound = false;
@@ -120,7 +125,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 			posicionAbsoluta = var_local->page_number * tamPag + var_local->offset;
 		}
 	} else { //Es un argumento
-		if((var_nombre-'0') > list_size(contexto->args)){
+		if((var_nombre-'0') > contexto->cant_args/*list_size(contexto->args)*/){
 			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR
 		}else{
 			t_var* argumento = list_get(contexto->args, var_nombre-'0');
@@ -211,7 +216,7 @@ void finalizar(void){
 		list_destroy(contexto->vars);
 	}
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
-		//finPrograma = true;
+		terminoPrograma = true;
 		printf("Finalizó la ejecucion del programa\n");
 		//finalizarPor(OP_CPU_PROGRAM_END);
 	}else{

@@ -121,41 +121,30 @@ void serialize_stack(t_stack *stack, void **buffer, int *buffer_size) {
  * buffer : El buffer donde se almacenara la entrada serializada.
  * buffer_size : Variable que terminara con el valor del tamanio final del buffer.
  */
-void serialize_stack_entry(t_stack_entry *entry, void **buffer,
-		int *buffer_size) {
+void serialize_stack_entry(t_stack_entry *entry, void **buffer,	int *buffer_size) {
 	int i = 0;
 	deserializar_data(&entry->pos, sizeof(int), buffer, buffer_size);
 	deserializar_data(&entry->cant_args, sizeof(int), buffer, buffer_size);
 //deserializar_data(&entry->args, (size_t) sizeof(t_arg)*entry->cant_args, buffer, buffer_size);
 	for (i = 0; i < entry->cant_args; i++) {
-		deserializar_data(&(entry->args + i)->page_number, sizeof(int), buffer,
-				buffer_size);
-		deserializar_data(&(entry->args + i)->offset, sizeof(int), buffer,
-				buffer_size);
-		deserializar_data(&(entry->args + i)->tamanio, sizeof(int), buffer,
-				buffer_size);
+		deserializar_data(&(entry->args + i)->page_number, sizeof(int), buffer,	buffer_size);
+		deserializar_data(&(entry->args + i)->offset, sizeof(int), buffer, buffer_size);
+		deserializar_data(&(entry->args + i)->tamanio, sizeof(int), buffer, buffer_size);
 	}
 	deserializar_data(&entry->cant_vars, sizeof(int), buffer, buffer_size);
 //deserializar_data(&entry->vars, (size_t) sizeof(t_var)*entry->cant_vars, buffer, buffer_size);
 	for (i = 0; i < entry->cant_vars; i++) {
-		deserializar_data(&(entry->vars + i)->var_id, sizeof(char), buffer,
-				buffer_size);
-		deserializar_data(&(entry->vars + i)->page_number, sizeof(int), buffer,
-				buffer_size);
-		deserializar_data(&(entry->vars + i)->offset, sizeof(int), buffer,
-				buffer_size);
-		deserializar_data(&(entry->vars + i)->tamanio, sizeof(int), buffer,
-				buffer_size);
+		deserializar_data(&(entry->vars + i)->var_id, sizeof(char), buffer,	buffer_size);
+		deserializar_data(&(entry->vars + i)->page_number, sizeof(int), buffer, buffer_size);
+		deserializar_data(&(entry->vars + i)->offset, sizeof(int), buffer, buffer_size);
+		deserializar_data(&(entry->vars + i)->tamanio, sizeof(int), buffer, buffer_size);
 	}
 	deserializar_data(&entry->cant_ret_vars, sizeof(int), buffer, buffer_size);
 //deserializar_data(&entry->ret_vars, (size_t) sizeof(t_ret_var)*entry->cant_vars, buffer, buffer_size);
 	for (i = 0; i < entry->cant_ret_vars; i++) {
-		deserializar_data(&(entry->ret_vars + i)->page_number, sizeof(int), buffer,
-				buffer_size);
-		deserializar_data(&(entry->ret_vars + i)->offset, sizeof(int), buffer,
-				buffer_size);
-		deserializar_data(&(entry->ret_vars + i)->tamanio, sizeof(int), buffer,
-				buffer_size);
+		deserializar_data(&(entry->ret_vars + i)->page_number, sizeof(int), buffer,	buffer_size);
+		deserializar_data(&(entry->ret_vars + i)->offset, sizeof(int), buffer, buffer_size);
+		deserializar_data(&(entry->ret_vars + i)->tamanio, sizeof(int), buffer, buffer_size);
 	}
 	deserializar_data(&entry->ret_pos, sizeof(int), buffer, buffer_size);
 }
@@ -168,17 +157,14 @@ void serialize_stack_entry(t_stack_entry *entry, void **buffer,
  * serialized_data : Conjunto de bytes serializados.
  * serialized_data_size : Tamanio total del conjunto de bytes.
  */
-void deserialize_stack(t_stack **stack, void **serialized_data,
-		int *serialized_data_size) {
+void deserialize_stack(t_stack **stack, void **serialized_data,	int *serialized_data_size) {
 	u_int32_t cantidad_links = 0, indice = 0;
 	t_stack_entry *stack_entry = NULL;
 	*stack = queue_create(); //Creo el stack
-	deserializar_data(&cantidad_links, sizeof(int), serialized_data,
-			serialized_data_size);
+	deserializar_data(&cantidad_links, sizeof(int), serialized_data, serialized_data_size);
 	for (indice = 0; indice < cantidad_links; indice++) {
 		stack_entry = create_new_stack_entry();
-		deserialize_stack_entry(&stack_entry, serialized_data,
-				serialized_data_size);
+		deserialize_stack_entry(&stack_entry, serialized_data, serialized_data_size);
 		queue_push(*stack, (void*) stack_entry); //Agrego elementos al stack
 	}
 }

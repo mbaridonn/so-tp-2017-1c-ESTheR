@@ -313,6 +313,26 @@ void abrirHiloConsolaKernel(){
 
 int main(void) {
 
+	/*char* PROGRAMA =
+		"begin\n"
+		"variables a, b\n"
+		"a = 3\n"
+		"b = 5\n"
+		"a = b + 12\n"
+		"end\n"
+		"\n";
+
+	t_pcb* pcb = crearPCB(PROGRAMA,1,256);
+	void * serialized_pcb = NULL;
+	int serialized_buffer_index = 0;
+	serializar_pcb(pcb, &serialized_pcb, &serialized_buffer_index);//Pareciera funcionar
+
+	//Pruebo deserializado
+	int pcb_serializado_index = 0;
+	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
+	deserializar_pcb(&incomingPCB, serialized_pcb, &pcb_serializado_index);
+	exit(0);*/
+
 	leerArchivo();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
 	struct sockaddr_in direccionServidor;
