@@ -1,23 +1,11 @@
-#include <parser/metadata_program.h>
-#include "stack.h"
+#include <stdint.h>
+#include "pcb.h"
 
 int id_proceso_actual = 0;
 
 enum estadosProceso {
 	NEW, READY, EXEC, BLOCK, EXIT
 };
-
-typedef struct {
-	int id_proceso;
-	int program_counter;
-	int cant_instrucciones;
-	int exit_code;
-	int cant_paginas_de_codigo;
-	int stackPointer;
-	t_intructions *indice_codigo;
-	t_stack *indice_stack;
-	char *indice_etiquetas;
-} t_pcb;
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);

@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <parser/parser.h>
-#include "pcb.h"
 #include "primitivasAnSISOP.h"
+#include "pcb.h"
 
 #define TAM_VARIABLE 4
 
@@ -163,7 +163,7 @@ void asignar(t_puntero direccion_variable, t_valor_variable valor){
 
 void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
 	printf("ANSISOP_irALabel %s\n", nombre_etiqueta);
-	t_puntero_instruccion numeroInstr = busquedaEtiqueta(nombre_etiqueta);//PENDIENTE
+	t_puntero_instruccion numeroInstr; //= busquedaEtiqueta(nombre_etiqueta);//PENDIENTE
 	printf("Numero de instruccion: %d", numeroInstr);
 	if(numeroInstr == -1){
 		printf("No se encontro la etiqueta\n");

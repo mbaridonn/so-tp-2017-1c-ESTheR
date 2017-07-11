@@ -7,9 +7,10 @@
 #include <fcntl.h>
 #include <parser/metadata_program.h>
 #include <commons/config.h>
+
+#include "lib/pcb.h"
 #include "libreriaSockets.h"
 #include "lib/primitivasAnSISOP.h"
-#include "lib/pcb.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
