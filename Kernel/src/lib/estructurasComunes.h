@@ -50,9 +50,10 @@ typedef struct {
 	int QUANTUM_SLEEP;
 	char ALGORITMO[30];
 	int GRADO_MULTIPROG;
-	char SEM_IDS[10][30]; // Debería ser una lista alfanumerica
-	int SEM_INIT[10][30]; // Lo mismo pero numerica
-	char SHARED_VARS[10][30]; // IDEM SEM_IDS
+	char** SEM_IDS;
+	int* SEM_INIT;
+	char** SHARED_VARS;
+	int* SHARED_VARS_VALUES;//Extra: Almacena valor de las variables globales
 	int STACK_SIZE;
 } t_configuracion;
 

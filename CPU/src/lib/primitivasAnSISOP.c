@@ -6,6 +6,7 @@
 #define TAM_VARIABLE 4
 
 bool terminoPrograma;
+int codigoError;
 
 //VALORES A INICIALIZAR
 t_pcb* pcbAEjecutar;
@@ -22,25 +23,19 @@ void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tam
 	serv_kernel = _serv_kernel;
 
 	terminoPrograma = false;
+	codigoError = 0;
 }
 
 bool esArgumento(t_nombre_variable identificador_variable){
 	return isdigit(identificador_variable);
 }
 
-/*t_stack_entry* stack_entry_create_and_initialize(){
-	t_stack_entry* stackEntry = calloc(1, sizeof(t_stack_entry));
-	stackEntry->args = NULL;//stackEntry->args = list_create();
-	stackEntry->vars = NULL;//stackEntry->vars = list_create();
-	stackEntry->ret_pos = -1;
-	stackEntry->ret_vars->offset = 0;
-	stackEntry->ret_vars->page_number = 0;
-	stackEntry->ret_vars->tamanio = 0;
-	return stackEntry;
-}*/
-
 bool terminoElPrograma(void){
 	return terminoPrograma;
+}
+
+int hayError(){
+	return codigoError;
 }
 
 void solicitarA(int *cliente, char *nombreCli) {
@@ -108,8 +103,8 @@ u_int32_t recibirUIntDeKernel() {
 t_puntero definirVariable(t_nombre_variable var_nombre){
 	if((pcbAEjecutar->stackPointer+4) > (stackSize * tamPag)){
 		printf("StackOverflow. Se finaliza el proceso\n");
-		//huboStackOver = true; (!!)
-		return -1;//DEBERÍA PRODUCIR UN ERROR
+		codigoError = -10;//Defino nuevo Exit Code -10: stackOverflow (!!)
+		return -1;//DEBERÍA PRODUCIR UN ERROR?
 	}
 
 	int pagina = pcbAEjecutar->stackPointer / tamPag;
@@ -152,7 +147,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 	printf("ANSISOP_obtenerPosicion %c \n", var_nombre);
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
 		printf("En indice de stack se encuentra vacio \n");
-		return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR
+		return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR   (PENDIENTE!!)
 	}
 
 	t_puntero posicionAbsoluta;
@@ -171,14 +166,14 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		}
 		if(notFound){
 			printf("No se encontro la variable %c en el stack \n", var_nombre);
-			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR
+			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR  (PENDIENTE!!)
 		}
 		else{
 			posicionAbsoluta = var_local->page_number * tamPag + var_local->offset;
 		}
 	} else { //Es un argumento
 		if((var_nombre-'0') > contexto->cant_args/*list_size(contexto->args)*/){
-			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR
+			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR  (PENDIENTE!!)
 		}else{
 			t_arg* argumento =  &contexto->args[var_nombre-'0'];
 			//EL ARGUMENTO X TIENE QUE ESTAR NECESARIAMENTE EN LA POSICIÓN X??
@@ -327,8 +322,8 @@ t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
 		return fd;
 	} else { //En realidad 0 es un FD válido, pero como está reservado y no lo usamos lo uso para indicar el error
 		printf("El programa intentó acceder a un archivo que no existe (Exit Code -2)\n");
+		codigoError = -2;
 		return 0; //NO!! SOLO LO PUSE PARA QUE NO ROMPA, NO SÉ QUÉ TIENE QUE DEVOLVER !!
-		//ERROR (Exit Code -2)      PENDIENTE!!!
 	}
 }
 
@@ -367,7 +362,7 @@ void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valo
 	enviarIntAKernel(descriptor_archivo);
 	enviarIntAKernel(tamanio);
 	esperarSenialDeKernel();
-	if (send(serv_kernel, informacion/*??*/, tamanio, 0) == -1) {
+	if (send(serv_kernel, informacion, tamanio, 0) == -1) {
 		printf("Error al enviar bytes a escribir\n");
 		exit(-1);
 	}
@@ -376,7 +371,7 @@ void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valo
 		printf("Escritura realizada correctamente\n");
 	} else {
 		printf("El programa intentó escribir un archivo sin permisos (Exit Code -4)\n");
-		//ERROR   (Exit Code -4)       (PENDIENTE !!)
+		codigoError = -4;
 	}
 }
 
@@ -395,7 +390,7 @@ void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valo
 		}
 	} else {
 		printf("El programa intentó leer un archivo sin permisos (Exit Code -3)\n");
-		//ERROR   (Exit Code -3)       (PENDIENTE !!)
+		codigoError = -3;
 		return;
 	}
 

@@ -232,6 +232,11 @@ char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tam
 }
 
 int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio){
+	if(fileDescriptor == 1){
+		//IMPRIMIR BYTES A ESCRIBIR POR CONSOLA (PENDIENTE!!)
+		return k_cpu_accion_OK;
+	}
+
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);

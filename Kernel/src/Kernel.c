@@ -16,6 +16,29 @@
 
 u_int32_t planificacionActivada = 1;
 
+void inicializarSemaforos(t_config *archivo_Modelo){
+	config->SEM_IDS = config_get_array_value(archivo_Modelo, "SEM_IDS");
+	char **strSEM_INIT = config_get_array_value(archivo_Modelo, "SEM_INIT");//Hay que convertir los strings en ints
+	int i=0, cantSemaforos = 0;
+	while (strSEM_INIT[i]!=NULL){
+		cantSemaforos++;
+		i++;
+	}
+	config->SEM_INIT = reservarMemoria(cantSemaforos * sizeof(int));
+	for(i=0;i<cantSemaforos;i++) config->SEM_INIT[i] = atoi(strSEM_INIT[i]);
+}
+
+void inicializarVariablesCompartidas(t_config *archivo_Modelo){
+	config->SHARED_VARS = config_get_array_value(archivo_Modelo, "SHARED_VARS");
+	int i =0, cantVariables = 0;
+	while (config->SHARED_VARS[i]!=NULL){
+		cantVariables++;
+		i++;
+	}
+	config->SHARED_VARS_VALUES = reservarMemoria(cantVariables * sizeof(int));
+	for(i=0;i<cantVariables;i++) config->SHARED_VARS_VALUES[i] = 0;
+}
+
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->PUERTO_PROG = config_get_int_value(archivo_Modelo, "PUERTO_PROG");
@@ -34,9 +57,9 @@ void settearVariables(t_config *archivo_Modelo) {
 	strcpy(config->ALGORITMO, aux);
 	config->GRADO_MULTIPROG = config_get_int_value(archivo_Modelo,
 			"GRADO_MULTIPROG");
-	//FALTA SEM_IDS, SEM_INIT, SHARED_VARS
 	config->STACK_SIZE = config_get_int_value(archivo_Modelo, "STACK_SIZE");
-
+	inicializarSemaforos(archivo_Modelo);
+	inicializarVariablesCompartidas(archivo_Modelo);
 }
 
 void leerArchivoConfig() {
@@ -340,6 +363,7 @@ int main(void) {
 	exit(0);*/
 
 	leerArchivoConfig();
+
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
 
 	listaPCBs_NEW = list_create();

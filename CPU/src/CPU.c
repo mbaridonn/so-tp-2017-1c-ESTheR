@@ -240,7 +240,8 @@ int main(void) {
 			printf("Me conecte con Memoria!\n");
 			//Solicito siguiente instruccion
 			char* instruccion;
-			while (!terminoElPrograma()) { //ESTO SERÍA SOLO PARA FIFO
+			int codigoError;
+			while (!terminoElPrograma() && !(codigoError = hayError())) { //ESTO SERÍA SOLO PARA FIFO
 				instruccion =
 						conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
 								incomingPCB->indice_codigo[incomingPCB->program_counter].start,
@@ -248,6 +249,10 @@ int main(void) {
 				analizadorLinea(instruccion, &functions, &kernel_functions);
 				incomingPCB->program_counter++;
 				free(instruccion);
+			}
+			if (codigoError != 0){
+				incomingPCB->exit_code = codigoError;
+				//VER QUE MÁS HAY QUE HACER !!
 			}
 			//ANTES DE DESCONECTAR LA CPU, HAY QUE ENVIARLE UN MENSAJE A MEMORIA PARA QUE MATE EL HILO (Y NO ROMPA)
 			break;

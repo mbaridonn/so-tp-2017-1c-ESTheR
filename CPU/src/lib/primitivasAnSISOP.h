@@ -19,6 +19,7 @@ enum accionesCPUMemoria{
 
 void solicitarA(int *cliente, char *nombreCli);
 bool terminoElPrograma(void);
+int hayError();
 
 t_puntero definirVariable(t_nombre_variable identificador_variable);
 t_puntero obtenerPosicionVariable(t_nombre_variable identificador_variable);
