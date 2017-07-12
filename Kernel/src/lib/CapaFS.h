@@ -29,7 +29,7 @@ u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_bander
 void cerrarArchivo(int PID, u_int32_t fileDescriptor);
 int borrarArchivo(int PID, u_int32_t fileDescriptor);
 void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int posicion);
-void leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio);
-void escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio);
+char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio);
+int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio);
 
 #endif /* CAPAFS_H_ */

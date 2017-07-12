@@ -53,7 +53,15 @@ void solicitarA(int *cliente, char *nombreCli) {
 void esperarSenialDeKernel() {
 	char senial[2] = "a";
 	if (recv(serv_kernel, senial, 2, 0) == -1) {
-		printf("Error al recibir senial de FS\n");
+		printf("Error al recibir senial de Kernel\n");
+	}
+}
+
+void enviarSenialAKernel() {
+	char senial[2] = "a";
+	if (send(serv_kernel, senial, 2, 0) == -1) {
+		printf("Error al enviar la senial\n");
+		exit(-1);
 	}
 }
 
@@ -344,19 +352,56 @@ void cerrar(t_descriptor_archivo descriptor_archivo){
 }
 
 void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posicion){
-
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_mover_cursor_archivo);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarIntAKernel(descriptor_archivo);
+	enviarIntAKernel(posicion);
+	//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 }
 
 void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valor_variable tamanio){
-	//Enviar mensaje a Memoria: conseguirDatosDeLaMemoria(pcbAEjecutar->id_proceso, pagina, offset, tamanio); ??
-	//bytesAEscribir SE TIENE QUE OBTENER EN CPU, LEYENDO DE MEMORIA "tamanio" DE BYTES DESDE "informacion" (PENDIENTE!!) ??
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_escribir_archivo);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarIntAKernel(descriptor_archivo);
+	enviarIntAKernel(tamanio);
+	esperarSenialDeKernel();
+	if (send(serv_kernel, informacion/*??*/, tamanio, 0) == -1) {
+		printf("Error al enviar bytes a escribir\n");
+		exit(-1);
+	}
+	int confirmacion = recibirUIntDeKernel();
+	if (confirmacion == k_cpu_accion_OK){
+		printf("Escritura realizada correctamente\n");
+	} else {
+		printf("El programa intentó escribir un archivo sin permisos (Exit Code -4)\n");
+		//ERROR   (Exit Code -4)       (PENDIENTE !!)
+	}
 }
 
 void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valor_variable tamanio){
-	//LEER
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_leer_archivo);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarIntAKernel(descriptor_archivo);
+	enviarIntAKernel(tamanio);
+	int respuesta = recibirUIntDeKernel();
+	char* bytesLeidos;
+	if (respuesta!=k_cpu_error){
+		enviarSenialAKernel();
+		if (recv(serv_kernel, bytesLeidos, tamanio, 0) == -1) {
+			printf("Error al recibir bytes leidos de Kernel\n");
+		}
+	} else {
+		printf("El programa intentó leer un archivo sin permisos (Exit Code -3)\n");
+		//ERROR   (Exit Code -3)       (PENDIENTE !!)
+		return;
+	}
 
-	//DESPUÉS DE RECIBIR LOS bytesLeidos (Y SI NO SE PRODUJO ERROR), HAY QUE ESCRIBIRLOS EN LA POSICION DE MEMORIA QUE INDICA informacion
+	//Hay que escribir los bytesLeidos en la posicion de memoria que indica informacion
 	int nroPag = informacion / tamPag;
 	int offset = informacion % tamPag;
-	//guardarEnMemoria(PID, nroPag, offset, tamanio, bytesLeidos)
+	//guardarEnMemoria(PID, nroPag, offset, tamanio, bytesLeidos)   (PENDIENTE !!)
+	//CREO QUE NO SE PUEDE USAR asignar(informacion, bytesLeidos) PORQUE EL TAMANIO PUEDE SER MAYOR AL DE UNA VARIABLE (4 BYTES)
 }

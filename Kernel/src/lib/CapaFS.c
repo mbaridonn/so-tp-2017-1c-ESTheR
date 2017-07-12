@@ -193,7 +193,7 @@ void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/i
 	tablasDeArchivosDeProcesos[PID][posicionReal].offset = posicion;
 }
 
-void leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio){
+char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio){
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
@@ -222,13 +222,16 @@ void leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tama
 			printf("Error recibiendo el archivo leido\n");
 			exit(-1);
 		}
-		//Enviar mensaje a CPU con los bytesLeidos, para que lo almacene en su puntero informacion (PENDIENTE!!)
+		//Enviar mensaje a CPU con los bytesLeidos, para que lo almacene en su puntero informacion
+		return bytesLeidos;
+
 	} else {
-		//Enviar mensaje a CPU: El programa intentó leer un archivo sin permisos (Exit Code -3)  (PENDIENTE!!)
+		//Enviar mensaje a CPU: El programa intentó leer un archivo sin permisos (Exit Code -3)
+		return NULL;
 	}
 }
 
-void escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio){
+int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio){
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
@@ -252,13 +255,14 @@ void escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*
 		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
 		avisarAccionAFS(tablasDeArchivosDeProcesos[PID][posicionReal].offset);//Uso avisarAccion para pasar parámetro
 		avisarAccionAFS(tamanio);//Uso avisarAccion para pasar parámetro
-		//bytesAEscribir SE TIENE QUE OBTENER EN CPU, LEYENDO DE MEMORIA "tamanio" DE BYTES DESDE "informacion" (PENDIENTE!!)
 		if (send(servFS, bytesAEscribir, tamanio, 0) == -1) {
 			printf("Error enviando los bytes a escribir.\n");
 			exit(-1);
 		}
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+		return k_cpu_accion_OK;
 	} else {
-		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)   (PENDIENTE!!)
+		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)
+		return k_cpu_error;
 	}
 }

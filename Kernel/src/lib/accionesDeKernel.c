@@ -46,6 +46,13 @@ void enviarSenialACPU(int *clieCPU) {
 	}
 }
 
+void esperarSenialDeCPU(int *clieCPU) {
+	char senial[2] = "a";
+	if (recv((*clieCPU), senial, 2, 0) == -1) {
+		printf("Error al recibir senial de CPU\n");
+	}
+}
+
 char* recibirPathDeCPU(int *clieCPU){
 	int tamPath;
 	enviarSenialACPU(clieCPU);
@@ -273,14 +280,48 @@ void atenderACPU(cliente_CPU *unaCPU){
 		break;
 	}
 	case cpu_k_mover_cursor_archivo:
-		//moverCursorArchivo(PID,fd,posicion);
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		int posicion = recibirAccionDe(&(unaCPU->clie_CPU));
+		moverCursorArchivo(PID,fd,posicion);
+		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
+	}
 	case cpu_k_leer_archivo:
-		//leerArchivo(PID,fd,tamanio);
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		int tamanio = recibirAccionDe(&(unaCPU->clie_CPU));
+		char* bytesLeidos = leerArchivo(PID,fd,tamanio);
+		if(bytesLeidos != NULL){
+			enviarIntACPU(&(unaCPU->clie_CPU), tamanio);
+			esperarSenialDeCPU(&(unaCPU->clie_CPU));
+			if (send(&(unaCPU->clie_CPU), bytesLeidos, tamanio, 0) == -1) {
+				printf("Error enviando los bytes leidos\n");
+				exit(-1);
+			}
+		} else {
+			enviarIntACPU(&(unaCPU->clie_CPU), k_cpu_error);
+		}
 		break;
+	}
 	case cpu_k_escribir_archivo:
-		//escribirArchivo(PID,fd,bytesAEscribir,tamanio);
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		int tamanio = recibirAccionDe(&(unaCPU->clie_CPU));
+		char* bytesAEscribir;
+		if (recv(&(unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
+			printf("Error al recibir bytes a escribir de CPU\n");
+		}
+		int confirmacion = escribirArchivo(PID,fd,bytesAEscribir,tamanio);
+		enviarIntACPU(&(unaCPU->clie_CPU), confirmacion);
 		break;
+	}
 	default:
 		break;
 	}
