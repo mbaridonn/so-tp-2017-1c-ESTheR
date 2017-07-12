@@ -142,7 +142,7 @@ char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
 
 void recibirArchivoDe(int *cliente) {
 	FILE *archivo;
-	archivo = fopen("prueba.txt", "w");
+	archivo = fopen("prueba.txt", "w");//POR QUÉ PRUEBA.TXT              ???
 	if (archivo == NULL) {
 		printf("No se pudo escribir el archivo\n");
 		exit(-1);
@@ -168,6 +168,7 @@ void recibirArchivoDe(int *cliente) {
 void cpu_kernel_aviso_desocupada() {
 	solicitarA(&serv_kernel, "Kernel");
 	u_int32_t accion = cpuLibre;
+	esperarSenialDeKernel();
 	if (send(serv_kernel, &accion, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando aviso de liberado a Kernel.\n");
 	}

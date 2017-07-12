@@ -43,17 +43,11 @@ bool terminoElPrograma(void){
 	return terminoPrograma;
 }
 
-void solicitarA(int *cliente, char *nombreCli) {//PEND
+void solicitarA(int *cliente, char *nombreCli) {
 	char a[2] = "a";
 	send((*cliente), a, 2, 0);
 	printf("Esperando atencion de %s..\n", nombreCli);
 	recv((*cliente), a, 2, 0);
-}
-
-void enviarIntAKernel(int mensaje){
-	if(send(serv_kernel,&mensaje,sizeof(int),0)==-1){
-		printf("Error enviando mensaje a Kernel.\n");
-	}
 }
 
 void esperarSenialDeKernel() {
@@ -63,8 +57,16 @@ void esperarSenialDeKernel() {
 	}
 }
 
+void enviarIntAKernel(int mensaje){
+	esperarSenialDeKernel();
+	if(send(serv_kernel,&mensaje,sizeof(int),0)==-1){
+		printf("Error enviando mensaje a Kernel.\n");
+	}
+}
+
 void enviarPathAKernel(char *path){
 	int tamPath = strlen(path)+1;
+	esperarSenialDeKernel();
 	if (send(serv_kernel, &tamPath, sizeof(int), 0) == -1) {
 		printf("Error enviando la longitud del Path\n");
 		exit(-1);
@@ -74,6 +76,23 @@ void enviarPathAKernel(char *path){
 		printf("Error enviando el Path\n");
 		exit(-1);
 	}
+}
+
+void enviarBanderasAKernel(t_banderas flags){
+	esperarSenialDeKernel();
+	if (send(serv_kernel, &flags, sizeof(flags), 0) == -1) {
+		printf("Error enviando las banderas\n");
+		exit(-1);
+	}
+}
+
+u_int32_t recibirUIntDeKernel() {
+	u_int32_t valor;
+	if (recv(serv_kernel, &valor, sizeof(u_int32_t), 0) == -1) {
+		printf("Error recibiendo u_int32_t de Kernel\n");
+		exit(-1);
+	}
+	return valor;
 }
 
 //PRIMITIVAS
@@ -293,15 +312,35 @@ t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
 	enviarIntAKernel(cpu_k_abrir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarPathAKernel(direccion);
-	//enviarBanderasAKernel(flags); <--- DEJÉ ACÁ
+	enviarBanderasAKernel(flags);
+	t_descriptor_archivo fd = recibirUIntDeKernel();
+	if(fd != 0){
+		printf("FD del archivo: %u\n", fd);
+		return fd;
+	} else { //En realidad 0 es un FD válido, pero como está reservado y no lo usamos lo uso para indicar el error
+		printf("El programa intentó acceder a un archivo que no existe (Exit Code -2)\n");
+		return 0; //NO!! SOLO LO PUSE PARA QUE NO ROMPA, NO SÉ QUÉ TIENE QUE DEVOLVER !!
+		//ERROR (Exit Code -2)      PENDIENTE!!!
+	}
 }
 
-void borrar(t_descriptor_archivo direccion){
-
+void borrar(t_descriptor_archivo descriptor_archivo){
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_borrar_archivo);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarIntAKernel(descriptor_archivo);
+	int confirmacion = recibirUIntDeKernel();
+	if(confirmacion == k_cpu_error){
+		//ERROR      PENDIENTE!!!
+	}
 }
 
 void cerrar(t_descriptor_archivo descriptor_archivo){
-
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_cerrar_archivo);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarIntAKernel(descriptor_archivo);
+	//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 }
 
 void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posicion){

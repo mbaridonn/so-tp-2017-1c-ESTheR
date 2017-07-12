@@ -25,9 +25,9 @@ typedef struct{
 } entradaTablaArchivosDeProceso;
 
 void inicializarTablasDeArchivos();
-void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags);
+u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags);
 void cerrarArchivo(int PID, u_int32_t fileDescriptor);
-void borrarArchivo(int PID, u_int32_t fileDescriptor);
+int borrarArchivo(int PID, u_int32_t fileDescriptor);
 void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int posicion);
 void leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio);
 void escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio);

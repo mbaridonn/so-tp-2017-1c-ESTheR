@@ -9,6 +9,10 @@ enum accionesCPUKernel{
 	cpu_k_leer_archivo, cpu_k_escribir_archivo
 };
 
+enum notificacionesKernelCPU{
+	k_cpu_error, k_cpu_accion_OK
+};
+
 enum accionesCPUMemoria{
 	cpu_mem_leer, cpu_mem_escribir
 };

@@ -38,26 +38,45 @@ int divisionRoundUp(int dividendo, int divisor) {
 	return 1 + ((dividendo - 1) / divisor);
 }
 
-void enviarSenialACPU(int *unaCPU) {
+void enviarSenialACPU(int *clieCPU) {
 	char senial[2] = "a";
-	if (send((*unaCPU), senial, 2, 0) == -1) {
+	if (send((*clieCPU), senial, 2, 0) == -1) {
 		printf("Error al enviar la senial\n");
+		exit(-1);
 	}
 }
 
-char* recibirPathDeCPU(int *unaCPU){
+char* recibirPathDeCPU(int *clieCPU){
 	int tamPath;
-	if (recv((*unaCPU), &tamPath, sizeof(int), 0) == -1) {
+	enviarSenialACPU(clieCPU);
+	if (recv((*clieCPU), &tamPath, sizeof(int), 0) == -1) {
 		printf("Error recibiendo la longitud del Path\n");
 		exit(-1);
 	}
 	char* path = reservarMemoria(tamPath);
-	enviarSenialACPU(unaCPU);
-	if (recv((*unaCPU), path, tamPath, 0) == -1) {
+	enviarSenialACPU(clieCPU);
+	if (recv((*clieCPU), path, tamPath, 0) == -1) {
 		printf("Error recibiendo el Path\n");
 		exit(-1);
 	}
 	return path;
+}
+
+t_banderas *recibirBanderasDeCPU(int *clieCPU){
+	t_banderas *flags = reservarMemoria(sizeof(t_banderas));
+	enviarSenialACPU(clieCPU);
+	if (recv((*clieCPU), flags, sizeof(t_banderas), 0) == -1) {
+		printf("Error recibiendo las banderas\n");
+		exit(-1);
+	}
+	return flags;
+}
+
+void enviarIntACPU(int *clieCPU, int valor){//PENDIENTE
+	if (send((*clieCPU), &valor, sizeof(int), 0) == -1) {
+		printf("Error enviando mensaje a CPU\n");
+		exit(-1);
+	}
 }
 
 void enviarArchivoAMemoria(char *buffer, u_int32_t tamBuffer) {
@@ -219,7 +238,9 @@ void atenderAConsola(int *unaConsola) {
 }
 
 void atenderACPU(cliente_CPU *unaCPU){
+	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
+	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 	int PID = recibirAccionDe(&(unaCPU->clie_CPU));
 	switch(accion){
 	case cpuLibre:
@@ -228,17 +249,29 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_abrir_archivo:
 	{
 		char* path = recibirPathDeCPU(&(unaCPU->clie_CPU));
-		//recibirBanderasDeCPU(&(unaCPU->clie_CPU));
-		//abrirArchivo(PID,path,flags);
+		t_banderas *flags = recibirBanderasDeCPU(&(unaCPU->clie_CPU));
+		u_int32_t fd = abrirArchivo(PID,path,*flags);
+		enviarIntACPU(&(unaCPU->clie_CPU), fd);
 		free(path);
+		free(flags);
 		break;
 	}
 	case cpu_k_cerrar_archivo:
-		//cerrarArchivo(PID,fd);
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		cerrarArchivo(PID,fd);
+		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
+	}
 	case cpu_k_borrar_archivo:
-		//borrarArchivo(PID,fd);
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		int confirmacion = borrarArchivo(PID,fd);//Recibe si se pudo completar o si se produjo error
+		enviarIntACPU(&(unaCPU->clie_CPU),confirmacion);
 		break;
+	}
 	case cpu_k_mover_cursor_archivo:
 		//moverCursorArchivo(PID,fd,posicion);
 		break;

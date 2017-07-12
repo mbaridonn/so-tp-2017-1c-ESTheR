@@ -31,7 +31,7 @@ void enviarPathAFS(char *path){
 	}
 }
 
-void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags){
+u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags){
 	char* strFlags = string_new();
 	if(flags.creacion) string_append(&strFlags, "c");
 	if(flags.lectura) string_append(&strFlags, "r");
@@ -52,8 +52,8 @@ void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas fl
 			enviarPathAFS(direccion);
 			//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		} else {
-			//Enviar mensaje a CPU: El programa intentó acceder a un archivo que no existe (Exit Code -2) (PENDIENTE!!)
-			return;
+			//Enviar mensaje a CPU: El programa intentó acceder a un archivo que no existe (Exit Code -2)
+			return 0;//En realidad 0 es un FD válido, pero como está reservado y no lo usamos lo uso para indicar el error
 		}
 	}
 
@@ -102,11 +102,10 @@ void abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas fl
 	tablasDeArchivosDeProcesos[PID][j].fdGlobal = i;//No es necesario castear xq voy a estar trabajando con enteros chicos (!)
 	tablasDeArchivosDeProcesos[PID][j].offset = 0;
 
-	u_int32_t fileDescriptor = j+3;//Las primeras 3 posiciones de la tabla de archivos del proceso están reservadas (!)
-
-	//Devolver FD a la CPU   (PENDIENTE!!)
-
 	free(strFlags);
+
+	u_int32_t fileDescriptor = j+3;//Las primeras 3 posiciones de la tabla de archivos del proceso están reservadas (!)
+	return fileDescriptor;
 }
 
 void entradaTablaArchivosDeProceso_limpiar(entradaTablaArchivosDeProceso *entrada){
@@ -145,7 +144,7 @@ void cerrarArchivo(int PID, u_int32_t fileDescriptor){
 	}
 }
 
-void borrarArchivo(int PID, u_int32_t fileDescriptor){
+int borrarArchivo(int PID, u_int32_t fileDescriptor){
 	if(PID>=CANT_PROC_TABLA_ARCH){
 		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
@@ -168,9 +167,10 @@ void borrarArchivo(int PID, u_int32_t fileDescriptor){
 		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		cerrarArchivo(PID,fileDescriptor);
+		return k_cpu_accion_OK;
 	} else {
 		printf("El archivo no puede ser borrado, ya que está abierto por otro proceso\n");
-		exit(-1); //SE DEBERÍA ENVIAR UN MENSAJE AL CPU       (PENDIENTE!!)
+		return k_cpu_error;
 	}
 }
 
