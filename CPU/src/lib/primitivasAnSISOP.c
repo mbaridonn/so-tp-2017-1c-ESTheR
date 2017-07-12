@@ -50,23 +50,21 @@ void solicitarA(int *cliente, char *nombreCli) {//PEND
 	recv((*cliente), a, 2, 0);
 }
 
-void enviarIntAKernel(int mensaje){//PEND
-	solicitarA(&serv_kernel,"Kernel");
+void enviarIntAKernel(int mensaje){
 	if(send(serv_kernel,&mensaje,sizeof(int),0)==-1){
 		printf("Error enviando mensaje a Kernel.\n");
 	}
 }
 
-void esperarSenialDeKernel() {//PEND
+void esperarSenialDeKernel() {
 	char senial[2] = "a";
 	if (recv(serv_kernel, senial, 2, 0) == -1) {
 		printf("Error al recibir senial de FS\n");
 	}
 }
 
-void enviarPathAKernel(char *path){//PEND
+void enviarPathAKernel(char *path){
 	int tamPath = strlen(path)+1;
-	solicitarA(&serv_kernel,"Kernel");
 	if (send(serv_kernel, &tamPath, sizeof(int), 0) == -1) {
 		printf("Error enviando la longitud del Path\n");
 		exit(-1);
@@ -291,10 +289,11 @@ void liberar(t_puntero puntero){
 }
 
 t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
+	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_abrir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
-	enviarPathAKernel(direccion);// FALTA RECIBIR EN ACCIONESDEKERNEL!!  <--- DEJÉ ACÁ
-	//enviarBanderasAKernel(flags);
+	enviarPathAKernel(direccion);
+	//enviarBanderasAKernel(flags); <--- DEJÉ ACÁ
 }
 
 void borrar(t_descriptor_archivo direccion){

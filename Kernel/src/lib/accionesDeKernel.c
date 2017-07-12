@@ -38,6 +38,28 @@ int divisionRoundUp(int dividendo, int divisor) {
 	return 1 + ((dividendo - 1) / divisor);
 }
 
+void enviarSenialACPU(int *unaCPU) {
+	char senial[2] = "a";
+	if (send((*unaCPU), senial, 2, 0) == -1) {
+		printf("Error al enviar la senial\n");
+	}
+}
+
+char* recibirPathDeCPU(int *unaCPU){
+	int tamPath;
+	if (recv((*unaCPU), &tamPath, sizeof(int), 0) == -1) {
+		printf("Error recibiendo la longitud del Path\n");
+		exit(-1);
+	}
+	char* path = reservarMemoria(tamPath);
+	enviarSenialACPU(unaCPU);
+	if (recv((*unaCPU), path, tamPath, 0) == -1) {
+		printf("Error recibiendo el Path\n");
+		exit(-1);
+	}
+	return path;
+}
+
 void enviarArchivoAMemoria(char *buffer, u_int32_t tamBuffer) {
 	if (send(servMemoria, &tamBuffer, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando longitud del archivo\n");
@@ -198,13 +220,19 @@ void atenderAConsola(int *unaConsola) {
 
 void atenderACPU(cliente_CPU *unaCPU){
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
+	int PID = recibirAccionDe(&(unaCPU->clie_CPU));
 	switch(accion){
 	case cpuLibre:
 		unaCPU->libre = 1;
 		break;
 	case cpu_k_abrir_archivo:
+	{
+		char* path = recibirPathDeCPU(&(unaCPU->clie_CPU));
+		//recibirBanderasDeCPU(&(unaCPU->clie_CPU));
 		//abrirArchivo(PID,path,flags);
+		free(path);
 		break;
+	}
 	case cpu_k_cerrar_archivo:
 		//cerrarArchivo(PID,fd);
 		break;
