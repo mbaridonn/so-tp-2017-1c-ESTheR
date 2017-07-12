@@ -11,13 +11,16 @@ bool terminoPrograma;
 t_pcb* pcbAEjecutar;
 int stackSize;
 int tamPag;
+int serv_kernel;
 
 //FUNCIONES EXTRA
 
-void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag){
+void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel){
 	pcbAEjecutar = _pcbAEjecutar;
 	stackSize = _stackSize;
 	tamPag = _tamPag;
+	serv_kernel = _serv_kernel;
+
 	terminoPrograma = false;
 }
 
@@ -38,6 +41,41 @@ bool esArgumento(t_nombre_variable identificador_variable){
 
 bool terminoElPrograma(void){
 	return terminoPrograma;
+}
+
+void solicitarA(int *cliente, char *nombreCli) {//PEND
+	char a[2] = "a";
+	send((*cliente), a, 2, 0);
+	printf("Esperando atencion de %s..\n", nombreCli);
+	recv((*cliente), a, 2, 0);
+}
+
+void enviarIntAKernel(int mensaje){//PEND
+	solicitarA(&serv_kernel,"Kernel");
+	if(send(serv_kernel,&mensaje,sizeof(int),0)==-1){
+		printf("Error enviando mensaje a Kernel.\n");
+	}
+}
+
+void esperarSenialDeKernel() {//PEND
+	char senial[2] = "a";
+	if (recv(serv_kernel, senial, 2, 0) == -1) {
+		printf("Error al recibir senial de FS\n");
+	}
+}
+
+void enviarPathAKernel(char *path){//PEND
+	int tamPath = strlen(path)+1;
+	solicitarA(&serv_kernel,"Kernel");
+	if (send(serv_kernel, &tamPath, sizeof(int), 0) == -1) {
+		printf("Error enviando la longitud del Path\n");
+		exit(-1);
+	}
+	esperarSenialDeKernel();
+	if (send(serv_kernel, path, tamPath, 0) == -1) {
+		printf("Error enviando el Path\n");
+		exit(-1);
+	}
 }
 
 //PRIMITIVAS
@@ -253,7 +291,10 @@ void liberar(t_puntero puntero){
 }
 
 t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
-
+	enviarIntAKernel(cpu_k_abrir_archivo);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarPathAKernel(direccion);// FALTA RECIBIR EN ACCIONESDEKERNEL!!  <--- DEJÉ ACÁ
+	//enviarBanderasAKernel(flags);
 }
 
 void borrar(t_descriptor_archivo direccion){
@@ -269,9 +310,15 @@ void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posic
 }
 
 void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valor_variable tamanio){
-
+	//Enviar mensaje a Memoria: conseguirDatosDeLaMemoria(pcbAEjecutar->id_proceso, pagina, offset, tamanio); ??
+	//bytesAEscribir SE TIENE QUE OBTENER EN CPU, LEYENDO DE MEMORIA "tamanio" DE BYTES DESDE "informacion" (PENDIENTE!!) ??
 }
 
 void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valor_variable tamanio){
+	//LEER
 
+	//DESPUÉS DE RECIBIR LOS bytesLeidos (Y SI NO SE PRODUJO ERROR), HAY QUE ESCRIBIRLOS EN LA POSICION DE MEMORIA QUE INDICA informacion
+	int nroPag = informacion / tamPag;
+	int offset = informacion % tamPag;
+	//guardarEnMemoria(PID, nroPag, offset, tamanio, bytesLeidos)
 }

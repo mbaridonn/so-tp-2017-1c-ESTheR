@@ -41,10 +41,9 @@ void solicitarA(int *cliente, char *nombreCli) {
 	printf("Esperando atencion de %s..\n", nombreCli);
 	recv((*cliente), a, 2, 0);
 }
+
 void msjConexionCon(char *s) {
-	printf(
-			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
-			s);
+	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
 void *reservarMemoria(int tamanioArchivo) {
@@ -91,8 +90,7 @@ void mostrarConfirmacion(int confirmacion) {
 	if (conf == hayPaginas) {
 		printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
 	} else {
-		printf(
-				"Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
+		printf("Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
 	}
 }
 

@@ -1,4 +1,5 @@
 #include "accionesDeKernel.h"
+#include "CapaFS.h"//OJO!! DEPENDENCIA CIRCULAR
 
 int recibirAccionDe(int *cliente){
 	u_int32_t accion;
@@ -38,7 +39,6 @@ int divisionRoundUp(int dividendo, int divisor) {
 }
 
 void enviarArchivoAMemoria(char *buffer, u_int32_t tamBuffer) {
-
 	if (send(servMemoria, &tamBuffer, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando longitud del archivo\n");
 		exit(-1);
@@ -201,6 +201,24 @@ void atenderACPU(cliente_CPU *unaCPU){
 	switch(accion){
 	case cpuLibre:
 		unaCPU->libre = 1;
+		break;
+	case cpu_k_abrir_archivo:
+		//abrirArchivo(PID,path,flags);
+		break;
+	case cpu_k_cerrar_archivo:
+		//cerrarArchivo(PID,fd);
+		break;
+	case cpu_k_borrar_archivo:
+		//borrarArchivo(PID,fd);
+		break;
+	case cpu_k_mover_cursor_archivo:
+		//moverCursorArchivo(PID,fd,posicion);
+		break;
+	case cpu_k_leer_archivo:
+		//leerArchivo(PID,fd,tamanio);
+		break;
+	case cpu_k_escribir_archivo:
+		//escribirArchivo(PID,fd,bytesAEscribir,tamanio);
 		break;
 	default:
 		break;

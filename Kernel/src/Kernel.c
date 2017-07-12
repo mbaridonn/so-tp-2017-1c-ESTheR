@@ -115,11 +115,9 @@ void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
 	printf("PCB enviado a CPU exitosamente\n");
 }
 
-
 void cliente_CPU_destroy(cliente_CPU *puntero){
 	free(puntero);
 }
-
 
 void liberarSiEraCPU(int proceso){
 	if(proceso==cpu){
@@ -165,7 +163,6 @@ void asignarProcesosSegunFIFO() {
 			list_add(listaPCBs_EXEC, pcb);
 		}
 	}
-
 }
 
 void asignarProcesosSegunRoundRobin() {
@@ -178,7 +175,6 @@ void planificar() {
 	} else {
 		asignarProcesosSegunRoundRobin();
 	}
-
 }
 
 void abrirHiloPlanificador() {
@@ -318,12 +314,12 @@ void abrirHiloConsolaKernel(){
 	}
 }
 
-
 int main(void) {
 
 	inicializarTablasDeArchivos();
 
-	/*char* PROGRAMA =
+	/*	PRUEBA SERIALIZACIÓN (DESPUÉS BORRAR)
+	 * char* PROGRAMA =
 		"begin\n"
 		"variables a, b\n"
 		"a = 3\n"
@@ -345,7 +341,6 @@ int main(void) {
 
 	leerArchivoConfig();
 	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
-	struct sockaddr_in direccionServidor;
 
 	listaPCBs_NEW = list_create();
 	listaPCBs_READY = list_create();
@@ -354,6 +349,7 @@ int main(void) {
 	listaPCBs_EXIT = list_create();
 	listaCPUs = list_create();
 
+	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
 	direccionServidor.sin_port = htons(8080);
@@ -445,7 +441,6 @@ int main(void) {
 			default:
 				break;
 			}
-
 		}
 	}
 

@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <parser/metadata_program.h>
 #include <commons/config.h>
 
 #include "lib/pcb.h"
@@ -14,18 +13,10 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
-int serv_kernel,serv_memoria;
+int serv_kernel, serv_memoria;
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
-};
-
-enum accionesCPUKernel{
-	cpuLibre
-};
-
-enum accionesCPUMemoria{
-	cpu_mem_leer, cpu_mem_escribir
 };
 
 typedef struct {
@@ -134,13 +125,6 @@ void recibirArchivoDe(int *cliente) {
 	free(bufferArchivo);
 }
 
-void solicitarA(int *cliente, char *nombreCli) {
-	char a[2] = "a";
-	send((*cliente), a, 2, 0);
-	printf("Esperando atencion de %s..\n", nombreCli);
-	recv((*cliente), a, 2, 0);
-}
-
 void cpu_kernel_aviso_desocupada(){
 	solicitarA(&serv_kernel,"Kernel");
 	u_int32_t accion = cpuLibre;
@@ -202,7 +186,7 @@ int main(void) {
 		printf("PCB start instruccion %d: %d\n",incomingPCB->program_counter, incomingPCB->indice_codigo[incomingPCB->program_counter].start);
 		printf("PCB offset instruccion %d: %d\n",incomingPCB->program_counter, incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
 
-		//FALTA inicializarPrimitivasANSISOP(pcbAEjecutar, stackSize, tamPag);  !!!
+		//FALTA inicializarPrimitivasANSISOP(incomingPCB, stackSize, tamPag, serv_kernel);  !!!
 
 		conectar(&serv_memoria, &direccionServidor2);
 		int procesoConectado2 = handshake(&serv_memoria, cpu);
@@ -212,7 +196,7 @@ int main(void) {
 				//Solicito siguiente instruccion
 				char* instruccion;
 				while(!terminoElPrograma()){//ESTO SERÍA SOLO PARA FIFO
-					instruccion = conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0/*Las páginas de código son las primeras en memoria*/,
+					instruccion = conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
 						incomingPCB->indice_codigo[incomingPCB->program_counter].start,
 						incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
 					analizadorLinea(instruccion, &functions, &kernel_functions);
@@ -225,7 +209,6 @@ int main(void) {
 				printf("No me puedo conectar con vos.\n");
 				break;
 			}
-
 		break;
 	default:
 		printf("No me puedo conectar con vos.\n");

@@ -4,8 +4,17 @@
 #include <parser/metadata_program.h>
 #include <parser/parser.h>
 
-/*registroStack* reg_stack_create();
-void restaurarContextoDeEjecucion();*/
+enum accionesCPUKernel{
+	cpuLibre, cpu_k_abrir_archivo, cpu_k_cerrar_archivo, cpu_k_borrar_archivo, cpu_k_mover_cursor_archivo,
+	cpu_k_leer_archivo, cpu_k_escribir_archivo
+};
+
+enum accionesCPUMemoria{
+	cpu_mem_leer, cpu_mem_escribir
+};
+
+void solicitarA(int *cliente, char *nombreCli);
+bool terminoElPrograma(void);
 
 t_puntero definirVariable(t_nombre_variable identificador_variable);
 t_puntero obtenerPosicionVariable(t_nombre_variable identificador_variable);
@@ -17,7 +26,6 @@ void irAlLabel(t_nombre_etiqueta t_nombre_etiqueta);
 void llamarSinRetorno(t_nombre_etiqueta etiqueta);
 void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar);
 void finalizar(void);
-bool terminoElPrograma(void);
 void retornar(t_valor_variable retorno);
 
 void wait(t_nombre_semaforo identificador_semaforo);
