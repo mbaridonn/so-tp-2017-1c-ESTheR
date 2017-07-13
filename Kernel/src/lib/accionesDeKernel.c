@@ -258,6 +258,18 @@ void atenderAConsola(int *unaConsola) {
 	}
 }
 
+void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
+	quitar_PCB_de_Lista(listaActual, pcb);
+	list_add(listaDestino, pcb);
+}
+
+t_pcb *obtener_PCB_segun_PID(int PID){
+	bool tieneEstePID(t_pcb *unPCB){
+		return unPCB->id_proceso==PID;
+	}
+	return list_find(listaPCBs_EXEC, (void*) tieneEstePID);
+}
+
 void atenderACPU(cliente_CPU *unaCPU){
 	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
@@ -266,6 +278,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	switch(accion){
 	case cpuLibre:
 		unaCPU->libre = 1;
+		t_pcb *un_pcb = obtener_PCB_segun_PID(PID);
+		transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_READY,un_pcb);
 		break;
 	case cpu_k_obtener_valor_compartida:
 	{

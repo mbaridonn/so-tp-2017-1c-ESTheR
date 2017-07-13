@@ -17,6 +17,10 @@ enum notificacionesKernelCPU{
 	k_cpu_error, k_cpu_accion_OK
 };
 
+enum algoritmos_planificacion{
+	FIFO,RR
+};
+
 enum accionesMemoria {
 	asignarPaginas, finalizarProceso
 };

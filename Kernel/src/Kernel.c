@@ -181,19 +181,45 @@ void asignarProcesosSegunFIFO() {
 			if(cpuDesocupada==NULL)break;
 			cpuDesocupada->libre = 0;
 			pcb = list_get(listaPCBs_READY, 0);
+			transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
 			enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
-			quitar_PCB_de_Lista(listaPCBs_READY, pcb);
-			list_add(listaPCBs_EXEC, pcb);
 		}
 	}
 }
 
 void asignarProcesosSegunRoundRobin() {
 	printf("************ Planificando segun RR *****************\n");
+	cliente_CPU *cpuDesocupada;
+		t_pcb *pcb;
+	while (1) {
+			if (hayProcesosReady() && planificacionActivada) {
+				cpuDesocupada = obtenerCPUDesocupada();
+				if(cpuDesocupada==NULL)break;
+				cpuDesocupada->libre = 0;
+				pcb = list_get(listaPCBs_READY, 0);
+				transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
+				enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
+			}
+		}
+}
+
+bool str_compare(char vec1[],char vec2[]){
+	int i = 0;
+	if(strlen(vec1)!=strlen(vec2)){
+		return false;
+	}
+	while(vec1[i]!='\0'){
+		if(vec1[i]!=vec2[i]){
+			printf("E\n");
+			return false;
+		}
+		i++;
+	}
+	return true;
 }
 
 void planificar() {
-	if (strcmp("FIFO\n", config->ALGORITMO)) {
+	if (str_compare("FIFO", config->ALGORITMO)) {
 		asignarProcesosSegunFIFO();
 	} else {
 		asignarProcesosSegunRoundRobin();
@@ -337,6 +363,33 @@ void abrirHiloConsolaKernel(){
 	}
 }
 
+void enviar_planificacion(int cpu){
+	int algoritmo = RR;
+	if(str_compare("FIFO", config->ALGORITMO)){
+		algoritmo = FIFO;
+	}
+	if(send(cpu,&algoritmo,sizeof(int),0) == -1){
+		printf("Error al enviar el tipo de algoritmo a CPU.\n");
+		exit(-1);
+	}
+}
+
+void enviar_quantum(int cpu){
+	int quantum = config->QUANTUM;
+	if(str_compare("FIFO", config->ALGORITMO)){
+		quantum = -1;
+	}
+	if(send(cpu,&quantum,sizeof(int),0) == -1){
+		printf("Error al enviar el quantum a CPU.\n");
+		exit(-1);
+	}
+}
+
+void enviar_planificacion_y_quantum(int cpu){
+	enviar_planificacion(cpu);
+	enviar_quantum(cpu);
+}
+
 int main(void) {
 
 	inicializarTablasDeArchivos();
@@ -421,6 +474,7 @@ int main(void) {
 
 			case cpu:
 				msjConexionCon("CPU");
+				enviar_planificacion_y_quantum(cliente);
 				cliente_CPU *nuevaCPU = crearClienteCPU(&cliente);
 				list_add(listaCPUs, nuevaCPU);
 				setInformacionSockets(client_socket, procesos_por_socket, cpu);

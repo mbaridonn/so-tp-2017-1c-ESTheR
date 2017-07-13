@@ -13,7 +13,11 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
-int serv_kernel, serv_memoria;
+int serv_kernel, serv_memoria, planificacion, quantum;
+
+enum algoritmos_planificacion{
+	FIFO,RR
+};
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
@@ -174,6 +178,31 @@ void cpu_kernel_aviso_desocupada() {
 	}
 }
 
+void recibir_planificacion(){
+	if(recv(serv_kernel,&planificacion,sizeof(int),0) == -1){
+		printf("Error al recibir el tipo de algoritmo de planificacion.\n");
+		exit(-1);
+	}
+}
+
+void recibir_quantum(){
+	if(recv(serv_kernel,&quantum,sizeof(int),0) == -1){
+		printf("Error al recibir el quantum de planificacion.\n");
+		exit(-1);
+	}
+}
+
+void recibir_planificacion_y_quantum(){
+	recibir_planificacion();
+	recibir_quantum();
+	if(planificacion==FIFO){
+		printf("Me llego que la planificacion es FIFO y el QUANTUM en:%d\n",quantum);
+	}
+	if(planificacion==RR){
+		printf("Me llego que la planificacion es RR y el QUANTUM en:%d\n",quantum);
+	}
+}
+
 int main(void) {
 	leerArchivo();
 
@@ -212,6 +241,7 @@ int main(void) {
 	switch (procesoConectado) {
 	case kernel:
 		printf("Me conecte con el Kernel!\n");
+		recibir_planificacion_y_quantum();
 		//Recibo PCB y lo deserializo
 		void* tmp_buff = calloc(1, sizeof(int));
 		int pcb_size = 0, pcb_size_index = 0;
