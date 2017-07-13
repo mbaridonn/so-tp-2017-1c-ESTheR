@@ -767,6 +767,23 @@ void finalizarPrograma(int PID) {
 	printf("Se ha finalizado el proceso %d\n", PID);
 }
 
+void liberarPaginaDeProceso(int PID, int nroPag){
+	int paginaABorrar;
+	if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) { //No se encontró la pagina
+		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+	}
+	paginaABorrar = paginaABorrar / tamFrame; //buscarPagina devuelve la pos en bytes
+	if(paginaABorrar == cantPagsPorPID[PID]-1){//Si es la última página
+		estructuraAdm[paginaABorrar].PID = -1;//La elimino
+		cantPagsPorPID[PID]--;
+		printf("Se libero la pagina %d del proceso %d\n", nroPag, PID);
+	} else {//SI NO ES LA ÚLTIMA, NO SE HACE NADA (EN REALIDAD, SE DEBERÍA ELIMINAR IGUAL). FALLA SILENCIOSA !!!
+		printf("No se puede liberar la pagina %d del proceso %d\n", nroPag, PID);
+	}
+
+	//HACE FALTA ELIMINAR LA PÁGINA DE LA CACHÉ?
+}
+
 void ejecutarOperaciones() { // ES DE PRUEBA. BORRAR DESPUES
 	/*Antes de ejecutar cada una hay que esperar una cantidad de tiempo configurable (en milisegundos), simulando el tiempo de
 	 acceso a memoria*/
