@@ -393,6 +393,7 @@ void enviar_planificacion_y_quantum(int cpu){
 int main(void) {
 
 	inicializarTablasDeArchivos();
+	inicializar_tablaHeap();
 
 	/*	PRUEBA SERIALIZACIÓN (DESPUÉS BORRAR)
 	 * char* PROGRAMA =
@@ -475,6 +476,8 @@ int main(void) {
 			case cpu:
 				msjConexionCon("CPU");
 				enviar_planificacion_y_quantum(cliente);
+				enviarIntACPU(&cliente,config->STACK_SIZE);
+				enviarIntACPU(&cliente,tamanioPagMemoria);
 				cliente_CPU *nuevaCPU = crearClienteCPU(&cliente);
 				list_add(listaCPUs, nuevaCPU);
 				setInformacionSockets(client_socket, procesos_por_socket, cpu);
@@ -521,6 +524,6 @@ int main(void) {
 			}
 		}
 	}
-
+	liberar_tablaHeap();
 	return 0;
 }

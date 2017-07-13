@@ -6,6 +6,7 @@
 #include <commons/collections/list.h>
 #include "funcionesMemoria.h"
 
+
 int tamFrame = 0;
 int cantFrames = 0;
 int *retardoMemoria = NULL;
@@ -13,7 +14,7 @@ int *retardoMemoria = NULL;
 char* memoriaPrincipal;
 
 enum accionesMemoriaKernel{
-	asignarPaginas, finalizarProceso
+	k_mem_inicializarPrograma,k_mem_finalizar_programa,k_mem_asignar_paginas, k_mem_leer_paginas, k_mem_escribir_paginas, k_mem_liberar_pagina
 };
 
 enum accionesCPUMemoria{
@@ -21,7 +22,7 @@ enum accionesCPUMemoria{
 };
 
 enum confirmacion {
-	noHayPaginas, hayPaginas
+	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina
 };
 
 typedef struct {
@@ -398,14 +399,23 @@ int recibir_process_id() {
 	return process_id;
 }
 
-void kernel_mem_asignarPaginas() {
+int recibir_int_de_Kernel(){
+	int un_int;
+	if (recv(clienteKernel, &un_int, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el process_id\n");
+		return EXIT_FAILURE;
+	}
+	return un_int;
+}
+
+void kernel_mem_inicializarPrograma() {
 	u_int32_t process_id, cant_pags;
 	enviarSenialAKernel();
 	process_id = recibir_process_id();
 	cant_pags = recibir_cant_paginas();
 	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
 			cant_pags);
-	asignarPaginasAProceso(process_id, cant_pags);
+	inicializarPrograma(process_id, cant_pags);
 
 	recibirArchivoDe(&clienteKernel, process_id);
 	enviarSenialAKernel();
@@ -426,16 +436,64 @@ void kernel_mem_finalizarProceso(){
 	finalizarPrograma(process_id);
 }
 
+void kernel_mem_leerPaginas(){
+	int pid = recibir_process_id(), nroPagina = recibir_int_de_Kernel(), offset = recibir_int_de_Kernel(), tamanio = recibir_int_de_Kernel();
+	char *bytesLeidos = leerPagina(pid,nroPagina,offset,tamanio);
+	if(send(clienteKernel,bytesLeidos,tamanio,0)==-1){
+		printf("Error al enviar bytesLeidos a Kernel.\n");
+		exit(-1);
+	}
+}
+
+char *recibirBufferDeKernel(int *tamanio){
+	char *buffer;
+	if (recv(clienteKernel, tamanio, sizeof(int), 0) == -1) {
+		printf("Error recibiendo longitud del buffer\n");
+		exit(-1);
+	}
+	buffer = reservarMemoria(*tamanio);
+	enviarSenialAKernel();
+	if (recv(clienteKernel, buffer, *tamanio, 0) == -1) {
+		printf("Error recibiendo el buffer\n");
+		exit(-1);
+	}
+	return buffer;
+}
+
+void kernel_mem_escribirPaginas(){
+	int pid = recibir_process_id(), nroPagina = recibir_int_de_Kernel(), offset = recibir_int_de_Kernel(), tamanio;
+	char *bytesAEscribir = recibirBufferDeKernel(&tamanio);
+	escribirPagina(pid,nroPagina,offset,tamanio,bytesAEscribir);
+	free(bytesAEscribir);
+
+}
+
+void kernel_mem_liberarPagina(){
+	int pid = recibir_int_de_Kernel(), nroPagina = recibir_int_de_Kernel();
+	liberarPaginaDeProceso(pid,nroPagina);
+}
+
+
 void atenderKernel() {
 	while (1) {
 		int accionPedida = accionPedidaPorKernel();
 		enviarSenialAKernel();
+		//FALTA SLEEP EN TODOS MENOR EN LEER PAGINAS
 		switch (accionPedida) {
-		case asignarPaginas://Asigna páginas y escribe archivo en Memoria
-			kernel_mem_asignarPaginas();
+		case k_mem_inicializarPrograma://Asigna páginas y escribe archivo en Memoria
+			kernel_mem_inicializarPrograma();
 			break;
-		case finalizarProceso:
+		case k_mem_finalizar_programa:
 			kernel_mem_finalizarProceso();
+			break;
+		case k_mem_leer_paginas:
+			kernel_mem_leerPaginas();
+			break;
+		case k_mem_escribir_paginas:
+			kernel_mem_escribirPaginas();
+			break;
+		case k_mem_liberar_pagina:
+			kernel_mem_liberarPagina();
 			break;
 		default:
 			break;
@@ -769,6 +827,7 @@ void finalizarPrograma(int PID) {
 
 void liberarPaginaDeProceso(int PID, int nroPag){
 	int paginaABorrar;
+	u_int32_t confirmacion;
 	if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) { //No se encontró la pagina
 		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 	}
@@ -776,9 +835,14 @@ void liberarPaginaDeProceso(int PID, int nroPag){
 	if(paginaABorrar == cantPagsPorPID[PID]-1){//Si es la última página
 		estructuraAdm[paginaABorrar].PID = -1;//La elimino
 		cantPagsPorPID[PID]--;
+		confirmacion = exitoLiberacionPagina;
 		printf("Se libero la pagina %d del proceso %d\n", nroPag, PID);
 	} else {//SI NO ES LA ÚLTIMA, NO SE HACE NADA (EN REALIDAD, SE DEBERÍA ELIMINAR IGUAL). FALLA SILENCIOSA !!!
 		printf("No se puede liberar la pagina %d del proceso %d\n", nroPag, PID);
+		confirmacion = falloLiberacionPagina;
+	}
+	if(send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0)==-1){
+		printf("Error enviando confirmacion de liberar pagina.\n");
 	}
 
 	//HACE FALTA ELIMINAR LA PÁGINA DE LA CACHÉ?

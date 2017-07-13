@@ -13,7 +13,7 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
-int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas;
+int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas, stackSize,tamPag;
 
 enum algoritmos_planificacion {
 	FIFO, RR
@@ -243,6 +243,7 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	char* instruccion;
 	int codigoError;
 	instrucciones_ejecutadas = 0;
+	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel);
 	while (!terminoElPrograma() && !(codigoError = hayError()) && hay_que_seguir_ejecutando()) { //ESTO SERÍA SOLO PARA FIFO
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
 				un_pcb->indice_codigo[un_pcb->program_counter].start,
@@ -276,7 +277,9 @@ void conectarse_con_kernel(struct sockaddr_in *direccionServidor){
 		case kernel:
 			printf("Me conecte con el Kernel!\n");
 			recibir_planificacion_y_quantum();
-			//FALTA inicializarPrimitivasANSISOP(incomingPCB, stackSize, tamPag, serv_kernel);  !!!
+			stackSize = recibirUIntDeKernel();
+			tamPag = recibirUIntDeKernel();
+			printf("Recibi stackSize: %d y tamPag: %d\n",stackSize,tamPag);
 			break;
 		default:
 			printf("No me puedo conectar con vos.\n");

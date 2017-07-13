@@ -22,7 +22,7 @@ enum algoritmos_planificacion{
 };
 
 enum accionesMemoria {
-	asignarPaginas, finalizarProceso
+	k_mem_inicializarPrograma,k_mem_finalizar_programa,k_mem_asignar_paginas, k_mem_leer_paginas, k_mem_escribir_paginas, k_mem_liberar_pagina
 };
 
 enum accionesCPU{
@@ -31,7 +31,7 @@ enum accionesCPU{
 };
 
 enum confirmacion {
-	noHayPaginas, hayPaginas
+	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina
 };
 
 enum acciones {

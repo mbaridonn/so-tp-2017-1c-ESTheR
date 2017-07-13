@@ -23,6 +23,8 @@ void recibirArchivoDe(int *unCliente, char *bufferArchivo, u_int32_t fsize) {
 	}
 }
 
+
+
 void validarAperturaArchivo(FILE *archivo) {
 	if (archivo == NULL) {
 		printf("No se pudo escribir el archivo\n");
@@ -79,9 +81,28 @@ t_banderas *recibirBanderasDeCPU(int *clieCPU){
 	return flags;
 }
 
-void enviarIntACPU(int *clieCPU, int valor){//PENDIENTE
+void enviarIntACPU(int *clieCPU, int valor){
 	if (send((*clieCPU), &valor, sizeof(int), 0) == -1) {
 		printf("Error enviando mensaje a CPU\n");
+		exit(-1);
+	}
+}
+
+void enviarIntAMemoria(int valor){
+	if (send(servMemoria, &valor, sizeof(int), 0) == -1) {
+		printf("Error enviando mensaje a Memoria\n");
+		exit(-1);
+	}
+}
+
+void enviarBufferAMemoria(char *buffer, int tamanio) {
+	if (send(servMemoria, &tamanio, sizeof(int), 0) == -1) {
+		printf("Error enviando longitud del archivo\n");
+		exit(-1);
+	}
+	esperarSenialDeMemoria();
+	if (send(servMemoria, buffer, tamanio, 0) == -1) {
+		printf("Error enviando el buffer\n");
 		exit(-1);
 	}
 }
@@ -166,14 +187,15 @@ void avisarAccionAFS(int accion) {
 
 void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
-	avisarAccionAMemoria(finalizarProceso);
+	avisarAccionAMemoria(k_mem_finalizar_programa);
 	if (send(servMemoria, &process, sizeof(int), 0) == -1) {
 		printf("Error enviando el process_id\n");
 		exit(-1);
 	}
-	quitar_PCB_de_Lista(listaPCBs_NEW,pcb);
-	list_add(listaPCBs_EXIT, pcb);
-	if(false);
+	transicion_colas_proceso(listaPCBs_NEW,listaPCBs_EXIT,pcb); // Tendria que considerar si estaba en EXEC.
+	//FALTA: MEMORY LEAKS
+    //Al finalizar un proceso, el Kernel deberá informar si un proceso liberó todas las estructuras en las páginas de Heap.
+
 	//AL ELIMINAR UN PROCESO, HABRÍA QUE ELIMINAR SU TABLA DE ARCHIVOS DE tablasDeArchivosDeProcesos
 } //ESTO NO ESTÁ PROBADO, PERO BUENO, HAY QUE TENER FE
 
@@ -232,7 +254,7 @@ void proced_script(int *unCliente) {
 	int pid = pcb->id_proceso;
 
 	//Envia archivo a Memoria
-	avisarAccionAMemoria(asignarPaginas);//FALTA SLEEP (PENDIENTE!!)
+	avisarAccionAMemoria(k_mem_inicializarPrograma);//FALTA SLEEP (PENDIENTE!!)
 	u_int32_t cant_pags = cant_pags_script + config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
 	u_int32_t confirmacion = confirmacionMemoria();
