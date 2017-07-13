@@ -23,7 +23,7 @@ enum accionesMemoria {
 
 enum accionesCPU{
 	cpuLibre, cpu_k_abrir_archivo, cpu_k_cerrar_archivo, cpu_k_borrar_archivo, cpu_k_mover_cursor_archivo,
-	cpu_k_leer_archivo, cpu_k_escribir_archivo
+	cpu_k_leer_archivo, cpu_k_escribir_archivo, cpu_k_obtener_valor_compartida, cpu_k_asignar_valor_compartida
 };
 
 enum confirmacion {

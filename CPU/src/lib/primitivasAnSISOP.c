@@ -285,11 +285,30 @@ void retornar(t_valor_variable var_retorno){
 }
 
 t_valor_variable obtenerValorCompartida(t_nombre_compartida var_compartida_nombre){
-
+	//Appendeo el '!'
+	char *nombreVariable = string_new();
+	string_append(&nombreVariable, "!");
+	string_append(&nombreVariable, var_compartida_nombre);
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_obtener_valor_compartida);
+	enviarPathAKernel(nombreVariable);//Asumo que el nombre termina con un \0
+	int valor = recibirUIntDeKernel(); //EN REALIDAD, PODRÍA FALLAR Y SE DEBERÍA PRODUCIR UN ERROR
+	free(nombreVariable);
+	return valor;
 }
 
 t_valor_variable asignarValorCompartida(t_nombre_compartida var_compartida_nombre, t_valor_variable var_compartida_valor){
-
+	//Appendeo el '!'
+	char *nombreVariable = string_new();
+	string_append(&nombreVariable, "!");
+	string_append(&nombreVariable, var_compartida_nombre);
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_asignar_valor_compartida);
+	enviarPathAKernel(nombreVariable);//Asumo que el nombre termina con un \0
+	enviarIntAKernel(var_compartida_valor);
+	//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE. EN REALIDAD, PODRÍA FALLAR Y SE DEBERÍA PRODUCIR UN ERROR
+	free(nombreVariable);
+	return var_compartida_valor;
 }
 
 //OPERACIONES DE KERNEL

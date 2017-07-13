@@ -204,6 +204,20 @@ void enviarPIDaConsola(int pid, int *consola){
 	printf("PID: %d \n",p_id);
 }
 
+int obtenerValorDeVariableCompartida(char* nombreVariable){
+	int i=0;
+	while(config->SHARED_VARS[i]!=NULL && strcmp(nombreVariable,config->SHARED_VARS[i])!=0) i++;
+	if (config->SHARED_VARS[i]==NULL) return 0; //ACÁ EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
+	else return config->SHARED_VARS_VALUES[i];
+}
+
+void asignarValorAVariableCompartida(nombreVariable, valorVariable){
+	int i=0;
+	while(config->SHARED_VARS[i]!=NULL && strcmp(nombreVariable,config->SHARED_VARS[i])!=0) i++;
+	if (config->SHARED_VARS[i]!=NULL) config->SHARED_VARS_VALUES[i]=valorVariable;
+	//SI NO SE ENCUENTRA, EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
+}
+
 void proced_script(int *unCliente) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
@@ -253,6 +267,22 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpuLibre:
 		unaCPU->libre = 1;
 		break;
+	case cpu_k_obtener_valor_compartida:
+	{
+		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
+		int valorVariable = obtenerValorDeVariableCompartida(nombreVariable);//SI NO EXISTE, DEVUELVE 0 (DEBERÍA PRODUCIR ERROR)
+		enviarIntACPU(&(unaCPU->clie_CPU),valorVariable);
+		free(nombreVariable);
+		break;
+	}
+	case cpu_k_asignar_valor_compartida:
+	{
+		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
+		int valorVariable = recibirAccionDe(&(unaCPU->clie_CPU));
+		asignarValorAVariableCompartida(nombreVariable, valorVariable);//SI NO EXISTE, NO HACE NADA (DEBERÍA PRODUCIR ERROR)
+		free(nombreVariable);
+		break;
+	}
 	case cpu_k_abrir_archivo:
 	{
 		char* path = recibirPathDeCPU(&(unaCPU->clie_CPU));
