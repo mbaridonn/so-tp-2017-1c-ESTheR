@@ -13,10 +13,10 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
-int serv_kernel, serv_memoria, planificacion, quantum;
+int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas;
 
-enum algoritmos_planificacion{
-	FIFO,RR
+enum algoritmos_planificacion {
+	FIFO, RR
 };
 
 enum procesos {
@@ -146,7 +146,7 @@ char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
 
 void recibirArchivoDe(int *cliente) {
 	FILE *archivo;
-	archivo = fopen("prueba.txt", "w");//POR QUÉ PRUEBA.TXT              ???
+	archivo = fopen("prueba.txt", "w"); //POR QUÉ PRUEBA.TXT              ???
 	if (archivo == NULL) {
 		printf("No se pudo escribir el archivo\n");
 		exit(-1);
@@ -178,29 +178,110 @@ void cpu_kernel_aviso_desocupada() {
 	}
 }
 
-void recibir_planificacion(){
-	if(recv(serv_kernel,&planificacion,sizeof(int),0) == -1){
+void recibir_planificacion() {
+	if (recv(serv_kernel, &planificacion, sizeof(int), 0) == -1) {
 		printf("Error al recibir el tipo de algoritmo de planificacion.\n");
 		exit(-1);
 	}
 }
 
-void recibir_quantum(){
-	if(recv(serv_kernel,&quantum,sizeof(int),0) == -1){
+void recibir_quantum() {
+	if (recv(serv_kernel, &quantum, sizeof(int), 0) == -1) {
 		printf("Error al recibir el quantum de planificacion.\n");
 		exit(-1);
 	}
 }
 
-void recibir_planificacion_y_quantum(){
+void recibir_planificacion_y_quantum() {
 	recibir_planificacion();
 	recibir_quantum();
-	if(planificacion==FIFO){
-		printf("Me llego que la planificacion es FIFO y el QUANTUM en:%d\n",quantum);
+	if (planificacion == FIFO) {
+		printf("Me llego que la planificacion es FIFO y el QUANTUM en:%d\n",
+				quantum);
 	}
-	if(planificacion==RR){
-		printf("Me llego que la planificacion es RR y el QUANTUM en:%d\n",quantum);
+	if (planificacion == RR) {
+		printf("Me llego que la planificacion es RR y el QUANTUM en:%d\n",
+				quantum);
+	} // Tambien se podria haber hecho un mensaje de kernel a cpu ejecutar_instrucciones(pcb,cantInstrucciones)
+}
+
+t_pcb *recibir_pcb() {
+	//Recibo PCB y lo deserializo
+	void* tmp_buff = calloc(1, sizeof(int));
+	int pcb_size = 0, pcb_size_index = 0;
+	recv(serv_kernel, tmp_buff, sizeof(int), 0);
+	deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
+	void *pcb_serializado = calloc(1, (size_t) pcb_size);
+	recv(serv_kernel, pcb_serializado, (size_t) pcb_size, 0);
+	int pcb_serializado_index = 0;
+	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
+	deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
+	free(tmp_buff);
+	free(pcb_serializado);
+	return incomingPCB;
+}
+
+void conectarse_con_memoria(struct sockaddr_in *direccionServidor2) {
+	conectar(&serv_memoria, direccionServidor2);
+	int procesoConectado2 = handshake(&serv_memoria, cpu);
+	switch (procesoConectado2) {
+	case memoria:
+		printf("Me conecte con Memoria!\n");
+		break;
+	default:
+		printf("No me puedo conectar con vos.\n");
+		break;
 	}
+}
+
+bool hay_que_seguir_ejecutando(){
+	return instrucciones_ejecutadas < quantum;
+}
+
+void ejecutar_instrucciones(t_pcb *un_pcb) {
+	//Solicito siguiente instruccion
+	char* instruccion;
+	int codigoError;
+	instrucciones_ejecutadas = 0;
+	while (!terminoElPrograma() && !(codigoError = hayError()) && hay_que_seguir_ejecutando()) { //ESTO SERÍA SOLO PARA FIFO
+		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
+				un_pcb->indice_codigo[un_pcb->program_counter].start,
+				un_pcb->indice_codigo[un_pcb->program_counter].offset);
+		analizadorLinea(instruccion, &functions, &kernel_functions);
+		un_pcb->program_counter++;
+		instrucciones_ejecutadas++;
+		free(instruccion);
+	}
+	if (codigoError != 0) {
+		un_pcb->exit_code = codigoError;
+		//VER QUE MÁS HAY QUE HACER !!
+	}
+	//ANTES DE DESCONECTAR LA CPU, HAY QUE ENVIARLE UN MENSAJE A MEMORIA PARA QUE MATE EL HILO (Y NO ROMPA)
+}
+
+void mostrar_datos_pcb(t_pcb *un_pcb) {
+	printf("PCB id: %d\n", un_pcb->id_proceso);
+	printf("PCB start instruccion %d: %d\n", un_pcb->program_counter,
+			un_pcb->indice_codigo[un_pcb->program_counter].start);
+	printf("PCB offset instruccion %d: %d\n", un_pcb->program_counter,
+			un_pcb->indice_codigo[un_pcb->program_counter].offset);
+}
+
+void conectarse_con_kernel(struct sockaddr_in *direccionServidor){
+	conectar(&serv_kernel, direccionServidor);
+
+		int procesoConectado = handshake(&serv_kernel, cpu);
+
+		switch (procesoConectado) {
+		case kernel:
+			printf("Me conecte con el Kernel!\n");
+			recibir_planificacion_y_quantum();
+			//FALTA inicializarPrimitivasANSISOP(incomingPCB, stackSize, tamPag, serv_kernel);  !!!
+			break;
+		default:
+			printf("No me puedo conectar con vos.\n");
+			break;
+		}
 }
 
 int main(void) {
@@ -231,69 +312,17 @@ int main(void) {
 	 }
 	 metadata_destruir(metadata);*/
 	//FIN PRUEBA ANSISOP
+	//testearSerializado();
 
-	testearSerializado();
+	conectarse_con_memoria(&direccionServidor2);
+	conectarse_con_kernel(&direccionServidor);
 
-	conectar(&serv_kernel, &direccionServidor);
-
-	int procesoConectado = handshake(&serv_kernel, cpu);
-
-	switch (procesoConectado) {
-	case kernel:
-		printf("Me conecte con el Kernel!\n");
-		recibir_planificacion_y_quantum();
-		//Recibo PCB y lo deserializo
-		void* tmp_buff = calloc(1, sizeof(int));
-		int pcb_size = 0, pcb_size_index = 0;
-		recv(serv_kernel, tmp_buff, sizeof(int), 0);
-		deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
-		void *pcb_serializado = calloc(1, (size_t) pcb_size);
-		recv(serv_kernel, pcb_serializado, (size_t) pcb_size, 0);
-		int pcb_serializado_index = 0;
-		t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
-		deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
-		free(tmp_buff);
-		free(pcb_serializado);
-
-		printf("PCB id: %d\n", incomingPCB->id_proceso);
-		printf("PCB start instruccion %d: %d\n", incomingPCB->program_counter,
-				incomingPCB->indice_codigo[incomingPCB->program_counter].start);
-		printf("PCB offset instruccion %d: %d\n", incomingPCB->program_counter,
-				incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
-
-		//FALTA inicializarPrimitivasANSISOP(incomingPCB, stackSize, tamPag, serv_kernel);  !!!
-
-		conectar(&serv_memoria, &direccionServidor2);
-		int procesoConectado2 = handshake(&serv_memoria, cpu);
-		switch (procesoConectado2) {
-		case memoria:
-			printf("Me conecte con Memoria!\n");
-			//Solicito siguiente instruccion
-			char* instruccion;
-			int codigoError;
-			while (!terminoElPrograma() && !(codigoError = hayError())) { //ESTO SERÍA SOLO PARA FIFO
-				instruccion =
-						conseguirDatosDeLaMemoria(incomingPCB->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
-								incomingPCB->indice_codigo[incomingPCB->program_counter].start,
-								incomingPCB->indice_codigo[incomingPCB->program_counter].offset);
-				analizadorLinea(instruccion, &functions, &kernel_functions);
-				incomingPCB->program_counter++;
-				free(instruccion);
-			}
-			if (codigoError != 0){
-				incomingPCB->exit_code = codigoError;
-				//VER QUE MÁS HAY QUE HACER !!
-			}
-			//ANTES DE DESCONECTAR LA CPU, HAY QUE ENVIARLE UN MENSAJE A MEMORIA PARA QUE MATE EL HILO (Y NO ROMPA)
-			break;
-		default:
-			printf("No me puedo conectar con vos.\n");
-			break;
-		}
-		break;
-	default:
-		printf("No me puedo conectar con vos.\n");
-		break;
+	while(1){
+		t_pcb *un_pcb = recibir_pcb();
+		mostrar_datos_pcb(un_pcb); // Es para chequear que llegue bien, no es un procedimiento NECESARIO
+		ejecutar_instrucciones(un_pcb);
+		free(un_pcb);
+		cpu_kernel_aviso_desocupada();
 	}
 
 	return 0;
