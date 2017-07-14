@@ -7,14 +7,10 @@ GENERAL
 CONSOLA
 -Consola debe recibir mensajes del programa e imprimirlos por pantalla (indicando a qué proceso pertenecen). También tiene que mostrar
 los resultados de la ejecución de un programa:
-	-Fecha y hora de inicio de ejecución
-	-Fecha y hora de fin de ejecución
 	-Cantidad de impresiones por pantalla
-	-Tiempo total de ejecución (diferencia entre tiempo de inicio y tiempo de fin))
--Finalizar Programa: finaliza un Programa AnSISOP, terminando el thread correspondiente al PID que se desee finalizar. (LO HACE YA?)
+-Finalizar Programa: finaliza un Programa AnSISOP, terminando el thread correspondiente al PID que se desee finalizar. 
 -Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola con el kernel, dando por muertos todos los 
-programas de manera abortiva. (LO HACE YA?)
--Tenemos ya un hilo por programa? El kernel le envía el PID después de que consola le manda el código?
+programas de manera abortiva.
 
 FILE SYSTEM
 EXTRA-En caso de que se tengan que crear subdirectorios antes de crear el archivo, actualmente sólo se puede crear uno. Se deberían poder crear
@@ -24,9 +20,6 @@ MEMORIA
 -Ante cualquier solicitud de acceso a la memoria principal (excepto en lectura, que ya lo maneja), se deberá esperar una cantidad de
 tiempo configurable (en milisegundos), simulando el tiempo de acceso a memoria.
 -Atacar los problemas de concurrencia que surjan.
--En caso de que un proceso solicite memoria y no se le pueda asignar por falta de espacio, se deberá informar al proceso que lo solicite
-(CPU o Kernel) de que no hay más espacio disponible. (LO HACE YA?)
--Faltan crear logs cuando se hace un dump.
 -Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
 EXTRA- La cache debería almacenar el contenido de la página, no una referencia al frame. Dump cache debería mostrar el contenido de la
 página, no el número de frame.
@@ -48,7 +41,5 @@ responder de forma favorable e informar del cambio en la configuración del sist
 solicitadas con el PCB correspondiente, cargando el código de error en el campo Exit Code, e informando al Proceso Consola correspondiente.
 -Si no se pudiera obtener espacio suficiente en Memoria para algunas de las estructuras necesarias del proceso, entonces se le rechazará
 el acceso al sistema, informándose oportunamente en el Proceso Consola correspondiente el motivo por el cual no pudo aceptarse el
-programa en el sistema. (LO HACE YA?)
--Implementar algoritmos FIFO y Round Robin. Para este último, debe ser configurable el valor del Quantum por archivo de configuración.
--Capas Memoria y File System (HAY UN MONTÓN DE COSAS COMPRENDIDAS EN ESTE ÍTEM)
+programa en el sistema.
 -Consola de Kernel
