@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <commons/log.h>
 #include <commons/collections/list.h>
 #include "funcionesMemoria.h"
 
@@ -88,12 +89,15 @@ int isInt(char *string) {
 }
 
 void dumpTablaDePags() {
+	FILE* logger = fopen("DumpTablaDePags", "w");
 	int i;
 	printf("Frame | PID | NroPag\n");
+	fprintf(logger, "Frame | PID | NroPag\n");
 	for (i = 0; i < cantFrames; i++) {
-		printf("%d | %d | %d \n", i, estructuraAdm[i].PID,
-				estructuraAdm[i].numPag);
+		printf("%d | %d | %d \n", i, estructuraAdm[i].PID, estructuraAdm[i].numPag);
+		fprintf(logger, "%d | %d | %d \n", i, estructuraAdm[i].PID, estructuraAdm[i].numPag);
 	}
+	fclose(logger);
 }
 
 void inicializarTablaPags(int cantFramesEstructuraAdm) {
@@ -125,12 +129,15 @@ void limpiarCache() {
 
 void dumpCache() {
 	int i;
+	FILE* logger = fopen("DumpCache", "w");
 	printf("Entrada | PID | NroPag | Contenido\n");
 	for (i = 0; i < entradasCache; i++) {
-		printf("%d | %d | %d | %d \n", i, memoriaCache[i].PID,
-				memoriaCache[i].numPag, memoriaCache[i].contenido);
+		printf("%d | %d | %d | %d \n", i, memoriaCache[i].PID, memoriaCache[i].numPag, memoriaCache[i].contenido);
 		//DEBERÍA MOSTRAR REALMENTE EL CONTENIDO, NO EL NÚMERO DE FRAME
+
+		fprintf(logger, "%d | %d | %d | %d \n", i, memoriaCache[i].PID, memoriaCache[i].numPag, memoriaCache[i].contenido);
 	}
+	fclose(logger);
 }
 
 void inicializarCache() {
@@ -179,24 +186,23 @@ int cantFramesOcupados() {
 }
 
 void hexDump8Bytes(void *mem, unsigned int len) { //Sacada de una página
+	FILE* logger = fopen("DumpContenidoMemoria", "w");
 	unsigned int i, j;
 	int HEXDUMP_COLS = 8;
-	for (i = 0;
-			i
-					< len
-							+ ((len % HEXDUMP_COLS) ?
-									(HEXDUMP_COLS - len % HEXDUMP_COLS) : 0);
-			i++) {
+	for (i = 0; i < len + ((len % HEXDUMP_COLS) ? (HEXDUMP_COLS - len % HEXDUMP_COLS) : 0); i++) {
 		/* print offset */
 		if (i % HEXDUMP_COLS == 0) {
 			printf("0x%06x: ", i);
+			fprintf(logger, "0x%06x: ", i);
 		}
 		/* print hex data */
 		if (i < len) {
 			printf("%02x ", 0xFF & ((char*) mem)[i]);
+			fprintf(logger, "%02x ", 0xFF & ((char*) mem)[i]);
 		} else /* end of block, just aligning for ASCII dump */
 		{
 			printf("   ");
+			fprintf(logger, "   ");
 		}
 		/* print ASCII dump */
 		if (i % HEXDUMP_COLS == (HEXDUMP_COLS - 1)) {
@@ -204,17 +210,22 @@ void hexDump8Bytes(void *mem, unsigned int len) { //Sacada de una página
 				if (j >= len) /* end of block, not really printing */
 				{
 					putchar(' ');
+					fprintf(logger, "%c", ' ');
 				} else if (isprint(((char* ) mem)[j])) /* printable char */
 				{
 					putchar(0xFF & ((char*) mem)[j]);
+					fprintf(logger, "%c", 0xFF & ((char*) mem)[j]);
 				} else /* other char */
 				{
 					putchar('.');
+					fprintf(logger, "%c", '.');
 				}
 			}
 			putchar('\n');
+			fprintf(logger, "%c", '\n');
 		}
 	}
+	fclose(logger);
 }
 
 void hexDump16Bytes(void *addr, int len) //Si no se usa, borrar
@@ -253,12 +264,17 @@ void hexDump16Bytes(void *addr, int len) //Si no se usa, borrar
 }
 
 void dumpProcesosActivos() {
+	FILE* logger = fopen("DumpProcesosActivosEnMemoria", "w");
 	int i;
 	printf("Proceso | CantPags\n");
+	fprintf(logger, "Proceso | CantPags\n");
 	for (i = 0; i < cantFrames; i++) {
-		if (cantPagsPorPID[i] != 0)
+		if (cantPagsPorPID[i] != 0){
 			printf("%d | %d \n", i, cantPagsPorPID[i]);
+			fprintf(logger, "%d | %d \n", i, cantPagsPorPID[i]);
+		}
 	}
+	fclose(logger);
 }
 
 void atenderComandos() {
