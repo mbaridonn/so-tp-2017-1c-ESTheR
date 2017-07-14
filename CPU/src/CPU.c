@@ -13,10 +13,15 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
-int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas, stackSize,tamPag;
+int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas,
+		stackSize, tamPag, motivo_liberacion;
 
 enum algoritmos_planificacion {
 	FIFO, RR
+};
+
+enum motivos_liberacion_CPU{
+	mot_quantum, mot_semaforo, mot_finalizo, mot_error
 };
 
 enum procesos {
@@ -129,6 +134,15 @@ void avisarAccionAMemoria(int accion) {
 	esperarSenialDeMemoria();
 }
 
+void avisarAccionAKernel(int accion) {
+	u_int32_t aux = accion;
+	if (send(serv_kernel, &aux, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la accion a Kernel.\n");
+		exit(-1);
+	}
+	esperarSenialDeKernel();
+}
+
 char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
 	char* instruccion = reservarMemoria(tamanio);
 	avisarAccionAMemoria(cpu_mem_leer);
@@ -171,8 +185,8 @@ void recibirArchivoDe(int *cliente) {
 
 void cpu_kernel_aviso_desocupada() {
 	solicitarA(&serv_kernel, "Kernel");
-	u_int32_t accion = cpuLibre;
 	esperarSenialDeKernel();
+	u_int32_t accion = cpuLibre;
 	if (send(serv_kernel, &accion, sizeof(u_int32_t), 0) == -1) {
 		printf("Error enviando aviso de liberado a Kernel.\n");
 	}
@@ -234,7 +248,7 @@ void conectarse_con_memoria(struct sockaddr_in *direccionServidor2) {
 	}
 }
 
-bool hay_que_seguir_ejecutando(){
+bool hay_que_seguir_ejecutando() {
 	return instrucciones_ejecutadas < quantum;
 }
 
@@ -242,11 +256,12 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	//Solicito siguiente instruccion
 	char* instruccion;
 	int codigoError;
-	instrucciones_ejecutadas = 0;
+	instrucciones_ejecutadas = 0;// Solo sirve para tenerlo inicializado en algo.
 	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel);
-	while (!terminoElPrograma() && !(codigoError = hayError()) && hay_que_seguir_ejecutando()) { //ESTO SERÍA SOLO PARA FIFO
+	while (!terminoElPrograma() && !(codigoError = hayError())
+			&& hay_que_seguir_ejecutando()) { //ESTO SERÍA SOLO PARA FIFO
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
-				un_pcb->indice_codigo[un_pcb->program_counter].start,
+		un_pcb->indice_codigo[un_pcb->program_counter].start,
 				un_pcb->indice_codigo[un_pcb->program_counter].offset);
 		analizadorLinea(instruccion, &functions, &kernel_functions);
 		un_pcb->program_counter++;
@@ -255,9 +270,15 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	}
 	if (codigoError != 0) {
 		un_pcb->exit_code = codigoError;
+		motivo_liberacion = mot_error;
 		//VER QUE MÁS HAY QUE HACER !!
 	}
-	//ANTES DE DESCONECTAR LA CPU, HAY QUE ENVIARLE UN MENSAJE A MEMORIA PARA QUE MATE EL HILO (Y NO ROMPA)
+	if(terminoElPrograma()){
+		motivo_liberacion = mot_finalizo;
+	}
+	if(instrucciones_ejecutadas == quantum){
+		motivo_liberacion = mot_quantum;
+	} // FALTA los ifs de wait y signal
 }
 
 void mostrar_datos_pcb(t_pcb *un_pcb) {
@@ -268,23 +289,58 @@ void mostrar_datos_pcb(t_pcb *un_pcb) {
 			un_pcb->indice_codigo[un_pcb->program_counter].offset);
 }
 
-void conectarse_con_kernel(struct sockaddr_in *direccionServidor){
+void conectarse_con_kernel(struct sockaddr_in *direccionServidor) {
 	conectar(&serv_kernel, direccionServidor);
 
-		int procesoConectado = handshake(&serv_kernel, cpu);
+	int procesoConectado = handshake(&serv_kernel, cpu);
 
-		switch (procesoConectado) {
-		case kernel:
-			printf("Me conecte con el Kernel!\n");
-			recibir_planificacion_y_quantum();
-			stackSize = recibirUIntDeKernel();
-			tamPag = recibirUIntDeKernel();
-			printf("Recibi stackSize: %d y tamPag: %d\n",stackSize,tamPag);
-			break;
-		default:
-			printf("No me puedo conectar con vos.\n");
-			break;
-		}
+	switch (procesoConectado) {
+	case kernel:
+		printf("Me conecte con el Kernel!\n");
+		recibir_planificacion_y_quantum();
+		stackSize = recibirUIntDeKernel();
+		tamPag = recibirUIntDeKernel();
+		printf("Recibi stackSize: %d y tamPag: %d\n", stackSize, tamPag);
+		break;
+	default:
+		printf("No me puedo conectar con vos.\n");
+		break;
+	}
+}
+
+void enviar_un_PCB_a_Kernel(t_pcb *pcb) {
+	//Serializo el PCB y lo envio a Kernel
+	//abstraer la asquerosidad de abajo
+	void * serialized_pcb = NULL;
+	int serialized_buffer_index = 0;
+	serializar_pcb(pcb, &serialized_pcb, &serialized_buffer_index);
+
+	if (send(serv_kernel, &serialized_buffer_index, (size_t) sizeof(int), 0)
+			< 0) {
+		printf("El envio de la longitud del buffer a Kernel fallo\n");
+		exit(-1);
+	}
+	if (send(serv_kernel, serialized_pcb, (size_t) serialized_buffer_index, 0)
+			< 0) {
+		printf("El envio de pcb a Kernel fallo\n");
+		exit(-1);
+	}
+	printf("PCB enviado a CPU exitosamente\n");
+}
+
+void enviar_motivo_liberacion(){
+	if (send(serv_kernel, &motivo_liberacion, sizeof(int), 0) == -1) {
+		printf("El envio de pcb a Kernel fallo\n");
+		exit(-1);
+	}
+}
+
+void devolver_pcb_y_liberarse(t_pcb *pcb) {
+	cpu_kernel_aviso_desocupada();
+	esperarSenialDeKernel();
+	enviarIntAKernel(pcb->id_proceso);
+	enviar_motivo_liberacion();
+	enviar_un_PCB_a_Kernel(pcb);
 }
 
 int main(void) {
@@ -316,16 +372,15 @@ int main(void) {
 	 metadata_destruir(metadata);*/
 	//FIN PRUEBA ANSISOP
 	//testearSerializado();
-
 	conectarse_con_memoria(&direccionServidor2);
 	conectarse_con_kernel(&direccionServidor);
 
-	while(1){
-		t_pcb *un_pcb = recibir_pcb();
-		mostrar_datos_pcb(un_pcb); // Es para chequear que llegue bien, no es un procedimiento NECESARIO
-		ejecutar_instrucciones(un_pcb);
-		free(un_pcb);
-		cpu_kernel_aviso_desocupada();
+	while (1) {
+		t_pcb *pcb = recibir_pcb();
+		mostrar_datos_pcb(pcb); // Es para chequear que llegue bien, NO es un procedimiento NECESARIO
+		ejecutar_instrucciones(pcb);
+		free(pcb);
+		devolver_pcb_y_liberarse(pcb);
 	}
 
 	return 0;

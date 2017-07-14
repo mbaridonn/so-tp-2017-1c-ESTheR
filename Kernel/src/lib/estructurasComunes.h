@@ -17,6 +17,10 @@ enum notificacionesKernelCPU{
 	k_cpu_error, k_cpu_accion_OK
 };
 
+enum motivos_liberacion_CPU{
+	mot_quantum, mot_semaforo, mot_finalizo, mot_error
+};
+
 enum algoritmos_planificacion{
 	FIFO,RR
 };

@@ -1,6 +1,11 @@
 #include "accionesDeKernel.h"
 #include "CapaFS.h"//OJO!! DEPENDENCIA CIRCULAR
 
+void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
+	quitar_PCB_de_Lista(listaActual, pcb);
+	list_add(listaDestino, pcb);
+}
+
 int recibirAccionDe(int *cliente){
 	u_int32_t accion;
 	recv((*cliente), &accion, sizeof(u_int32_t), 0);
@@ -22,8 +27,6 @@ void recibirArchivoDe(int *unCliente, char *bufferArchivo, u_int32_t fsize) {
 		exit(-1);
 	}
 }
-
-
 
 void validarAperturaArchivo(FILE *archivo) {
 	if (archivo == NULL) {
@@ -185,6 +188,38 @@ void avisarAccionAFS(int accion) {
 	esperarSenialDeFS();
 }
 
+bool tiene_este_pcb(t_list *lista,t_pcb *pcb){
+	bool esElPCB(t_pcb *unPCB){
+		return unPCB->id_proceso == pcb->id_proceso;
+	}
+	return list_any_satisfy(lista,esElPCB);
+}
+
+t_list *lista_que_tiene_este_pcb(t_pcb *pcb){
+	if(tiene_este_pcb(listaPCBs_NEW,pcb)){
+		return listaPCBs_NEW;
+	}
+	if(tiene_este_pcb(listaPCBs_READY,pcb)){
+		return listaPCBs_READY;
+	}
+	if(tiene_este_pcb(listaPCBs_EXEC,pcb)){
+		return listaPCBs_EXEC;
+	}
+	if(tiene_este_pcb(listaPCBs_BLOCK,pcb)){
+		return listaPCBs_BLOCK;
+	}
+	if(tiene_este_pcb(listaPCBs_EXIT,pcb)){
+		return listaPCBs_EXIT;
+	}
+	return NULL;
+}
+
+void poner_proceso_en_EXIT(t_pcb *pcb){
+	t_list *lista;
+	lista = lista_que_tiene_este_pcb(pcb);
+	transicion_colas_proceso(lista,listaPCBs_EXIT,pcb);
+}
+
 void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
 	avisarAccionAMemoria(k_mem_finalizar_programa);
@@ -192,7 +227,7 @@ void finalizarUnProceso(t_pcb *pcb) {
 		printf("Error enviando el process_id\n");
 		exit(-1);
 	}
-	transicion_colas_proceso(listaPCBs_NEW,listaPCBs_EXIT,pcb); // Tendria que considerar si estaba en EXEC.
+	poner_proceso_en_EXIT(pcb); // Tendria que considerar si estaba en EXEC.
 	//FALTA: MEMORY LEAKS
     //Al finalizar un proceso, el Kernel deberá informar si un proceso liberó todas las estructuras en las páginas de Heap.
 
@@ -280,11 +315,6 @@ void atenderAConsola(int *unaConsola) {
 	}
 }
 
-void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
-	quitar_PCB_de_Lista(listaActual, pcb);
-	list_add(listaDestino, pcb);
-}
-
 t_pcb *obtener_PCB_segun_PID(int PID){
 	bool tieneEstePID(t_pcb *unPCB){
 		return unPCB->id_proceso==PID;
@@ -292,17 +322,70 @@ t_pcb *obtener_PCB_segun_PID(int PID){
 	return list_find(listaPCBs_EXEC, (void*) tieneEstePID);
 }
 
+int recibir_int_de(int cliente){
+	int accion;
+	if(recv(cliente, &accion, sizeof(int), 0) == -1){
+		printf("Error recibiendo un int.\n");
+	}
+	return accion;
+}
+
+t_pcb *recibir_pcb_de(int cliente) {
+	//Recibo PCB y lo deserializo
+	void* tmp_buff = calloc(1, sizeof(int));
+	int pcb_size = 0, pcb_size_index = 0;
+	recv(cliente, tmp_buff, sizeof(int), 0);
+	deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
+	void *pcb_serializado = calloc(1, (size_t) pcb_size);
+	recv(cliente, pcb_serializado, (size_t) pcb_size, 0);
+	int pcb_serializado_index = 0;
+	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
+	deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
+	free(tmp_buff);
+	free(pcb_serializado);
+	return incomingPCB;
+}
+
+void actualizar_info_pcb(t_pcb *pcb){
+	bool esElPCB(t_pcb *unPCB){
+		return unPCB->id_proceso == pcb->id_proceso;
+	}
+	list_remove_and_destroy_by_condition(listaPCBs_EXEC,esElPCB,pcb_destroy);
+	list_add(listaPCBs_EXEC,pcb);
+}
+
+void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
+	switch(motivo_liberacion){
+	case mot_finalizo:
+		finalizarUnProceso(pcb);
+		break;
+	case mot_error:
+		finalizarUnProceso(pcb); // Esta bien no?
+		break;
+	case mot_quantum:
+		transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_READY,pcb);
+		break;
+	case mot_semaforo:
+		//transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_BLOCK,pcb); DEPENDE
+		break;
+	}
+}
+
 void atenderACPU(cliente_CPU *unaCPU){
-	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+	enviarSenialACPU(&(unaCPU->clie_CPU));//Porque le envia una senial otra vez? Es decir, la ejecucion anterior a esto confirma la atencion ya (envia una senial)
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
 	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-	int PID = recibirAccionDe(&(unaCPU->clie_CPU));
+	int PID = recibir_int_de(unaCPU->clie_CPU);
 	switch(accion){
 	case cpuLibre:
+	{
+		int motivo_liberacion = recibir_int_de(unaCPU->clie_CPU);
+		t_pcb *pcb = recibir_pcb_de(unaCPU->clie_CPU);
+		actualizar_info_pcb(pcb);
 		unaCPU->libre = 1;
-		t_pcb *un_pcb = obtener_PCB_segun_PID(PID);
-		transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_READY,un_pcb);
+		mover_pcb_segun_motivo(pcb,motivo_liberacion);
 		break;
+	}
 	case cpu_k_obtener_valor_compartida:
 	{
 		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
@@ -314,7 +397,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_asignar_valor_compartida:
 	{
 		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
-		int valorVariable = recibirAccionDe(&(unaCPU->clie_CPU));
+		int valorVariable = recibir_int_de(unaCPU->clie_CPU);
 		asignarValorAVariableCompartida(nombreVariable, valorVariable);//SI NO EXISTE, NO HACE NADA (DEBERÍA PRODUCIR ERROR)
 		free(nombreVariable);
 		break;
@@ -332,7 +415,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_cerrar_archivo:
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		cerrarArchivo(PID,fd);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
@@ -340,7 +423,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_borrar_archivo:
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		int confirmacion = borrarArchivo(PID,fd);//Recibe si se pudo completar o si se produjo error
 		enviarIntACPU(&(unaCPU->clie_CPU),confirmacion);
 		break;
@@ -348,9 +431,9 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_mover_cursor_archivo:
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		int posicion = recibirAccionDe(&(unaCPU->clie_CPU));
+		int posicion = recibir_int_de(unaCPU->clie_CPU);
 		moverCursorArchivo(PID,fd,posicion);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
@@ -358,9 +441,9 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_leer_archivo:
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		int tamanio = recibirAccionDe(&(unaCPU->clie_CPU));
+		int tamanio = recibir_int_de(unaCPU->clie_CPU);
 		char* bytesLeidos = leerArchivo(PID,fd,tamanio);
 		if(bytesLeidos != NULL){
 			enviarIntACPU(&(unaCPU->clie_CPU), tamanio);
@@ -377,10 +460,10 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_escribir_archivo:
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		u_int32_t fd = recibirAccionDe(&(unaCPU->clie_CPU));
+		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		int tamanio = recibirAccionDe(&(unaCPU->clie_CPU));
-		char* bytesAEscribir;
+		int tamanio = recibir_int_de(unaCPU->clie_CPU);
+		char* bytesAEscribir;//HAY QUE RECIBIR EL TAMANIO PRIMERO
 		if (recv(&(unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
 			printf("Error al recibir bytes a escribir de CPU\n");
 		}
