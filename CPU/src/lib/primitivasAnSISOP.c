@@ -1,7 +1,5 @@
 #include <ctype.h>
-#include <parser/parser.h>
 #include "primitivasAnSISOP.h"
-#include "pcb.h"
 
 #define TAM_VARIABLE 4
 
@@ -13,14 +11,16 @@ t_pcb* pcbAEjecutar;
 int stackSize;
 int tamPag;
 int serv_kernel;
+int serv_memoria;
 
 //FUNCIONES EXTRA
 
-void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel){
+void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel, int _serv_memoria){
 	pcbAEjecutar = _pcbAEjecutar;
 	stackSize = _stackSize;
 	tamPag = _tamPag;
 	serv_kernel = _serv_kernel;
+	serv_memoria = _serv_memoria;
 
 	terminoPrograma = false;
 	codigoError = 0;
@@ -36,6 +36,66 @@ bool terminoElPrograma(void){
 
 int hayError(){
 	return codigoError;
+}
+
+void esperarSenialDeMemoria() {
+	char senial[2] = "a";
+	if (recv(serv_memoria, senial, 2, 0) == -1) {
+		printf("Error al recibir senial antes de enviar paginas\n");
+	}
+}
+
+void avisarAccionAMemoria(int accion) {
+	u_int32_t aux = accion;
+	if (send(serv_memoria, &aux, sizeof(u_int32_t), 0) == -1) {
+		printf("Error enviando la accion.\n");
+		exit(-1);
+	}
+	esperarSenialDeMemoria();
+}
+
+void enviarBufferAMemoria(char *buffer, int tamanio) {
+	if (send(serv_memoria, &tamanio, sizeof(int), 0) == -1) {
+		printf("Error enviando longitud del archivo\n");
+		exit(-1);
+	}
+	esperarSenialDeMemoria();
+	if (send(serv_memoria, buffer, tamanio, 0) == -1) {
+		printf("Error enviando el buffer\n");
+		exit(-1);
+	}
+}
+
+void enviarIntAMemoria(int valor){
+	if (send(serv_memoria, &valor, sizeof(int), 0) == -1) {
+		printf("Error enviando mensaje a Memoria\n");
+		exit(-1);
+	}
+}
+
+char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
+	char* instruccion = reservarMemoria(tamanio);
+	avisarAccionAMemoria(cpu_mem_leer);
+	//Uso la misma función, aunque estoy pasando parámetros
+	avisarAccionAMemoria(PID);
+	avisarAccionAMemoria(nroPag);
+	avisarAccionAMemoria(offset);
+	avisarAccionAMemoria(tamanio);
+	if (recv(serv_memoria, instruccion, tamanio, 0) == -1) {
+		printf("Error al recibir instrucción de Memoria\n");
+	}
+	printf("Instruccion recibida: %s\n", instruccion);
+	return instruccion;
+}
+
+void solicitarEscrituraAMemoria(int pid, int nroPagina, int offset, int tamanio,
+		char *bytesAEscribir) {
+	avisarAccionAMemoria(cpu_mem_escribir);
+	enviarIntAMemoria(pid);
+	enviarIntAMemoria(nroPagina);
+	enviarIntAMemoria(offset);
+	enviarBufferAMemoria(bytesAEscribir,tamanio);
+
 }
 
 void solicitarA(int *cliente, char *nombreCli) {
@@ -192,7 +252,6 @@ t_valor_variable dereferenciar(t_puntero direccion_variable){
 	int tamanio = TAM_VARIABLE;
 
 	t_valor_variable* ptrValor = (int*)conseguirDatosDeLaMemoria(pcbAEjecutar->id_proceso, pagina, offset, tamanio);
-		//conseguirDatosDeLaMemoria ESTÁ EN MEMORIA.C
 		//SE PUEDE CASTEAR UN ARRAY DE 4 CHARS A INT ASÍ??
 		//CAPAZ NO SE OBTENGA BIEN EL VALOR: VER ENDIANNESS
 	//DEBERÍA RECIBIR UNA CONFIRMACIÓN??
@@ -209,7 +268,7 @@ void asignar(t_puntero direccion_variable, t_valor_variable valor){
 	offset = direccion_variable % tamPag;
 	tamanio = TAM_VARIABLE;
 
-	//Enviar mensaje a Memoria: escribirPagina(pcbAEjecutar->id_proceso, pagina, offset, tamanio, (char*)&valor);
+	solicitarEscrituraAMemoria(pcbAEjecutar->id_proceso, pagina, offset, tamanio, (char*)&valor);
 	//DEBERÍA RECIBIR UNA CONFIRMACIÓN??
 }
 
@@ -322,11 +381,20 @@ void signal(t_nombre_semaforo identificador_semaforo){
 }
 
 t_puntero reservar(t_valor_variable espacio){
-
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_reservar);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	//enviarIntAKernel(pcbAEjecutar->) FALTA ENVIAR CONTADOR_PAGINAS
+	enviarIntAKernel(espacio);
+	// Capaz devuelve algo.
 }
 
 void liberar(t_puntero puntero){
-
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_liberar);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	//enviarIntAKernel(pcbAEjecutar->) FALTA ENVIAR CONTADOR_PAGINAS
+	enviarIntAKernel(puntero);
 }
 
 t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
@@ -416,6 +484,7 @@ void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valo
 	//Hay que escribir los bytesLeidos en la posicion de memoria que indica informacion
 	int nroPag = informacion / tamPag;
 	int offset = informacion % tamPag;
-	//guardarEnMemoria(PID, nroPag, offset, tamanio, bytesLeidos)   (PENDIENTE !!)
+
+	solicitarEscrituraAMemoria(pcbAEjecutar->id_proceso, nroPag, offset, tamanio, bytesLeidos);
 	//CREO QUE NO SE PUEDE USAR asignar(informacion, bytesLeidos) PORQUE EL TAMANIO PUEDE SER MAYOR AL DE UNA VARIABLE (4 BYTES)
 }

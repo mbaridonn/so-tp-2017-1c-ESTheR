@@ -56,6 +56,11 @@ void *reservarMemoria(int tamanio) {
 	return puntero;
 }
 
+void mili_sleep(int retardo){
+	float nuevo_retardo = (float)retardo/(float)1000;
+	sleep(nuevo_retardo);
+}
+
 int divisionRoundUp(int dividendo, int divisor) {
 	if (dividendo <= 0 || divisor <= 0) {
 		printf("Esta division funciona unicamente con enteros positivos\n");
@@ -399,6 +404,15 @@ int recibir_process_id() {
 	return process_id;
 }
 
+int recibir_int_de_CPU(int cpu){
+	int un_int;
+	if (recv(cpu, &un_int, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el process_id\n");
+		return EXIT_FAILURE;
+	}
+	return un_int;
+}
+
 int recibir_int_de_Kernel(){
 	int un_int;
 	if (recv(clienteKernel, &un_int, sizeof(int), 0) == -1) {
@@ -443,6 +457,21 @@ void kernel_mem_leerPaginas(){
 		printf("Error al enviar bytesLeidos a Kernel.\n");
 		exit(-1);
 	}
+}
+
+char *recibirBufferDeCPU(int *tamanio,int cpu){
+	char *buffer;
+	if (recv(cpu, tamanio, sizeof(int), 0) == -1) {
+		printf("Error recibiendo longitud del buffer\n");
+		exit(-1);
+	}
+	buffer = reservarMemoria(*tamanio);
+	enviarSenialACPU(cpu);
+	if (recv(cpu, buffer, *tamanio, 0) == -1) {
+		printf("Error recibiendo el buffer\n");
+		exit(-1);
+	}
+	return buffer;
 }
 
 char *recibirBufferDeKernel(int *tamanio){
@@ -509,7 +538,7 @@ void enviarSenialACPU(int fdCPU){
 	}
 }
 
-void leerYEnviarInstruccionACPU(int fdCPU){
+void leerYEnviarBytesLeidosACPU(int fdCPU){
 	int PID, nroPag, offset, tamanio;
 	if (recv(fdCPU, &PID, sizeof(int), 0) == -1) {
 		printf("Error recibiendo el PID\n");
@@ -532,14 +561,22 @@ void leerYEnviarInstruccionACPU(int fdCPU){
 	}
 	enviarSenialACPU(fdCPU);
 	printf("Ejecuto comando: leerPagina(%d,%d,%d,%d)\n",PID,nroPag,offset,tamanio);
-	char* instruccion = leerPagina(PID,nroPag,offset,tamanio);
+	char* bytesLeidos = leerPagina(PID,nroPag,offset,tamanio);
 	//instruccion[tamanio+1]='\0';//NO ROMPE, PERO ESTOY ACCEDIENDO A UNA POSICION NO RESERVADA
 	//printf("Lei la instruccion '%s''\n", instruccion);
-	if (send(fdCPU, instruccion, tamanio, 0) == -1) {
+	if (send(fdCPU, bytesLeidos, tamanio, 0) == -1) {
 		printf("Error al enviar la senial antes de asignar paginas\n");
 		exit(-1);
 	}
-	free(instruccion);
+	free(bytesLeidos);
+}
+
+void cpu_m_escribir_pagina(int cpu){
+	int pid = recibir_int_de_CPU(cpu), nroPagina = recibir_int_de_CPU(cpu), offset = recibir_int_de_CPU(cpu), tamanio;
+	char *bytes = recibirBufferDeCPU(&tamanio,cpu);
+	printf("Ejecuto comando: escribirPagina(%d,%d,%d,%d)\n",pid,nroPagina,offset,tamanio);
+	escribirPagina(pid,nroPagina,offset,tamanio,bytes);
+	free(bytes);
 }
 
 void atenderCPU(int fdCPU) {
@@ -554,9 +591,10 @@ void atenderCPU(int fdCPU) {
 		enviarSenialACPU(fdCPU);
 		switch (accionPedida) {
 		case cpu_mem_leer:
-			leerYEnviarInstruccionACPU(fdCPU);
+			leerYEnviarBytesLeidosACPU(fdCPU);
 			break;
 		case cpu_mem_escribir:
+			cpu_m_escribir_pagina(fdCPU);
 			break;
 		default:
 			break;
@@ -737,7 +775,7 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	//En cualquier caso actualizo la caché, ya sea para agregar la entrada(si no está), o para actualizar el último acceso
 	ingresarEntradaEnCache(PID, nroPag);
 	if (estaEnCache != 1) {	//Es la única operación que puede tener retardo o no, por eso lo incluyo acá
-		sleep(*retardoMemoria);
+		mili_sleep(*retardoMemoria);
 	}
 	int posByteComienzoPag;
 	int tamanioRestante = 0;

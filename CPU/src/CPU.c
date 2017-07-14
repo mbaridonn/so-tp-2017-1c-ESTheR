@@ -176,22 +176,6 @@ void leerArchivo() {
 
 //Funciones CPU
 
-void esperarSenialDeMemoria() {
-	char senial[2] = "a";
-	if (recv(serv_memoria, senial, 2, 0) == -1) {
-		printf("Error al recibir senial antes de enviar paginas\n");
-	}
-}
-
-void avisarAccionAMemoria(int accion) {
-	u_int32_t aux = accion;
-	if (send(serv_memoria, &aux, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la accion.\n");
-		exit(-1);
-	}
-	esperarSenialDeMemoria();
-}
-
 void avisarAccionAKernel(int accion) {
 	u_int32_t aux = accion;
 	if (send(serv_kernel, &aux, sizeof(u_int32_t), 0) == -1) {
@@ -199,21 +183,6 @@ void avisarAccionAKernel(int accion) {
 		exit(-1);
 	}
 	esperarSenialDeKernel();
-}
-
-char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
-	char* instruccion = reservarMemoria(tamanio);
-	avisarAccionAMemoria(cpu_mem_leer);
-	//Uso la misma función, aunque estoy pasando parámetros
-	avisarAccionAMemoria(PID);
-	avisarAccionAMemoria(nroPag);
-	avisarAccionAMemoria(offset);
-	avisarAccionAMemoria(tamanio);
-	if (recv(serv_memoria, instruccion, tamanio, 0) == -1) {
-		printf("Error al recibir instrucción de Memoria\n");
-	}
-	printf("Instruccion recibida: %s\n", instruccion);
-	return instruccion;
 }
 
 void recibirArchivoDe(int *cliente) {
@@ -315,7 +284,7 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	char* instruccion;
 	int codigoError;
 	instrucciones_ejecutadas = 0;// Solo sirve para tenerlo inicializado en algo.
-	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel);
+	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel,serv_memoria);
 	while (!terminoElPrograma() && !(codigoError = hayError())
 			&& hay_que_seguir_ejecutando()) { //ESTO SERÍA SOLO PARA FIFO
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/

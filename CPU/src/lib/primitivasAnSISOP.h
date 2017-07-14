@@ -3,10 +3,12 @@
 
 #include <parser/metadata_program.h>
 #include <parser/parser.h>
+#include "pcb.h"
 
 enum accionesCPU{
 	cpuLibre, cpu_k_abrir_archivo, cpu_k_cerrar_archivo, cpu_k_borrar_archivo, cpu_k_mover_cursor_archivo,
-	cpu_k_leer_archivo, cpu_k_escribir_archivo, cpu_k_obtener_valor_compartida, cpu_k_asignar_valor_compartida
+	cpu_k_leer_archivo, cpu_k_escribir_archivo, cpu_k_obtener_valor_compartida, cpu_k_asignar_valor_compartida,
+	cpu_k_reservar, cpu_k_liberar
 };
 
 enum notificacionesKernelCPU{
@@ -20,6 +22,13 @@ enum accionesCPUMemoria{
 void solicitarA(int *cliente, char *nombreCli);
 bool terminoElPrograma(void);
 int hayError();
+void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel, int _serv_memoria);
+void esperarSenialDeKernel();
+char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio);
+u_int32_t recibirUIntDeKernel();
+void enviarIntAKernel(int un_int);
+
+
 
 t_puntero definirVariable(t_nombre_variable identificador_variable);
 t_puntero obtenerPosicionVariable(t_nombre_variable identificador_variable);

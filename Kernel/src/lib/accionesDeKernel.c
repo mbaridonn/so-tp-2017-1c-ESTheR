@@ -487,6 +487,24 @@ void atenderACPU(cliente_CPU *unaCPU){
 		enviarIntACPU(&(unaCPU->clie_CPU), confirmacion);
 		break;
 	}
+	case cpu_k_reservar:
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		int espacio_requerido = recibir_int_de(unaCPU->clie_CPU);
+		inicializar_pid_y_tamPag(PID,tamanioPagMemoria);
+		//FALTA RECIBIR CONTADOR_PAGINAS
+		reservarMemoriaDinamica(espacio_requerido);
+		break;
+	}
+	case cpu_k_liberar:
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		u_int32_t direccion = recibir_int_de(unaCPU->clie_CPU);
+		inicializar_pid_y_tamPag(PID,tamanioPagMemoria);
+		//FALTA RECIBIR CONTADOR_PAGINAS
+		liberarMemoriaDinamica(direccion);
+		break;
+	}
 	default:
 		break;
 	}
