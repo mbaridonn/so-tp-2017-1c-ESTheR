@@ -105,9 +105,19 @@ void esperarConfirmacionDeKernel(int *kernel) {
 }
 
 void mostrarFechaHoraEjecucion() {
-	time_t t = time(NULL);
-	struct tm *tm = localtime(&t);
-	printf("%s\n", asctime(tm));
+	time_t tiempoEnSegundos = time(NULL);
+	struct tm *tm = localtime(&tiempoEnSegundos);
+	printf("Fecha: %s Tiempo En Segs: %ld \n", asctime(tm),tiempoEnSegundos);
+}
+
+void mostrarInicioEjecucion(){
+	printf("Fecha y hora de inicio de ejecucion:\n");
+	mostrarFechaHoraEjecucion();
+}
+
+void mostrarFinEjecucion(){
+	printf("Fecha y hora de fin de ejecucion:\n");
+	mostrarFechaHoraEjecucion();
 }
 
 void esperarMensajesDeKernel(){
@@ -166,8 +176,7 @@ void iniciarPrograma(int *cliente) {
 		accion = startProgram;
 		informarAccion(cliente, &accion);
 
-		printf("Fecha y hora de inicio de ejecucion:\n");
-		mostrarFechaHoraEjecucion();
+		mostrarInicioEjecucion();
 	}
 
 	fseek(archivo, 0, SEEK_END);
