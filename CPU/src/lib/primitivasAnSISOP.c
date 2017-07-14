@@ -384,17 +384,38 @@ t_puntero reservar(t_valor_variable espacio){
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_reservar);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
-	//enviarIntAKernel(pcbAEjecutar->) FALTA ENVIAR CONTADOR_PAGINAS
+	//enviarIntAKernel(pcbAEjecutar->) FALTA ENVIAR CONTADOR_PAGINAS (HASTA QUE NO SE AGREGUE VA A FALLAR, XQ KERNEL LO ESPERA!!)
 	enviarIntAKernel(espacio);
-	// Capaz devuelve algo.
+	int confirmacion = recibirUIntDeKernel();
+	u_int32_t direccion = recibirUIntDeKernel();
+	if (confirmacion==noSePudoReservarMemoria){
+		printf("El espacio requerido supera el tamaño máximo reservable por petición (Exit Code -8)\n");
+		codigoError = -8;
+	} else if (confirmacion==noHayPaginas){
+		printf("No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria (Exit Code -9)\n");
+		codigoError = -9;
+	} else {
+		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
+		//INCREMENTAR PCB->CONTADOR_DE_PAGINAS (PENDIENTE!!!!)
+	}
+	return direccion;//OJO! DEVUELVE 0 SI NO SE PUDO RESERVAR
 }
 
 void liberar(t_puntero puntero){
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_liberar);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
-	//enviarIntAKernel(pcbAEjecutar->) FALTA ENVIAR CONTADOR_PAGINAS
 	enviarIntAKernel(puntero);
+	int confirmacion = recibirUIntDeKernel();
+	if (confirmacion == noSePudoLiberarMemoria){
+		printf("No se pudo liberar Memoria, dicha memoria no está asignada al proceso (Exit Code -11)\n");
+		codigoError = -11;//Defino nuevo Exit Code -11: error al liberar Memoria (!!)
+	} else if (confirmacion==exitoLiberacionPagina){
+		printf("Se pudo liberar Memoria, y tambien la pagina\n");
+		//DECREMENTAR PCB->CONTADOR_DE_PAGINAS (PENDIENTE!!!!)
+	} else /*confirmacion==falloLiberacionPagina || confirmacion==sePudoLiberarMemoria*/{
+		printf("Se pudo liberar Memoria\n");
+	}
 }
 
 t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){

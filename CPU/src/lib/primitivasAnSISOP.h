@@ -19,6 +19,11 @@ enum accionesCPUMemoria{
 	cpu_mem_leer, cpu_mem_escribir
 };
 
+enum confirmacion {
+	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina, noSePudoReservarMemoria, sePudoReservarMemoria,
+	noSePudoLiberarMemoria, sePudoLiberarMemoria
+};
+
 void solicitarA(int *cliente, char *nombreCli);
 bool terminoElPrograma(void);
 int hayError();
@@ -27,8 +32,6 @@ void esperarSenialDeKernel();
 char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio);
 u_int32_t recibirUIntDeKernel();
 void enviarIntAKernel(int un_int);
-
-
 
 t_puntero definirVariable(t_nombre_variable identificador_variable);
 t_puntero obtenerPosicionVariable(t_nombre_variable identificador_variable);
@@ -52,12 +55,5 @@ void cerrar(t_descriptor_archivo descriptor_archivo);
 void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posicion);
 void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valor_variable tamanio);
 void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valor_variable tamanio);
-
-/*// Variables globales provenientes del main:
-extern bool finalizarCPU;
-extern bool cpuOciosa;
-extern bool huboStackOverflow;
-extern int devolvioPcb;
-extern bool finalizoPrograma;*/
 
 #endif /* CPU_SRC_LIB_PRIMITIVASANSISOP_H_ */

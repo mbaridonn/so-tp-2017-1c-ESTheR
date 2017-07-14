@@ -7,7 +7,7 @@
 #include "estructurasComunes.h"
 #include <commons/collections/list.h>
 
-void inicializar_pid_y_tamPag(int pid, int tamanioPag);
+void inicializar_pid_tamPag_clieCPU_y_contador_paginas(int pid, int tamanioPag, int clienteCPU, int contPags);
 void inicializar_tablaHeap();
 void liberar_tablaHeap();
 u_int32_t reservarMemoriaDinamica(int espacioRequerido);

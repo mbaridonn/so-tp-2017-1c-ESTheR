@@ -36,7 +36,8 @@ enum accionesCPU{
 };
 
 enum confirmacion {
-	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina
+	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina, noSePudoReservarMemoria, sePudoReservarMemoria,
+	noSePudoLiberarMemoria, sePudoLiberarMemoria
 };
 
 enum acciones {
