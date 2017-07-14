@@ -371,6 +371,21 @@ void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
 	}
 }
 
+void mostrarPcb(t_pcb *pcb_prueba) {
+	printf("id_proceso: %d \n", pcb_prueba->id_proceso);
+	printf("program_counter: %d \n", pcb_prueba->program_counter);
+	printf("cant_instrucciones: %d \n", pcb_prueba->cant_instrucciones);
+	printf("cant_paginas_de_codigo: %d \n", pcb_prueba->cant_paginas_de_codigo);
+	printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
+	printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
+	printf("stackPointer: %d \n", pcb_prueba->stackPointer);
+	printf("cantElementosStack: %d \n",
+			pcb_prueba->indice_stack->elements->elements_count);
+	printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
+	printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
+	printf("exit_code: %d \n\n", pcb_prueba->exit_code);
+}
+
 void atenderACPU(cliente_CPU *unaCPU){
 	enviarSenialACPU(&(unaCPU->clie_CPU));//Porque le envia una senial otra vez? Es decir, la ejecucion anterior a esto confirma la atencion ya (envia una senial)
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
@@ -381,6 +396,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		int motivo_liberacion = recibir_int_de(unaCPU->clie_CPU);
 		t_pcb *pcb = recibir_pcb_de(unaCPU->clie_CPU);
+		mostrarPcb(pcb);
 		actualizar_info_pcb(pcb);
 		unaCPU->libre = 1;
 		mover_pcb_segun_motivo(pcb,motivo_liberacion);

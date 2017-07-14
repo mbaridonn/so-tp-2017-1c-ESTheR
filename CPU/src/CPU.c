@@ -307,7 +307,7 @@ void conectarse_con_memoria(struct sockaddr_in *direccionServidor2) {
 }
 
 bool hay_que_seguir_ejecutando() {
-	return instrucciones_ejecutadas < quantum;
+	return instrucciones_ejecutadas < quantum || quantum < 0;
 }
 
 void ejecutar_instrucciones(t_pcb *un_pcb) {
@@ -395,7 +395,6 @@ void enviar_motivo_liberacion(){
 
 void devolver_pcb_y_liberarse(t_pcb *pcb) {
 	cpu_kernel_aviso_desocupada();
-	esperarSenialDeKernel();
 	enviarIntAKernel(pcb->id_proceso);
 	enviar_motivo_liberacion();
 	enviar_un_PCB_a_Kernel(pcb);
