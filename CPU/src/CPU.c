@@ -49,6 +49,61 @@ AnSISOP_kernel kernel_functions = { .AnSISOP_wait = wait, .AnSISOP_signal =
 				cerrar, .AnSISOP_moverCursor = moverCursor, .AnSISOP_escribir =
 				escribir, .AnSISOP_leer = leer };
 
+t_metadata_program *getMetadataExample() {
+	puts("\nThis is a fake ansisop program (hardcoded)\n");
+	char *programa =
+			"begin\nvariables f, A, g \n A = 0 \n!Global = 1+A\n print !Global \n jnz !Global Siguiente \n:Proximo\n	\n f = 8 \ng <- doble !Global \n io impresora 20\n	:Siguiente \n imprimir A \ntextPrint Hola Mundo! \n\n sumar1 &g \n print g \n\n sinParam \n \nend\n\nfunction sinParam\n	textPrint Bye\nend\n\n#Devolver el doble del\n#primer parametro\nfunction doble\nvariables f \n f = $0 + $0 \n return fvend\n\nfunction sumar1\n	*$0 = 1 + *$0\nend\n\nfunction imprimir\n wait mutexA\n print $0+1\n signal mutexB\nend\n\n";
+//print_instrucciones_size ();
+	return metadata_desde_literal(programa); // get metadata from the program
+}
+
+t_stack *getStackExample() {
+	t_stack * stack_mock = queue_create();
+	t_stack_entry * first_entry = malloc(sizeof(t_stack_entry));
+	first_entry->pos = 0;
+	first_entry->cant_args = 1;
+	first_entry->args = malloc(sizeof(t_arg));
+	first_entry->args->page_number = 1;
+	first_entry->args->offset = 2;
+	first_entry->args->tamanio = 3;
+	first_entry->cant_vars = 1;
+	first_entry->vars = malloc(sizeof(t_var));
+	first_entry->vars->var_id = 4;
+	first_entry->vars->page_number = 5;
+	first_entry->vars->offset = 6;
+	first_entry->vars->tamanio = 7;
+	first_entry->cant_ret_vars = 1;
+	first_entry->ret_vars = malloc(sizeof(t_ret_var));
+	first_entry->ret_vars->page_number = 8;
+	first_entry->ret_vars->offset = 9;
+	first_entry->ret_vars->tamanio = 10;
+	first_entry->ret_pos = 0;
+	queue_push(stack_mock, first_entry);
+	return stack_mock;
+}
+
+t_pcb * getPcbExample() {
+//1) Get metadata structure from ansisop whole program
+	t_metadata_program* newMetadata = getMetadataExample();
+//printf("Cantidad de etiquetas: %i \n\n", newMetadata->cantidad_de_etiquetas); // print something
+//newMetadata->instrucciones_serializado += 1;
+//2) Create the PCB with the metadata information obtained, and extra information of the Kernel
+	t_pcb * newPCB = malloc(sizeof(t_pcb));
+	newPCB->id_proceso = 7777;
+	newPCB->program_counter = newMetadata->instruccion_inicio;
+	newPCB->cant_instrucciones = newMetadata->instrucciones_size;
+	newPCB->cant_paginas_de_codigo = 666;
+//	newMetadata->instrucciones_serializado;
+	newPCB->indice_codigo = newMetadata->instrucciones_serializado;
+	newPCB->stackPointer = 10;
+	newPCB->indice_stack = getStackExample();
+	newPCB->etiquetas_size = newMetadata->etiquetas_size;
+	newPCB->indice_etiquetas = newMetadata->etiquetas;
+	newPCB->exit_code = 999;
+
+	return newPCB;
+}
+
 void mostrarPcb(t_pcb *pcb_prueba) {
 	printf("id_proceso: %d \n", pcb_prueba->id_proceso);
 	printf("program_counter: %d \n", pcb_prueba->program_counter);
@@ -57,8 +112,10 @@ void mostrarPcb(t_pcb *pcb_prueba) {
 	printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
 	printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
 	printf("stackPointer: %d \n", pcb_prueba->stackPointer);
+	printf("cantElementosStack: %d \n",
+			pcb_prueba->indice_stack->elements->elements_count);
 	printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
-	//	printf("indice_etiquetas: %c \n",*(pcb_prueba->indice_etiquetas));
+	printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
 	printf("exit_code: %d \n\n", pcb_prueba->exit_code);
 }
 
@@ -70,7 +127,8 @@ void testearSerializado() {
 			"a = b + 12\n"
 			"end\n";
 
-	t_pcb *pcb_a_serializar = crearPCB(script, 1024, 1024);
+	//t_pcb *pcb_a_serializar = crearPCB(script, 1024, 1024);
+	t_pcb *pcb_a_serializar = getPcbExample();
 
 	mostrarPcb(pcb_a_serializar);
 
@@ -80,7 +138,7 @@ void testearSerializado() {
 
 	t_pcb* pcb_a_deserializar = calloc(1, sizeof(t_pcb));
 	int pcb_serializado_index = 0;
-	deserializar_pcb(&pcb_a_deserializar, pcb_a_serializar,
+	deserializar_pcb(&pcb_a_deserializar, serialized_pcb,
 			&pcb_serializado_index);
 
 	mostrarPcb(pcb_a_deserializar);
@@ -377,7 +435,7 @@ int main(void) {
 
 	while (1) {
 		t_pcb *pcb = recibir_pcb();
-		mostrar_datos_pcb(pcb); // Es para chequear que llegue bien, NO es un procedimiento NECESARIO
+		mostrarPcb(pcb); // Es para chequear que llegue bien, NO es un procedimiento NECESARIO
 		ejecutar_instrucciones(pcb);
 		free(pcb);
 		devolver_pcb_y_liberarse(pcb);
