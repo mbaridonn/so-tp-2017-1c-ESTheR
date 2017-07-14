@@ -12,6 +12,13 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
+int horaInicio;
+int minInicio;
+int segInicio;
+int horaFin;
+int minFin;
+int segFin;
+
 typedef struct {
 	//char ipKernel[10]; FALTA IMPLEMENTAR
 	int puerto;
@@ -104,20 +111,57 @@ void esperarConfirmacionDeKernel(int *kernel) {
 	mostrarConfirmacion(confirmacion);
 }
 
-void mostrarFechaHoraEjecucion() {
+void mostrarDiferenciaInicioFinEjecucion() {
+	int difHoras,difMinutos,difSegundos;
+
+	if (segInicio > segFin) {
+		--minFin;
+		segFin += 60;
+	}
+
+	difSegundos = segFin - segInicio;
+	if (minInicio > minFin) {
+		--horaFin;
+		minInicio += 60;
+	}
+
+	difMinutos = minFin - minInicio;
+	difHoras = horaFin - horaInicio;
+
+	printf("Hora: %d\n", difHoras);
+	printf("Minuto: %d\n", difMinutos);
+	printf("Segundo: %d\n", difSegundos);
+}
+
+void mostrarFechaHoraEjecucion(int opcion) {
+	struct tm *tmRetorno;
 	time_t tiempoEnSegundos = time(NULL);
 	struct tm *tm = localtime(&tiempoEnSegundos);
-	printf("Fecha: %s Tiempo En Segs: %ld \n", asctime(tm),tiempoEnSegundos);
+	tmRetorno = tm;
+	printf("Fecha: %s\n", asctime(tmRetorno));
+	printf("Hora: %d\n", tmRetorno->tm_hour);
+	printf("Minuto: %d\n", tmRetorno->tm_min);
+	printf("Segundo: %d\n", tmRetorno->tm_sec);
+
+	if(opcion == 1){
+		horaInicio = tmRetorno->tm_hour;
+		minInicio = tmRetorno->tm_min;
+		segInicio = tmRetorno->tm_sec;
+	}else{
+		horaFin = tmRetorno->tm_hour;
+		minFin = tmRetorno->tm_min;
+		segFin = tmRetorno->tm_sec;
+	}
 }
 
-void mostrarInicioEjecucion(){
+void mostrarInicioEjecucion() {
 	printf("Fecha y hora de inicio de ejecucion:\n");
-	mostrarFechaHoraEjecucion();
+	mostrarFechaHoraEjecucion(1);
 }
 
-void mostrarFinEjecucion(){
+void mostrarFinEjecucion() {
 	printf("Fecha y hora de fin de ejecucion:\n");
-	mostrarFechaHoraEjecucion();
+	mostrarFechaHoraEjecucion(2);
 }
 
 void esperarMensajesDeKernel(){
