@@ -45,6 +45,13 @@ enum acciones {
 };
 
 typedef struct{
+	int clie_consola;
+	int pid;
+	char *bufferArchivo;
+	int fsize;
+}pedido_script;
+
+typedef struct{
 	int clie_CPU;
 	int libre;
 } cliente_CPU;
@@ -75,8 +82,9 @@ t_list *listaPCBs_EXEC;
 t_list *listaPCBs_BLOCK;
 t_list *listaPCBs_EXIT;
 t_list *listaCPUs;
+t_list *lista_pedidos_script;
 
-int cliente, cliente2, servMemoria, servFS;
+int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;
 u_int32_t tamanioPagMemoria;
 
 #endif /* ESTRUCTURASCOMUNES_H_ */
