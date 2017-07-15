@@ -107,18 +107,29 @@ t_pcb * getPcbExample() {
 }
 
 void mostrarPcb(t_pcb *pcb_prueba) {
-	printf("id_proceso: %d \n", pcb_prueba->id_proceso);
-	printf("program_counter: %d \n", pcb_prueba->program_counter);
-	printf("cant_instrucciones: %d \n", pcb_prueba->cant_instrucciones);
-	printf("cant_paginas_de_codigo: %d \n", pcb_prueba->cant_paginas_de_codigo);
-	printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
-	printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
-	printf("stackPointer: %d \n", pcb_prueba->stackPointer);
-	printf("cantElementosStack: %d \n",
-			pcb_prueba->indice_stack->elements->elements_count);
-	printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
-	printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
-	printf("exit_code: %d \n\n", pcb_prueba->exit_code);
+	log_info(cpu_log, "id_proceso: %d ", pcb_prueba->id_proceso);
+	//printf("id_proceso: %d \n", pcb_prueba->id_proceso);
+	log_info(cpu_log, "program_counter: %d ", pcb_prueba->program_counter);
+	//printf("program_counter: %d \n", pcb_prueba->program_counter);
+	log_info(cpu_log, "cant_instrucciones: %d ", pcb_prueba->cant_instrucciones);
+	//printf("cant_instrucciones: %d \n", pcb_prueba->cant_instrucciones);
+	log_info(cpu_log, "cant_paginas_de_codigo: %d ", pcb_prueba->cant_paginas_de_codigo);
+	//printf("cant_paginas_de_codigo: %d \n", pcb_prueba->cant_paginas_de_codigo);
+	log_info(cpu_log, "indice_codigo->start: %u ", pcb_prueba->indice_codigo->start);
+	//printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
+	log_info(cpu_log, "indice_codigo->offset: %u ", pcb_prueba->indice_codigo->offset);
+	//printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
+	log_info(cpu_log, "stackPointer: %d \n", pcb_prueba->stackPointer);
+	//printf("stackPointer: %d \n", pcb_prueba->stackPointer);
+	log_info(cpu_log,"cantElementosStack: %d ",pcb_prueba->indice_stack->elements->elements_count);
+	//printf("cantElementosStack: %d \n",pcb_prueba->indice_stack->elements->elements_count);
+	log_info(cpu_log, "etiquetas_size: %d ", pcb_prueba->etiquetas_size);
+	//printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
+	log_info(cpu_log, "indice_etiquetas: %c ", *(pcb_prueba->indice_etiquetas));
+	//printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
+	log_info(cpu_log, "exit_code: %d \n", pcb_prueba->exit_code);
+	//printf("exit_code: %d \n\n", pcb_prueba->exit_code);
+
 }
 
 void testearSerializado() {
@@ -140,8 +151,7 @@ void testearSerializado() {
 
 	t_pcb* pcb_a_deserializar = calloc(1, sizeof(t_pcb));
 	int pcb_serializado_index = 0;
-	deserializar_pcb(&pcb_a_deserializar, serialized_pcb,
-			&pcb_serializado_index);
+	deserializar_pcb(&pcb_a_deserializar, serialized_pcb,&pcb_serializado_index);
 
 	mostrarPcb(pcb_a_deserializar);
 }
@@ -167,7 +177,8 @@ void mostrarArchivoConfig() {
 
 void leerArchivo() {
 	if (access(RUTAARCHIVO, F_OK) == -1) {
-		printf("No se encontró el Archivo\n");
+		log_error(cpu_log, "No se encontró el Archivo");
+		//printf("No se encontró el Archivo\n");
 		exit(-1);
 	}
 	t_config *archivo_config = config_create(RUTAARCHIVO);
@@ -181,7 +192,8 @@ void leerArchivo() {
 void avisarAccionAKernel(int accion) {
 	u_int32_t aux = accion;
 	if (send(serv_kernel, &aux, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la accion a Kernel.\n");
+		log_error(cpu_log, "Error enviando la accion a Kernel");
+		//printf("Error enviando la accion a Kernel.\n");
 		exit(-1);
 	}
 	esperarSenialDeKernel();
@@ -191,19 +203,22 @@ void recibirArchivoDe(int *cliente) {
 	FILE *archivo;
 	archivo = fopen("prueba.txt", "w"); //POR QUÉ PRUEBA.TXT              ???
 	if (archivo == NULL) {
-		printf("No se pudo escribir el archivo\n");
+		log_error(cpu_log, "No se pudo escribir el archivo");
+		//printf("No se pudo escribir el archivo\n");
 		exit(-1);
 	}
 
 	u_int32_t fsize = 0;
 	if (recv((*cliente), &fsize, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo longitud del archivo\n");
+		log_error(cpu_log, "Error recibiendo longitud del archivo");
+		//printf("Error recibiendo longitud del archivo\n");
 		exit(-1);
 	}
 
 	char *bufferArchivo = reservarMemoria(fsize + 1);
 	if (recv((*cliente), bufferArchivo, fsize + 1, 0) == -1) {
-		printf("Error recibiendo el archivo\n");
+		log_error(cpu_log, "Error recibiendo el archivo");
+		//printf("Error recibiendo el archivo\n");
 		exit(-1);
 	}
 	printf("%s\n\n", bufferArchivo);
@@ -217,20 +232,23 @@ void cpu_kernel_aviso_desocupada() {
 	esperarSenialDeKernel();
 	u_int32_t accion = cpuLibre;
 	if (send(serv_kernel, &accion, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando aviso de liberado a Kernel.\n");
+		log_error(cpu_log, "Error enviando aviso de liberado a Kernel");
+		//printf("Error enviando aviso de liberado a Kernel.\n");
 	}
 }
 
 void recibir_planificacion() {
 	if (recv(serv_kernel, &planificacion, sizeof(int), 0) == -1) {
-		printf("Error al recibir el tipo de algoritmo de planificacion.\n");
+		log_error(cpu_log, "Error al recibir el tipo de algoritmo de planificacion");
+		//printf("Error al recibir el tipo de algoritmo de planificacion.\n");
 		exit(-1);
 	}
 }
 
 void recibir_quantum() {
 	if (recv(serv_kernel, &quantum, sizeof(int), 0) == -1) {
-		printf("Error al recibir el quantum de planificacion.\n");
+		log_error(cpu_log, "Error al recibir el quantum de planificacion");
+		//printf("Error al recibir el quantum de planificacion.\n");
 		exit(-1);
 	}
 }
@@ -239,12 +257,12 @@ void recibir_planificacion_y_quantum() {
 	recibir_planificacion();
 	recibir_quantum();
 	if (planificacion == FIFO) {
-		printf("Me llego que la planificacion es FIFO y el QUANTUM en:%d\n",
-				quantum);
+		log_info(cpu_log, "Me llego que la planificacion es FIFO y el QUANTUM en:%d\n", quantum);
+		//printf("Me llego que la planificacion es FIFO y el QUANTUM en:%d\n",quantum);
 	}
 	if (planificacion == RR) {
-		printf("Me llego que la planificacion es RR y el QUANTUM en:%d\n",
-				quantum);
+		log_info(cpu_log, "Me llego que la planificacion es RR y el QUANTUM en:%d\n", quantum);
+		//printf("Me llego que la planificacion es RR y el QUANTUM en:%d\n",quantum);
 	} // Tambien se podria haber hecho un mensaje de kernel a cpu ejecutar_instrucciones(pcb,cantInstrucciones)
 }
 
@@ -269,10 +287,12 @@ void conectarse_con_memoria(struct sockaddr_in *direccionServidor2) {
 	int procesoConectado2 = handshake(&serv_memoria, cpu);
 	switch (procesoConectado2) {
 	case memoria:
-		printf("Me conecte con Memoria!\n");
+		log_info(cpu_log, "Me conecte con Memoria!");
+		//printf("Me conecte con Memoria!\n");
 		break;
 	default:
-		printf("No me puedo conectar con vos.\n");
+		log_info(cpu_log, "No me puedo conectar con vos");
+		//printf("No me puedo conectar con vos.\n");
 		break;
 	}
 }
@@ -287,12 +307,11 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	int codigoError;
 	instrucciones_ejecutadas = 0;// Solo sirve para tenerlo inicializado en algo.
 	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel,serv_memoria);
-	while (!terminoElPrograma() && !(codigoError = hayError())
-			&& hay_que_seguir_ejecutando() && !estaBloqueado()) {
-		printf("Esta bloqueado: %d\n",estaBloqueado());
+	while (!terminoElPrograma() && !(codigoError = hayError()) && hay_que_seguir_ejecutando() && !estaBloqueado()) {
+		log_info(cpu_log,"Esta bloqueado: %d",estaBloqueado);
+		//printf("Esta bloqueado: %d\n",estaBloqueado());
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
-		un_pcb->indice_codigo[un_pcb->program_counter].start,
-				un_pcb->indice_codigo[un_pcb->program_counter].offset);
+		un_pcb->indice_codigo[un_pcb->program_counter].start, un_pcb->indice_codigo[un_pcb->program_counter].offset);
 		analizadorLinea(instruccion, &functions, &kernel_functions);
 		un_pcb->program_counter++;
 		instrucciones_ejecutadas++;
@@ -315,11 +334,13 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 }
 
 void mostrar_datos_pcb(t_pcb *un_pcb) {
+	//log_info(cpu_log,"PCB id: %d", un_pcb->id_proceso);
 	printf("PCB id: %d\n", un_pcb->id_proceso);
-	printf("PCB start instruccion %d: %d\n", un_pcb->program_counter,
-			un_pcb->indice_codigo[un_pcb->program_counter].start);
-	printf("PCB offset instruccion %d: %d\n", un_pcb->program_counter,
-			un_pcb->indice_codigo[un_pcb->program_counter].offset);
+	//log_info(cpu_log,"PCB start instruccion %d: %d", un_pcb->program_counter,un_pcb->indice_codigo[un_pcb->program_counter].start);
+	printf("PCB start instruccion %d: %d\n", un_pcb->program_counter,un_pcb->indice_codigo[un_pcb->program_counter].start);
+	//log_info(cpu_log,"PCB offset instruccion %d: %d\n", un_pcb->program_counter,un_pcb->indice_codigo[un_pcb->program_counter].offset);
+	printf("PCB offset instruccion %d: %d\n", un_pcb->program_counter,un_pcb->indice_codigo[un_pcb->program_counter].offset);
+	//No sé si esto debería tener logs, los dejo comentados
 }
 
 void conectarse_con_kernel(struct sockaddr_in *direccionServidor) {
@@ -329,14 +350,17 @@ void conectarse_con_kernel(struct sockaddr_in *direccionServidor) {
 
 	switch (procesoConectado) {
 	case kernel:
-		printf("Me conecte con el Kernel!\n");
+		log_info(cpu_log, "Me conecte con el Kernel!");
+		//printf("Me conecte con el Kernel!\n");
 		recibir_planificacion_y_quantum();
 		stackSize = recibirUIntDeKernel();
 		tamPag = recibirUIntDeKernel();
-		printf("Recibi stackSize: %d y tamPag: %d\n", stackSize, tamPag);
+		log_info(cpu_log, "Recibi stackSize: %d y tamPag: %d", stackSize, tamPag);
+		//printf("Recibi stackSize: %d y tamPag: %d\n", stackSize, tamPag);
 		break;
 	default:
-		printf("No me puedo conectar con vos.\n");
+		log_error(cpu_log, "No me puedo conectar con vos");
+		//printf("No me puedo conectar con vos.\n");
 		break;
 	}
 }
@@ -348,22 +372,24 @@ void enviar_un_PCB_a_Kernel(t_pcb *pcb) {
 	int serialized_buffer_index = 0;
 	serializar_pcb(pcb, &serialized_pcb, &serialized_buffer_index);
 
-	if (send(serv_kernel, &serialized_buffer_index, (size_t) sizeof(int), 0)
-			< 0) {
-		printf("El envio de la longitud del buffer a Kernel fallo\n");
+	if (send(serv_kernel, &serialized_buffer_index, (size_t) sizeof(int), 0)< 0) {
+		log_error(cpu_log, "El envio de la longitud del buffer a Kernel fallo");
+		//printf("El envio de la longitud del buffer a Kernel fallo\n");
 		exit(-1);
 	}
-	if (send(serv_kernel, serialized_pcb, (size_t) serialized_buffer_index, 0)
-			< 0) {
-		printf("El envio de pcb a Kernel fallo\n");
+	if (send(serv_kernel, serialized_pcb, (size_t) serialized_buffer_index, 0)< 0) {
+		log_error(cpu_log, "El envio de pcb a Kernel fallo");
+		//printf("El envio de pcb a Kernel fallo\n");
 		exit(-1);
 	}
-	printf("PCB enviado a CPU exitosamente\n");
+	log_info(cpu_log, "PCB enviado a CPU exitosamente", stackSize, tamPag);
+	//printf("PCB enviado a CPU exitosamente\n");
 }
 
 void enviar_motivo_liberacion(){
 	if (send(serv_kernel, &motivo_liberacion, sizeof(int), 0) == -1) {
-		printf("El envio de pcb a Kernel fallo\n");
+		log_info(cpu_log, "El envio de pcb a Kernel fallo");
+		//printf("El envio de pcb a Kernel fallo\n");
 		exit(-1);
 	}
 }
@@ -376,6 +402,8 @@ void devolver_pcb_y_liberarse(t_pcb *pcb) {
 }
 
 int main(void) {
+
+	inicializarLog();
 	leerArchivo();
 
 	struct sockaddr_in direccionServidor;
@@ -414,6 +442,8 @@ int main(void) {
 		devolver_pcb_y_liberarse(pcb);
 		free(pcb);
 	}
+
+	log_destroy(cpu_log);
 
 	return 0;
 }
