@@ -21,7 +21,7 @@ enum algoritmos_planificacion {
 };
 
 enum motivos_liberacion_CPU{
-	mot_quantum, mot_semaforo, mot_finalizo, mot_error
+	mot_quantum, mot_finalizo, mot_error, mot_bloqueado
 };
 
 enum procesos {
@@ -288,7 +288,7 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	instrucciones_ejecutadas = 0;// Solo sirve para tenerlo inicializado en algo.
 	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel,serv_memoria);
 	while (!terminoElPrograma() && !(codigoError = hayError())
-			&& hay_que_seguir_ejecutando()) { //ESTO SERÍA SOLO PARA FIFO
+			&& hay_que_seguir_ejecutando() && !estaBloqueado()) {
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
 		un_pcb->indice_codigo[un_pcb->program_counter].start,
 				un_pcb->indice_codigo[un_pcb->program_counter].offset);
@@ -308,6 +308,9 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	if(instrucciones_ejecutadas == quantum){
 		motivo_liberacion = mot_quantum;
 	} // FALTA los ifs de wait y signal
+	if(estaBloqueado()){
+		motivo_liberacion = mot_bloqueado;
+	}
 }
 
 void mostrar_datos_pcb(t_pcb *un_pcb) {

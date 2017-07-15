@@ -8,11 +8,11 @@
 enum accionesCPU{
 	cpuLibre, cpu_k_abrir_archivo, cpu_k_cerrar_archivo, cpu_k_borrar_archivo, cpu_k_mover_cursor_archivo,
 	cpu_k_leer_archivo, cpu_k_escribir_archivo, cpu_k_obtener_valor_compartida, cpu_k_asignar_valor_compartida,
-	cpu_k_reservar, cpu_k_liberar
+	cpu_k_reservar, cpu_k_liberar, cpu_k_wait, cpu_k_signal
 };
 
 enum notificacionesKernelCPU{
-	k_cpu_error, k_cpu_accion_OK
+	k_cpu_error, k_cpu_accion_OK, k_cpu_bloquear, k_cpu_continuar
 };
 
 enum accionesCPUMemoria{
@@ -32,6 +32,7 @@ void esperarSenialDeKernel();
 char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio);
 u_int32_t recibirUIntDeKernel();
 void enviarIntAKernel(int un_int);
+bool estaBloqueado();
 
 t_puntero definirVariable(t_nombre_variable identificador_variable);
 t_puntero obtenerPosicionVariable(t_nombre_variable identificador_variable);

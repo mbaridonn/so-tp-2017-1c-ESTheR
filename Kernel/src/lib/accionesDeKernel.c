@@ -192,14 +192,14 @@ t_pcb *obtener_PCB_segun_PID_en(t_list *lista,int pid){
 	bool esElPCB(t_pcb *unPCB){
 			return unPCB->id_proceso == pid;
 	}
-	return list_find(lista,esElPCB);
+	return list_find(lista,(void*)esElPCB);
 }
 
 bool tiene_este_pcb(t_list *lista,int pid){
 	bool esElPCB(t_pcb *unPCB){
 		return unPCB->id_proceso == pid;
 	}
-	return list_any_satisfy(lista,esElPCB);
+	return list_any_satisfy(lista,(void*)esElPCB);
 }
 
 t_list *lista_que_tiene_este_pcb(int pid){
@@ -275,7 +275,7 @@ int obtenerValorDeVariableCompartida(char* nombreVariable){
 	else return config->SHARED_VARS_VALUES[i];
 }
 
-void asignarValorAVariableCompartida(nombreVariable, valorVariable){
+void asignarValorAVariableCompartida(char *nombreVariable, int valorVariable){
 	int i=0;
 	while(config->SHARED_VARS[i]!=NULL && strcmp(nombreVariable,config->SHARED_VARS[i])!=0) i++;
 	if (config->SHARED_VARS[i]!=NULL) config->SHARED_VARS_VALUES[i]=valorVariable;
@@ -368,7 +368,7 @@ void actualizar_info_pcb(t_pcb *pcb){
 	bool esElPCB(t_pcb *unPCB){
 		return unPCB->id_proceso == pcb->id_proceso;
 	}
-	list_remove_and_destroy_by_condition(listaPCBs_EXEC,esElPCB,pcb_destroy);
+	list_remove_and_destroy_by_condition(listaPCBs_EXEC,(void*)esElPCB,(void*)pcb_destroy);
 	list_add(listaPCBs_EXEC,pcb);
 }
 
@@ -376,7 +376,7 @@ bool hubo_detencion_forzosa(t_pcb *pcb){
 	bool esElPID(int *pid){
 			return *pid == pcb->id_proceso;
 	}
-	return list_any_satisfy(lista_detenciones_pendientes,esElPID);
+	return list_any_satisfy(lista_detenciones_pendientes,(void*)esElPID);
 }
 
 void pid_destroyer(int *pid){
@@ -388,7 +388,14 @@ void eliminar_detencion(t_pcb *pcb){
 				return *pid == pcb->id_proceso;
 	}
 	cant_procesos_detenidos++;
-	list_remove_and_destroy_by_condition(lista_detenciones_pendientes,esElPID,pid_destroyer);
+	list_remove_and_destroy_by_condition(lista_detenciones_pendientes,(void*)esElPID,(void*)pid_destroyer);
+}
+
+bloqueo *crear_bloqueo(int pid, int pos_semaforo){
+	bloqueo *un_bloqueo = reservarMemoria(sizeof(bloqueo));
+	un_bloqueo->pid = pid;
+	un_bloqueo->pos_semaforo = pos_semaforo;
+	return un_bloqueo;
 }
 
 void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
@@ -409,8 +416,8 @@ void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
 	case mot_quantum:
 		transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_READY,pcb);
 		break;
-	case mot_semaforo:
-		//transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_BLOCK,pcb); DEPENDE
+	case mot_bloqueado:
+		transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_BLOCK,pcb);
 		break;
 	}
 }
@@ -430,6 +437,24 @@ void mostrarPcb(t_pcb *pcb_prueba) {
 	printf("exit_code: %d \n\n", pcb_prueba->exit_code);
 }
 
+void bloqueo_destroy(bloqueo *bloq){
+	free(bloq);
+}
+
+void wake_up(int pos_semaforo){
+	bool tiene_este_semaforo(bloqueo *bloq){
+		return bloq->pos_semaforo == pos_semaforo;
+	}
+	bloqueo *un_bloqueo = list_find(lista_bloqueos,(void *)tiene_este_semaforo);
+	int pid = un_bloqueo->pid;
+	bool es_este_bloqueo(bloqueo *bloq){
+		return bloq->pos_semaforo == pos_semaforo && bloq->pid==pid;
+	}
+	list_remove_and_destroy_by_condition(lista_bloqueos,(void *)es_este_bloqueo,(void *)bloqueo_destroy);
+	t_pcb *un_pcb = obtener_PCB_segun_PID_en(listaPCBs_BLOCK,pid);
+	transicion_colas_proceso(listaPCBs_BLOCK,listaPCBs_READY,un_pcb);
+}
+
 void atenderACPU(cliente_CPU *unaCPU){
 	enviarSenialACPU(&(unaCPU->clie_CPU));//Porque le envia una senial otra vez? Es decir, la ejecucion anterior a esto confirma la atencion ya (envia una senial)
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
@@ -442,8 +467,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 		t_pcb *pcb = recibir_pcb_de(unaCPU->clie_CPU);
 		mostrarPcb(pcb);
 		actualizar_info_pcb(pcb);
-		unaCPU->libre = 1;
 		mover_pcb_segun_motivo(pcb,motivo_liberacion);
+		unaCPU->libre = 1;
 		break;
 	}
 	case cpu_k_obtener_valor_compartida:
@@ -523,12 +548,13 @@ void atenderACPU(cliente_CPU *unaCPU){
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int tamanio = recibir_int_de(unaCPU->clie_CPU);
-		char* bytesAEscribir;//HAY QUE RECIBIR EL TAMANIO PRIMERO
+		char* bytesAEscribir = reservarMemoria(tamanio);
 		if (recv(&(unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
 			printf("Error al recibir bytes a escribir de CPU\n");
 		}
 		int confirmacion = escribirArchivo(PID,fd,bytesAEscribir,tamanio);
 		enviarIntACPU(&(unaCPU->clie_CPU), confirmacion);
+		free(bytesAEscribir);
 		break;
 	}
 	case cpu_k_reservar:
@@ -547,6 +573,36 @@ void atenderACPU(cliente_CPU *unaCPU){
 		u_int32_t direccion = recibir_int_de(unaCPU->clie_CPU);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, 0/*No es necesario*/);
 		liberarMemoriaDinamica(direccion);
+		break;
+	}
+	case cpu_k_wait:
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));
+		char *identificador_semaforo = recibirPathDeCPU(&(unaCPU->clie_CPU));
+		int i=0;
+		while(config->SEM_IDS[i]!=NULL && strcmp(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
+		if (config->SEM_IDS[i]!=NULL) config->SEM_INIT[i]--;
+		if(config->SEM_INIT[i] < 0){
+			bloqueo *un_bloqueo = crear_bloqueo(PID,i);
+			list_add(lista_bloqueos,un_bloqueo);
+			enviarIntACPU(&(unaCPU->clie_CPU),k_cpu_bloquear);
+		}else{
+			enviarIntACPU(&(unaCPU->clie_CPU),k_cpu_continuar);
+		}
+		free(identificador_semaforo);
+		break;
+	}
+	case cpu_k_signal:
+	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));
+		char *identificador_semaforo = recibirPathDeCPU(&(unaCPU->clie_CPU));
+		int i=0;
+		while(config->SEM_IDS[i]!=NULL && strcmp(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
+		if (config->SEM_IDS[i]!=NULL) config->SEM_INIT[i]++;
+		if(config->SEM_INIT[i] <= 0){
+			wake_up(i);
+		}
+		free(identificador_semaforo);
 		break;
 	}
 	default:

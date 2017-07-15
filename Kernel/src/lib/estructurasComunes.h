@@ -14,11 +14,11 @@ enum accionesFS{
 };
 
 enum notificacionesKernelCPU{
-	k_cpu_error, k_cpu_accion_OK
+	k_cpu_error, k_cpu_accion_OK, k_cpu_bloquear, k_cpu_continuar
 };
 
 enum motivos_liberacion_CPU{
-	mot_quantum, mot_semaforo, mot_finalizo, mot_error
+	mot_quantum, mot_finalizo, mot_error, mot_bloqueado
 };
 
 enum algoritmos_planificacion{
@@ -32,7 +32,7 @@ enum accionesMemoria {
 enum accionesCPU{
 	cpuLibre, cpu_k_abrir_archivo, cpu_k_cerrar_archivo, cpu_k_borrar_archivo, cpu_k_mover_cursor_archivo,
 	cpu_k_leer_archivo, cpu_k_escribir_archivo, cpu_k_obtener_valor_compartida, cpu_k_asignar_valor_compartida,
-	cpu_k_reservar, cpu_k_liberar
+	cpu_k_reservar, cpu_k_liberar, cpu_k_wait, cpu_k_signal
 };
 
 enum confirmacion {
@@ -55,6 +55,11 @@ typedef struct{
 	int clie_CPU;
 	int libre;
 } cliente_CPU;
+
+typedef struct{
+	int pid;
+	int pos_semaforo;
+}bloqueo;
 
 typedef struct {
 	int PUERTO_PROG;
@@ -84,6 +89,7 @@ t_list *listaPCBs_EXIT;
 t_list *listaCPUs;
 t_list *lista_pedidos_script;
 t_list *lista_detenciones_pendientes;
+t_list *lista_bloqueos;
 
 int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;
 u_int32_t tamanioPagMemoria;

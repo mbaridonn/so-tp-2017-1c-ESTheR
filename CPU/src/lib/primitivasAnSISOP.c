@@ -3,7 +3,7 @@
 
 #define TAM_VARIABLE 4
 
-bool terminoPrograma;
+bool terminoPrograma, esta_bloqueado;
 int codigoError;
 
 //VALORES A INICIALIZAR
@@ -24,6 +24,7 @@ void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tam
 
 	terminoPrograma = false;
 	codigoError = 0;
+	esta_bloqueado = false;
 }
 
 bool esArgumento(t_nombre_variable identificador_variable){
@@ -36,6 +37,10 @@ bool terminoElPrograma(void){
 
 int hayError(){
 	return codigoError;
+}
+
+bool estaBloqueado(){
+	return esta_bloqueado;
 }
 
 void esperarSenialDeMemoria() {
@@ -373,11 +378,21 @@ t_valor_variable asignarValorCompartida(t_nombre_compartida var_compartida_nombr
 //OPERACIONES DE KERNEL
 
 void wait(t_nombre_semaforo identificador_semaforo){
-
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_wait);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarPathAKernel(identificador_semaforo);
+	int confirmacion = recibirUIntDeKernel();
+	if(confirmacion == k_cpu_bloquear){
+		esta_bloqueado = true;
+	}
 }
 
 void signal(t_nombre_semaforo identificador_semaforo){
-
+	solicitarA(&serv_kernel,"Kernel");
+	enviarIntAKernel(cpu_k_signal);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
+	enviarPathAKernel(identificador_semaforo);
 }
 
 t_puntero reservar(t_valor_variable espacio){

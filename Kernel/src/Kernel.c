@@ -533,6 +533,7 @@ int main(void) {
 	listaCPUs = list_create();
 	lista_pedidos_script = list_create();
 	lista_detenciones_pendientes = list_create();
+	lista_bloqueos = list_create();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
