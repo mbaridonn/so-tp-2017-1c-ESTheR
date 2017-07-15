@@ -12,11 +12,13 @@
 #include <commons/string.h>
 #include <commons/txt.h>
 #include <commons/bitarray.h>
+//#include <commons/log.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem"
 
 int clienteKernel;
+//t_log *fileSystem_log;
 
 enum accionesFS{
 	k_fs_validar_archivo, k_fs_crear_archivo, k_fs_borrar_archivo, k_fs_leer_archivo, k_fs_escribir_archivo
@@ -41,10 +43,10 @@ enum procesos {
 };
 
 void msjConexionCon(char *s) {
-	printf(
-			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
-			s);
-} //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
+	//printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+	log_info(fileSystem_log,"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
+			 s);
+}
 
 int nuevohandshake(int *cliente, int proceso) {
 	char unProceso[2];
@@ -59,7 +61,8 @@ int nuevohandshake(int *cliente, int proceso) {
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
-		printf("No hay más espacio\n");
+		log_error(fileSystem_log, "No hay más espacio");
+		//printf("No hay más espacio\n");
 		exit(-1);
 	}
 	return puntero;
@@ -80,6 +83,7 @@ void mostrarArchivoConfig() {
 	printf("------------------------------------------\n");
 	while ((c = fgetc(f)) != EOF)
 		putchar(c);
+	//log_info(fileSystem_log, "\n");
 	printf("\n");
 	printf("------------------------------------------\n");
 
@@ -87,19 +91,22 @@ void mostrarArchivoConfig() {
 
 void leerArchivo() {
 	if (access(RUTAARCHIVO, F_OK) == -1) {
-		printf("No se encontró el Archivo\n");
+		log_error(fileSystem_log, "No se encontró el Archivo");
+		//printf("No se encontró el Archivo\n");
 		exit(-1);
 	}
 	t_config *archivo_config = config_create(RUTAARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	mostrarArchivoConfig();
-	printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
+	log_info(fileSystem_log, "Leí el archivo y extraje el puerto: %d", config->puerto);
+	//printf("Leí el archivo y extraje el puerto: %d\n", config->puerto);
 }
 
 int divisionRoundUp(int dividendo, int divisor) {
 	if (dividendo <= 0 || divisor <= 0) {
-		printf("Esta division funciona unicamente con enteros positivos\n");
+		log_error(fileSystem_log, "Esta division funciona unicamente con enteros positivos");
+		//printf("Esta division funciona unicamente con enteros positivos\n");
 		exit(-1);
 	}
 	return 1 + ((dividendo - 1) / divisor);
@@ -130,7 +137,8 @@ void leerArchivoConfiguracionFS() {
 	strcat(path, pathRelativo);
 
 	if (access(path, F_OK) == -1) {
-		printf("No se encontró el archivo de configuración del FS\n");
+		log_error(fileSystem_log, "No se encontró el Archivo de Configuración");
+		//printf("No se encontró el archivo de configuración del FS\n");
 		exit(-1);
 	}
 	t_config *archivo_config_fs = config_create(path);
@@ -164,7 +172,8 @@ void inicializarBitmap() {
 	char pathRelativo[22] = "Metadata/Bitmap.bin";
 	strcat(path, pathRelativo);
 	if (access(path, F_OK) == -1) {
-		printf("No se encontró el archivo bitmap del FS\n");
+		log_error(fileSystem_log, "No se encontró el archivo bitmap");
+		//printf("No se encontró el archivo bitmap del FS\n");
 		exit(-1);
 	}
 
@@ -172,23 +181,25 @@ void inicializarBitmap() {
 	ftruncate(fd, divisionRoundUp(configFS->cantBloques, 8)); //Tiene que tener este tamaño en bytes (pone los bytes en 0?)
 	struct stat mystat;
 	if (fstat(fd, &mystat) < 0) {
-		printf("Error al establecer fstat\n");
+		log_error(fileSystem_log, "Error al establecer fstat");
+		//printf("Error al establecer fstat\n");
 		close(fd);
 		exit(-1);
 	}
 	char *bitmap = (char *) mmap(0, mystat.st_size, PROT_READ | PROT_WRITE,
 	MAP_PRIVATE, fd, 0);
 	if (bitmap == MAP_FAILED) {
-		printf("Error al mapear a memoria\n");
+		log_error(fileSystem_log, "Error al mapear a memoria");
+		//printf("Error al mapear a memoria\n");
 		close(fd);
 		exit(-1);
 	}
-	bitarray = bitarray_create_with_mode(bitmap,
-			divisionRoundUp(configFS->cantBloques, 8), LSB_FIRST);
+	bitarray = bitarray_create_with_mode(bitmap,divisionRoundUp(configFS->cantBloques, 8), LSB_FIRST);
 	/*int i;                                NECESARIO PARA PONER TODOS LOS BITS EN 0? LO HACE YA TRUNCATE?
 	 for (i = 0; i < cantBloques; i++) {
 	 bitarray_clean_bit(bitarray, i);
 	 }*/
+	// log_info(fileSystem_log,"El tamano del bitarray es de : %d\n", bitarray_get_max_bit(bitarray));
 	close(fd);
 }
 
@@ -232,7 +243,8 @@ void crearArchivo(char* pathRelativo) {
 		crearDirectorio(path); //SÓLO FUNCIONA PARA CREAR UN SUBDIRECTORIO. SI HAY MÁS FALLA
 		archivo = fopen(path, "w");
 		if (!archivo) {
-			printf("Error al crear archivo despúes de crear el directorio\n");
+			log_error(fileSystem_log, "Error al crear archivo despúes de crear el directorio");
+			//printf("Error al crear archivo despúes de crear el directorio\n");
 			exit(-1);
 		}
 	}
@@ -289,7 +301,8 @@ char* obtenerDatos(char* pathRelativo, int offset, int size) {
 	t_config *archivo = config_create(path);
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
 	if (offset >= tamArchivo) {
-		printf("Se está intentando leer más allá del fin del archivo\n");
+		log_error(fileSystem_log, "Se está intentando leer más allá del fin del archivo");
+		//printf("Se está intentando leer más allá del fin del archivo\n");
 		exit(-1); //SE DEBERIÁ DEVOLVER UN MENSAJE AL KERNEL
 	}
 	int cantBloques;
@@ -306,7 +319,8 @@ char* obtenerDatos(char* pathRelativo, int offset, int size) {
 	if (offsetEnBloque + size > configFS->tamBloque) { //Si se pasa del bloque
 		int proximoBloque = bloqueInicial + 1;
 		if (proximoBloque == cantBloques) {
-			printf("Se está intentando leer más allá del fin del archivo\n");
+			log_error(fileSystem_log, "Se está intentando leer más allá del fin del archivo");
+			//printf("Se está intentando leer más allá del fin del archivo\n");
 			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 		}
 		sizeRestante = size - (configFS->tamBloque - offsetEnBloque); //Si hay otro bloque, me guardo el tamaño restante
@@ -357,7 +371,8 @@ int cantidadDeBloquesLibres() {
 
 void agregarBloques(t_config *archivo, int cantBloquesAAgregar) {
 	if (cantBloquesAAgregar > cantidadDeBloquesLibres()) {
-		printf("No hay suficientes bloques para asignar al archivo\n");
+		log_error(fileSystem_log, "No hay suficientes bloques para asignar al archivo");
+		//printf("No hay suficientes bloques para asignar al archivo\n");
 		exit(-1);		//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE
 	}
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
@@ -457,14 +472,16 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 void enviarSenialAKernel() {
 	char senial[2] = "a";
 	if (send(clienteKernel, senial, 2, 0) == -1) {
-		printf("Error al enviar la senial\n");
+		log_error(fileSystem_log, "Error al enviar la senial");
+		//printf("Error al enviar la senial\n");
 	}
 }
 
 int accionPedidaPorKernel() {
 	int accionPedida;
 	if (recv(clienteKernel, &accionPedida, sizeof(int), 0) == -1) {
-		printf("Error recibiendo la accion pedida\n");
+		log_error(fileSystem_log, "Error recibiendo la accion pedida");
+		//printf("Error recibiendo la accion pedida\n");
 		exit(-1);
 	}
 	return accionPedida;
@@ -474,14 +491,16 @@ char *recibirPath(){
 	int tamPath;
 	char *path;
 	if (recv(clienteKernel, &tamPath, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el tamanio del Path\n");
+		log_error(fileSystem_log, "Error recibiendo el tamanio del Path");
+		//printf("Error recibiendo el tamanio del Path\n");
 		exit(-1);
 	}
 	path = reservarMemoria(tamPath*sizeof(char));
 	enviarSenialAKernel();
 	if (recv(clienteKernel, &tamPath, sizeof(int), 0) == -1) {
-			printf("Error recibiendo el tamanio del Path\n");
-			exit(-1);
+		log_error(fileSystem_log, "Error recibiendo el tamanio del Path");
+		//printf("Error recibiendo el tamanio del Path\n");
+		exit(-1);
 	}
 	return path;
 }
@@ -498,7 +517,8 @@ void atenderKernel() {
 			path = recibirPath();
 			bool existe = validarArchivo(path);//POR QUÉ NO PUEDO DECLARAR EL CHAR* EN EL CASE PERO EL BOOL SI??
 			if (send(clienteKernel, &existe, sizeof(bool), 0) == -1) {
-				printf("Error enviando si el archivo existe\n");
+				log_error(fileSystem_log, "Error enviando si el archivo existe");
+				//printf("Error enviando si el archivo existe\n");
 				exit(-1);
 			}
 			free(path);
@@ -524,7 +544,8 @@ void atenderKernel() {
 			enviarSenialAKernel();
 			char* bytesLeidos = obtenerDatos(path, offset, size);
 			if (send(clienteKernel, bytesLeidos, size, 0) == -1) {//TENGO QUE ESPERAR MÁS??
-				printf("Error enviando el archivo leido\n");
+				log_error(fileSystem_log, "Error enviando el archivo leido");
+				//printf("Error enviando el archivo leido\n");
 				exit(-1);
 			}
 			break;
@@ -539,7 +560,8 @@ void atenderKernel() {
 			enviarSenialAKernel();
 			char* buffer = reservarMemoria(size);
 			if (recv(clienteKernel, buffer, size, 0) == -1) {
-				printf("Error recibiendo los bytes a escribir\n");
+				log_error(fileSystem_log, "Error recibiendo los bytes a escribir");
+				//printf("Error recibiendo los bytes a escribir\n");
 				exit(-1);
 			}
 			guardarDatos(path,offset,size,buffer);
@@ -554,6 +576,11 @@ void atenderKernel() {
 
 
 int main(void) {
+
+	inicializarLog();
+//	fileSystem_log = log_create("/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/Debug/FileSystem.log", "CódigoFacilito-FS\n", true, LOG_LEVEL_TRACE);
+	log_info(fileSystem_log,"Iniciando FileSystem\n");
+
 	leerArchivo();
 
 	leerArchivoConfiguracionFS();
@@ -577,14 +604,16 @@ int main(void) {
 		atenderKernel();
 		break;
 	default:
-		printf("No me puedo conectar con vos.\n");
+		log_error(fileSystem_log, "No me puedo conectar con vos");
+		//printf("No me puedo conectar con vos.\n");
 		exit(-1);
 		break;
 	}
 
+
 	bitarray_destroy(bitarray);
 
 	close(clienteKernel);
-
+	log_destroy(fileSystem_log);
 	return 0;
 }
