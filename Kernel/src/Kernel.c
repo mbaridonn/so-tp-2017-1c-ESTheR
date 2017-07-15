@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <stdlib.h>
 #include <commons/config.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -112,8 +113,16 @@ cliente_CPU *crearClienteCPU(int *c_cpu) {
 	return nuevaCPU;
 }
 
-int hayProcesosReady() {
+bool hayProcesosReady() {
 	return !list_is_empty(listaPCBs_READY);
+}
+
+bool hayProcesosNew() {
+	return !list_is_empty(listaPCBs_NEW);
+}
+
+int cantidad_procesos_en_memoria(){
+	return cant_historica_procesos_memoria - cant_procesos_finalizados - cant_procesos_detenidos;
 }
 
 void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
@@ -158,36 +167,12 @@ int hay_CPUs_Conectadas() {
 
 cliente_CPU *obtenerCPUDesocupada() {
 	bool estaDesocupada(cliente_CPU *unaCPU) {
-		return unaCPU->libre == 1;
+				return unaCPU->libre == 1;
 	}
-	while(1){
-		if(planificacionActivada){
-			if (list_any_satisfy(listaCPUs, (void*) estaDesocupada)){
-				return list_find(listaCPUs, (void*) estaDesocupada);
-			}
-		}else{
-			return NULL;
-		}
-	}
+	return list_find(listaCPUs, (void*) estaDesocupada);
 }
 
-void asignarProcesosSegunFIFO() {
-	cliente_CPU *cpuDesocupada;
-	t_pcb *pcb;
-	printf("************ Planificando segun FIFO *****************\n");
-	while (1) {
-		if (hayProcesosReady() && planificacionActivada) {
-			cpuDesocupada = obtenerCPUDesocupada();
-			if(cpuDesocupada==NULL)break;
-			cpuDesocupada->libre = 0;
-			pcb = list_get(listaPCBs_READY, 0);
-			transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
-			enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
-		}
-	}
-}
-
-void asignarProcesosSegunRoundRobin() {
+/*void asignarProcesosSegunRoundRobin() {
 	printf("************ Planificando segun RR *****************\n");
 	cliente_CPU *cpuDesocupada;
 		t_pcb *pcb;
@@ -200,8 +185,8 @@ void asignarProcesosSegunRoundRobin() {
 				transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
 				enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
 			}
-		}
-}
+	}
+}*/
 
 bool str_compare(char vec1[],char vec2[]){
 	int i = 0;
@@ -218,12 +203,89 @@ bool str_compare(char vec1[],char vec2[]){
 	return true;
 }
 
-void planificar() {
+
+void mostrar_tipo_de_algoritmo_de_planificacion(){
 	if (str_compare("FIFO", config->ALGORITMO)) {
-		asignarProcesosSegunFIFO();
-	} else {
-		asignarProcesosSegunRoundRobin();
+			printf("*******************Planificando segun FIFO*******************\n");
+	} else{
+			printf("*******************Planificando segun Round Robin*******************\n");
 	}
+}
+
+bool hay_alguna_cpu_disponible(){
+	bool estaDesocupada(cliente_CPU *unaCPU) {
+			return unaCPU->libre == 1;
+	}
+	return list_any_satisfy(listaCPUs, (void*) estaDesocupada);
+}
+
+bool proceso_new_puede_pasar_a_READY(){
+	return hayProcesosNew() && cantidad_procesos_en_memoria() < config->GRADO_MULTIPROG;
+}
+
+bool proceso_ready_puede_pasar_a_EXEC(){
+	return hayProcesosReady() && hay_alguna_cpu_disponible();
+}
+
+pedido_script *obtener_pedido_segun_PID(int pid){
+	bool tieneEstePID(pedido_script *pedido){
+			return pedido->pid==pid;
+	}
+	return list_find(lista_pedidos_script, (void*) tieneEstePID);
+}
+
+int enviar_programa_a_memoria(t_pcb *pcb){
+	avisarAccionAMemoria(k_mem_inicializarPrograma);//FALTA SLEEP (PENDIENTE!!)
+	u_int32_t cant_pags = pcb->cant_paginas_de_codigo + config->STACK_SIZE;
+	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
+	u_int32_t confirmacion = confirmacionMemoria();
+	pedido_script *pedido = obtener_pedido_segun_PID(pcb->id_proceso);
+	enviarArchivoAMemoria(pedido->bufferArchivo, pedido->fsize);
+	esperarSenialDeMemoria();
+	free(pedido->bufferArchivo);
+	return confirmacion;
+}
+
+void pedido_destroy(pedido_script *pedido){
+	free(pedido);
+}
+
+void eliminar_pedido(pedido_script *pedido){
+	bool tieneEstePID(pedido_script *unPedido){
+				return pedido->pid==unPedido->pid;
+	}
+	list_remove_and_destroy_by_condition(lista_pedidos_script,tieneEstePID,pedido_destroy);
+}
+
+void avisar_a_consola_si_hubo_exito(int confirmacion, t_pcb *pcb){
+	pedido_script *pedido = obtener_pedido_segun_PID(pcb->id_proceso);
+	avisarAConsolaSegunConfirmacion(confirmacion, &(pedido->clie_consola));
+	enviarPIDaConsola(pcb->id_proceso,&(pedido->clie_consola));
+	eliminar_pedido(pedido);
+}
+
+void planificar() {
+	cliente_CPU *cpuDesocupada;
+	t_pcb *pcb;
+	mostrar_tipo_de_algoritmo_de_planificacion();
+	while (planificacionActivada) {
+		if(proceso_new_puede_pasar_a_READY()){
+			pcb = list_get(listaPCBs_NEW,0);
+			int confirmacion = enviar_programa_a_memoria(pcb);
+			tomarAccionSegunConfirmacion(confirmacion, pcb);
+			avisar_a_consola_si_hubo_exito(confirmacion,pcb);
+			if(pcb->id_proceso!=1)transicion_colas_proceso(listaPCBs_NEW,listaPCBs_READY,pcb); //Hardcoded
+			cant_historica_procesos_memoria++;
+		}
+		if(proceso_ready_puede_pasar_a_EXEC()){
+			cpuDesocupada = obtenerCPUDesocupada();
+			cpuDesocupada->libre = 0;
+			pcb = list_get(listaPCBs_READY, 0);
+			transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
+			enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
+		}
+	}
+
 }
 
 void abrirHiloPlanificador() {
@@ -247,9 +309,10 @@ void list_read_id(t_list *listaProcesos){
 	}
 	while(i < list_size(listaProcesos)){
 		pcb = list_get(listaProcesos,i);
-		printf("%d/n",pcb->id_proceso);
+		printf("%d ",pcb->id_proceso);
 		i++;
 	}
+	printf("\n\n");
 }
 
 cliente_CPU *obtenerClienteCPUSegunFD(int fd){
@@ -286,10 +349,15 @@ void habilitarConsolaKernel() {
 			subcomando = strtok(subcomando, "\n");
 			if (strcmp("System", subcomando) == 0) {
 				printf("Procesos del Sistema:\n");
+				printf("Lista de procesos NEW:\n");
 				list_read_id(listaPCBs_NEW);
+				printf("Lista de procesos READY:\n");
 				list_read_id(listaPCBs_READY);
+				printf("Lista de procesos EXEC:\n");
 				list_read_id(listaPCBs_EXEC);
+				printf("Lista de procesos BLOCK:\n");
 				list_read_id(listaPCBs_BLOCK);
+				printf("Lista de procesos EXIT:\n");
 				list_read_id(listaPCBs_EXIT);
 
 			} else if (strcmp("New", subcomando) == 0) {
@@ -390,10 +458,17 @@ void enviar_planificacion_y_quantum(int cpu){
 	enviar_quantum(cpu);
 }
 
+void inicializar_contadores_procesos(){
+	cant_historica_procesos_memoria = 0;
+	cant_procesos_finalizados = 0;
+	cant_procesos_detenidos = 0;
+}
+
 int main(void) {
 
 	inicializarTablasDeArchivos();
 	inicializar_tablaHeap();
+	inicializar_contadores_procesos();
 
 	/*	PRUEBA SERIALIZACIÓN (DESPUÉS BORRAR)
 	 * char* PROGRAMA =
@@ -426,6 +501,7 @@ int main(void) {
 	listaPCBs_BLOCK = list_create();
 	listaPCBs_EXIT = list_create();
 	listaCPUs = list_create();
+	lista_pedidos_script = list_create();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;

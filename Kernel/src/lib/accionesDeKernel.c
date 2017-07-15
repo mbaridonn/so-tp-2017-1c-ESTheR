@@ -275,6 +275,15 @@ void asignarValorAVariableCompartida(nombreVariable, valorVariable){
 	//SI NO SE ENCUENTRA, EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
 }
 
+pedido_script *crear_pedido_script(int clie_consola,int pid,char *bufferArchivo,int fsize){
+	pedido_script *pedido = reservarMemoria(sizeof(pedido_script));
+	pedido->clie_consola = clie_consola;
+	pedido->pid = pid;
+	pedido->bufferArchivo = bufferArchivo;
+	pedido->fsize = fsize;
+	return pedido;
+}
+
 void proced_script(int *unCliente) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);
@@ -285,10 +294,12 @@ void proced_script(int *unCliente) {
 	printf("%s\n\n", bufferArchivo);
 	u_int32_t cant_pags_script = divisionRoundUp(fsize, tamanioPagMemoria);
 	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script,tamanioPagMemoria);
+	pedido_script *pedido = crear_pedido_script((*unCliente),pcb->id_proceso,bufferArchivo,fsize);
+	list_add(lista_pedidos_script,pedido);
 	list_add(listaPCBs_NEW, pcb);
-	int pid = pcb->id_proceso;
+	printf("El largo de la cola de New es: %d\n",list_size(listaPCBs_NEW));
 
-	//Envia archivo a Memoria
+	/*Envia archivo a Memoria
 	avisarAccionAMemoria(k_mem_inicializarPrograma);//FALTA SLEEP (PENDIENTE!!)
 	u_int32_t cant_pags = cant_pags_script + config->STACK_SIZE;
 	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
@@ -301,7 +312,7 @@ void proced_script(int *unCliente) {
 
 	enviarPIDaConsola(pid,unCliente);
 
-	free(bufferArchivo);
+	free(bufferArchivo);*/
 }
 
 void atenderAConsola(int *unaConsola) {
@@ -358,6 +369,7 @@ void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
 	switch(motivo_liberacion){
 	case mot_finalizo:
 		finalizarUnProceso(pcb);
+		cant_procesos_finalizados++;
 		break;
 	case mot_error:
 		finalizarUnProceso(pcb); // Esta bien no?
