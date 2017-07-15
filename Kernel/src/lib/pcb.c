@@ -28,8 +28,9 @@ t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag) {
 	punteroPCB->stackPointer = cant_pags_script * tamPag;
 	punteroPCB->indice_stack = queue_create();
 	punteroPCB->etiquetas_size = metadata->etiquetas_size;
-	punteroPCB->indice_etiquetas = calloc(1, metadata->etiquetas_size);
-	memcpy(punteroPCB->indice_etiquetas, metadata->etiquetas, metadata->etiquetas_size);
+	//punteroPCB->indice_etiquetas = calloc(1, metadata->etiquetas_size);
+	//memcpy(punteroPCB->indice_etiquetas, metadata->etiquetas, metadata->etiquetas_size);
+	punteroPCB->indice_etiquetas = metadata->etiquetas;
 	punteroPCB->exit_code = 0; //En realidad 0 significa que termino bien.
 	return punteroPCB;
 }
@@ -69,7 +70,7 @@ void serializar_pcb(t_pcb *pcb, void **buffer, int *buffer_size) {
 	serializar_data(&pcb->cant_paginas_de_codigo, sizeof(int), buffer, buffer_size);
 	serialize_instrucciones(pcb->indice_codigo, pcb->cant_instrucciones, buffer, buffer_size);
 	serializar_data(&pcb->stackPointer, sizeof(uint32_t), buffer, buffer_size);
-	//serialize_stack(pcb->indice_stack, buffer, buffer_size);
+	serialize_stack(pcb->indice_stack, buffer, buffer_size);
 	serializar_data(&pcb->etiquetas_size, sizeof(int), buffer, buffer_size);
 	serializar_data(pcb->indice_etiquetas, pcb->etiquetas_size, buffer, buffer_size);
 	serializar_data(&pcb->exit_code, sizeof(int), buffer, buffer_size);
@@ -106,7 +107,7 @@ void deserializar_pcb(t_pcb **pcb, void *data_serializada, int *indice_data_seri
 	deserialize_instrucciones(&(*pcb)->indice_codigo, (*pcb)->cant_instrucciones, data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->stackPointer, sizeof(int), data_serializada, indice_data_serializada);
 	(*pcb)->indice_stack = queue_create(); //TODO: Por que se necesita esto aca y en deserialize_stack TAMBIEN?
-	//deserialize_stack(&(*pcb)->indice_stack, data_serializada, indice_data_serializada);
+	deserialize_stack(&(*pcb)->indice_stack, data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->etiquetas_size, sizeof(int), data_serializada, indice_data_serializada);
 	deserialize_etiquetas(&(*pcb)->indice_etiquetas, (*pcb)->etiquetas_size, data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->exit_code, sizeof(int), data_serializada, indice_data_serializada);
