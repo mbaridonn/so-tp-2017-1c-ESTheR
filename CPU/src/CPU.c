@@ -405,8 +405,8 @@ int main(void) {
 		t_pcb *pcb = recibir_pcb();
 		mostrarPcb(pcb); // Es para chequear que llegue bien, NO es un procedimiento NECESARIO
 		ejecutar_instrucciones(pcb);
-		free(pcb);
 		devolver_pcb_y_liberarse(pcb);
+		free(pcb);
 	}
 
 	return 0;
