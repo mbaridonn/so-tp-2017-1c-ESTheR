@@ -274,7 +274,6 @@ void planificar() {
 			int confirmacion = enviar_programa_a_memoria(pcb);
 			tomarAccionSegunConfirmacion(confirmacion, pcb);
 			avisar_a_consola_si_hubo_exito(confirmacion,pcb);
-			if(pcb->id_proceso!=1)transicion_colas_proceso(listaPCBs_NEW,listaPCBs_READY,pcb); //Hardcoded
 			cant_historica_procesos_memoria++;
 		}
 		if(proceso_ready_puede_pasar_a_EXEC()){
