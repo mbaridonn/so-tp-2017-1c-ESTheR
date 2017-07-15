@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+//#include <signal.h>
 #include <commons/config.h>
 
 #include "lib/pcb.h"
@@ -15,6 +16,8 @@
 
 int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas,
 		stackSize, tamPag, motivo_liberacion;
+
+bool descCPU;
 
 enum algoritmos_planificacion {
 	FIFO, RR
@@ -401,7 +404,15 @@ void devolver_pcb_y_liberarse(t_pcb *pcb) {
 	enviar_un_PCB_a_Kernel(pcb);
 }
 
+void desconectarCPU(int senial){
+	//if (senial == SIGUSR1) descCPU = true;
+}
+
 int main(void) {
+
+	//signal(SIGUSR1, desconectarCPU);
+
+	descCPU = false;
 
 	inicializarLog();
 	leerArchivo();
@@ -435,7 +446,7 @@ int main(void) {
 	conectarse_con_memoria(&direccionServidor2);
 	conectarse_con_kernel(&direccionServidor);
 
-	while (1) {
+	while (!descCPU) {
 		t_pcb *pcb = recibir_pcb();
 		mostrarPcb(pcb); // Es para chequear que llegue bien, NO es un procedimiento NECESARIO
 		ejecutar_instrucciones(pcb);
