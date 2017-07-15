@@ -29,7 +29,9 @@ enum procesos {
 };
 
 typedef struct {
+	char* ipKernel;
 	int puertoKernel;
+	char* ipMemoria;
 	int puertoMemoria;
 } t_configuracion;
 t_configuracion *config;
@@ -146,10 +148,10 @@ void testearSerializado() {
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config->puertoKernel = config_get_int_value(archivo_Modelo,
-			"PUERTO_KERNEL");
-	config->puertoMemoria = config_get_int_value(archivo_Modelo,
-			"PUERTO_MEMORIA");
+	config->ipKernel = strdup(config_get_string_value(archivo_Modelo, "IP_KERNEL"));
+	config->puertoKernel = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
+	config->ipMemoria = strdup(config_get_string_value(archivo_Modelo, "IP_MEMORIA"));
+	config->puertoMemoria = config_get_int_value(archivo_Modelo, "PUERTO_MEMORIA");
 }
 
 void mostrarArchivoConfig() {
@@ -374,12 +376,12 @@ int main(void) {
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1");
+	direccionServidor.sin_addr.s_addr = inet_addr(config->ipKernel);
 	direccionServidor.sin_port = htons(config->puertoKernel/*8080*/);
 
 	struct sockaddr_in direccionServidor2;
 	direccionServidor2.sin_family = AF_INET;
-	direccionServidor2.sin_addr.s_addr = inet_addr("127.0.0.1");
+	direccionServidor2.sin_addr.s_addr = inet_addr(config->ipMemoria);
 	direccionServidor2.sin_port = htons(config->puertoMemoria/*8125*/);
 
 	//INICIO PRUEBA ANSISOP

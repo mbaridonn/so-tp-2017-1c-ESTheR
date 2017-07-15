@@ -537,7 +537,7 @@ int main(void) {
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
-	direccionServidor.sin_port = htons(8080);
+	direccionServidor.sin_port = htons(config->PUERTO_PROG);
 
 	//PARA MEMORIA
 	struct sockaddr_in direccionServidor2;

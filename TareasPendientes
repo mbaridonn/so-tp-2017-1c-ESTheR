@@ -1,9 +1,5 @@
 Tareas pendientes:
 
-GENERAL
--El puerto se debe leer desde el archivo de config (no tiene que estar hardcodeado).
--Poder setear las IPs (por archivo de config?)
-
 CONSOLA
 -Consola debe recibir mensajes del programa e imprimirlos por pantalla (indicando a qué proceso pertenecen). También tiene que mostrar
 los resultados de la ejecución de un programa:
@@ -17,22 +13,19 @@ EXTRA-En caso de que se tengan que crear subdirectorios antes de crear el archiv
 los que sean necesarios.
 
 MEMORIA
--Ante cualquier solicitud de acceso a la memoria principal (excepto en lectura, que ya lo maneja), se deberá esperar una cantidad de
-tiempo configurable (en milisegundos), simulando el tiempo de acceso a memoria.
--Atacar los problemas de concurrencia que surjan.
 -Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
 EXTRA- La cache debería almacenar el contenido de la página, no una referencia al frame. Dump cache debería mostrar el contenido de la
 página, no el número de frame.
 EXTRA- Revisar tamaño de la tabla CantPagsPorPID (en realidad debería ser una lista, no un array).
 
 CPU
--Mediante la señal SIGUSR1, se le podrá notificar a un CPU que deberá desconectarse una vez concluida la ejecución del Programa actual,
-dejando de dar servicio al sistema.
 -Al ejecutar la última sentencia, el CPU deberá notificar al Kernel que el proceso finalizó para que este se ocupe de solicitar la
 eliminación de las estructuras utilizadas por el sistema.
 -Existe la posibilidad que el Proceso CPU reciba un mensaje de excepción como resultado de una solicitud a la Memoria o al Kernel.
 En este caso la CPU deberá mostrar por pantalla un mensaje aclarando cuál fue el inconveniente que sucedió y como consecuencia del error
 se deberá finalizar el programa AnSISOP que se encuentre en ejecución.
+-Mediante la señal SIGUSR1, se le podrá notificar a un CPU que deberá desconectarse una vez concluida la ejecución del Programa actual,
+dejando de dar servicio al sistema.
 
 KERNEL
 -En cualquier momento, instancias de los Procesos CPU y Procesos Consola pueden ingresar o desconectarse del sistema, debiendo el Kernel

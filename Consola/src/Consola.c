@@ -20,7 +20,7 @@ int minFin;
 int segFin;
 
 typedef struct {
-	//char ipKernel[10]; FALTA IMPLEMENTAR
+	char* ipKernel;
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
@@ -64,7 +64,7 @@ void *reservarMemoria(int tamanioArchivo) {
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	//config->ipKernel = config_get_string_value(archivo_Modelo,"IP_KERNEL");
+	config->ipKernel = strdup(config_get_string_value(archivo_Modelo,"IP_KERNEL"));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
 }
 void mostrarArchivoConfig() {
@@ -307,7 +307,7 @@ int main(void) {
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); //En realidad se le debería pasar config->ipKernel
+	direccionServidor.sin_addr.s_addr = inet_addr(config->ipKernel);
 	direccionServidor.sin_port = htons(config->puerto);
 
 	int cliente;
