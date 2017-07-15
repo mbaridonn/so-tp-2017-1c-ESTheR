@@ -3,10 +3,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <commons/log.h>
 #include <commons/collections/list.h>
 #include "funcionesMemoria.h"
 
+pthread_mutex_t mutexAsignarPagina = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexIngresarEntradaEnCache = PTHREAD_MUTEX_INITIALIZER;
 
 int tamFrame = 0;
 int cantFrames = 0;
@@ -121,10 +124,12 @@ void inicializarCantPagsPorPID() {
 }
 
 void limpiarCache() {
+	pthread_mutex_lock(&mutexIngresarEntradaEnCache);
 	int i;
 	for (i = 0; i < entradasCache; i++) {
 		memoriaCache[i].PID = -1; //Supongo que PID -1 significa entrada vacía
 	}
+	pthread_mutex_unlock(&mutexIngresarEntradaEnCache);
 }
 
 void dumpCache() {
@@ -284,7 +289,6 @@ void atenderComandos() {
 	lineaIngresada = reservarMemoria(100);
 	subcomando = reservarMemoria(100);
 	printf("Comandos: r(etardo), d(ump), (f)lush, (s)ize\n");
-	//Hay que usar un mutex!!
 	while (1) {
 		char comando;
 		fgets(lineaIngresada, 100, stdin);
@@ -303,13 +307,12 @@ void atenderComandos() {
 			}
 			break;
 		case 'd':
-			//FALTA CREAR LOGS
 			printf(
 					"Dump:\n"
 							"-cache: Este comando hará un dump completo de la memoria Cache\n"
 							"-memEstr (Estructuras de memoria): Tabla de Páginas y Listado de procesos Activos\n"
 							"-memCont (Contenido de memoria): Datos almacenados en la memoria de todos los procesos o"
-							"de un proceso en particular\n"); //FALTA SEGUNDA OPCIÓN
+							"de un proceso en particular\n"); //FALTA SEGUNDA OPCIÓN  (PENDIENTE !!!)
 			fgets(subcomando, 100, stdin);
 			subcomando = strtok(subcomando, "\n");
 			if (strcmp("cache", subcomando) == 0) {
@@ -443,8 +446,7 @@ void kernel_mem_inicializarPrograma() {
 	enviarSenialAKernel();
 	process_id = recibir_process_id();
 	cant_pags = recibir_cant_paginas();
-	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id,
-			cant_pags);
+	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id, cant_pags);
 	inicializarPrograma(process_id, cant_pags);
 
 	recibirArchivoDe(&clienteKernel, process_id);
@@ -523,7 +525,6 @@ void atenderKernel() {
 	while (1) {
 		int accionPedida = accionPedidaPorKernel();
 		enviarSenialAKernel();
-		//FALTA SLEEP EN TODOS MENOR EN LEER PAGINAS
 		switch (accionPedida) {
 		case k_mem_inicializarPrograma://Asigna páginas y escribe archivo en Memoria
 			kernel_mem_inicializarPrograma();
@@ -623,7 +624,7 @@ int hash(int PID, int nroPag) {
 	//indiceEnLaTabla = PID;
 	//indiceEnLaTabla += nroPag;
 	//indiceEnLaTabla %= cantFrames;
-	int indiceEnLaTabla = 0.5 * (PID + nroPag) * (PID + nroPag + 1) + nroPag;//"Cantor pairing function" es una buena función de hash?
+	int indiceEnLaTabla = 0.5 * (PID + nroPag) * (PID + nroPag + 1) + nroPag;//"Cantor pairing function"
 	indiceEnLaTabla %= cantFrames;
 	return max(indiceEnLaTabla, cantFramesEstructuraAdm);
 	//La funcion de hash no deberia devolver un frame ocupado por la tabla de páginas
@@ -674,7 +675,11 @@ int proximoFrameLibre(int frameBase) {
 	}
 }
 
-void asignarPaginasAProceso(int PID, int pagsRequeridas) {
+void asignarPaginasAProceso(int PID, int pagsRequeridas) {//HAY QUE USAR MUTEX!!
+	mili_sleep(*retardoMemoria);
+
+	pthread_mutex_lock(&mutexAsignarPagina);
+
 	int nroPag = 0;
 	int frameAAsignar;
 	u_int32_t aux;
@@ -695,6 +700,8 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 	aux = hayPaginas;
 	send(clienteKernel, &aux, sizeof(u_int32_t), 0);
 	printf("Se pudieron asignar las páginas al proceso %d\n", PID);
+
+	pthread_mutex_unlock(&mutexAsignarPagina);
 }
 
 void inicializarPrograma(int PID, int cantPags) {
@@ -704,6 +711,8 @@ void inicializarPrograma(int PID, int cantPags) {
 	 2) las paginas del stack estan seteados por archivo de configuracion cuanto pueden pesar (el campo STACK_SIZE)
 	 Chequear al momento de escribir en una pagina nueva que la pagina nueva no sea de un PID distinto o que no este asignada
 	 a nadie. Nunca ningun proceso le manda a escribir a la memoria mas de lo que tiene una pagina*/
+
+	//No agrego mili_sleep(retardoMemoria), ya lo hace en asignarPaginasAProceso
 
 	if (cantPagsPorPID[PID]) {//Chequea que el programa no esté ya inicializado (es decir, que la cant de pags sea distinata de cero)
 		printf("El programa ya se encuentra inicializado\n");
@@ -736,6 +745,9 @@ void setearEntradaCache(int* entrada, int PID, int nroPag, int contenido) {
 }
 
 void ingresarEntradaEnCache(int PID, int nroPag) {
+
+	pthread_mutex_lock(&mutexIngresarEntradaEnCache);
+
 	int entradaAReemplazar = -1;
 	//Si ya se encuentra en cache, se actualiza la misma entrada
 	int j;
@@ -759,26 +771,24 @@ void ingresarEntradaEnCache(int PID, int nroPag) {
 			entradaAReemplazar = *(int*) list_find(colaEntradasCache,
 					(void*) esEntradaDeProceso);//Obtengo entrada más "antigua" del proceso
 			//Elimino la entradaAReemplazar de la lista
-			list_remove_and_destroy_by_condition(colaEntradasCache,
-					(void*) esEntradaDeProceso, (void*) int_destroy);
+			list_remove_and_destroy_by_condition(colaEntradasCache, (void*) esEntradaDeProceso, (void*) int_destroy);
 		} else {		//Si no se alcanzó el limite, la sustitución es global.
 			//Si hay entradas libres, lo asigno ahí
 			int i;
-			for (i = 0; (entradaAReemplazar == -1) && (i < entradasCache);
-					i++) {
+			for (i = 0; (entradaAReemplazar == -1) && (i < entradasCache); i++) {
 				if (memoriaCache[i].PID == -1)
 					entradaAReemplazar = i;
 			}
 			//Sino, se corre el algoritmo de reemplazo LRU
 			if (entradaAReemplazar == -1) {
 				entradaAReemplazar = *(int*) list_get(colaEntradasCache, 0);//Obtengo entrada más "antigua"
-				list_remove_and_destroy_element(colaEntradasCache, 0,
-						(void*) int_destroy);		//Y la elimino de la lista
+				list_remove_and_destroy_element(colaEntradasCache, 0, (void*) int_destroy);//Y la elimino de la lista
 			}
 		}
 	}
-	setearEntradaCache(&entradaAReemplazar, PID, nroPag,
-			buscarPagina(PID, nroPag));
+	setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
+
+	pthread_mutex_unlock(&mutexIngresarEntradaEnCache);
 }
 
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
@@ -790,7 +800,7 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	}
 	//En cualquier caso actualizo la caché, ya sea para agregar la entrada(si no está), o para actualizar el último acceso
 	ingresarEntradaEnCache(PID, nroPag);
-	if (estaEnCache != 1) {	//Es la única operación que puede tener retardo o no, por eso lo incluyo acá
+	if (estaEnCache != 1) {
 		mili_sleep(*retardoMemoria);
 	}
 	int posByteComienzoPag;
@@ -810,15 +820,12 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	posByteComienzoPag += offset;
 	int i;
 	char *bytesLeidos = reservarMemoria(tamanio);
-	for (i = 0;
-			i < tamanio - tamanioRestante/*en caso de que haya que leer más de otra pág*/;
-			i++) {
+	for (i = 0; i < tamanio - tamanioRestante/*en caso de que haya que leer más de otra pág*/; i++) {
 		bytesLeidos[i] = memoriaPrincipal[posByteComienzoPag];
 		posByteComienzoPag++;
 	}
 	if (tamanioRestante) { //Hay que leer el resto de otra página
-		char *bytesRestantesLeidos = leerPagina(PID, proxPag, 0,
-				tamanioRestante); //Lee lo que esta en la página que sigue
+		char *bytesRestantesLeidos = leerPagina(PID, proxPag, 0, tamanioRestante); //Lee lo que esta en la página que sigue
 		//Si leerPagina me manda un error, lo tendría que tratar (por ahora hay un exit)
 		int j = 0;
 		while (i < tamanio) {
@@ -832,6 +839,8 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 }
 
 void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) {
+	mili_sleep(*retardoMemoria);
+
 	int posByteComienzoPag;
 	if (offset + tamanio > tamFrame) {
 		int proxPag = proximaPagina(PID, nroPag);
@@ -858,6 +867,8 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 }
 
 void finalizarPrograma(int PID) {
+	mili_sleep(*retardoMemoria);
+
 	int nroPag = cantPagsPorPID[PID] - 1;
 	int paginaABorrar;
 	while (nroPag >= 0) {
@@ -880,6 +891,8 @@ void finalizarPrograma(int PID) {
 }
 
 void liberarPaginaDeProceso(int PID, int nroPag){
+	mili_sleep(*retardoMemoria);
+
 	int paginaABorrar;
 	u_int32_t confirmacion;
 	if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) { //No se encontró la pagina

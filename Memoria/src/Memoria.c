@@ -89,8 +89,6 @@ int main(void) {
 	int servidor;
 	int cliente;
 
-	char *bufferArchivo;
-
 	pthread_t hilo_comandos, hilo_kernel, hilo_cpu;
 
 	inicializarMemoriaPrincipal(config->tamFrame, config->cantFrames,
@@ -102,7 +100,6 @@ int main(void) {
 		printf("Error al crear el thread de comandos.\n");
 		exit(-1);
 	}
-
 
 	while (1) {
 		esperarConexion(&servidor, &direccionServidor);
