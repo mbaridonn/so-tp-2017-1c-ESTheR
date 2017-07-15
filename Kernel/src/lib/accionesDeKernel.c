@@ -1,4 +1,5 @@
 #include "accionesDeKernel.h"
+#include "estructurasComunes.h"
 #include "CapaFS.h"//OJO!! DEPENDENCIA CIRCULAR
 
 void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
@@ -134,6 +135,10 @@ void esperarSenialDeFS() {
 	if (recv(servFS, senial, 2, 0) == -1) {
 		printf("Error al recibir senial de FS\n");
 	}
+}
+
+bool esta_ejecutandose(int pid){
+	return tiene_este_pcb(listaPCBs_EXEC,pid);
 }
 
 void kernel_mem_start_process(int *process_id, u_int32_t *cant_pags) {
@@ -322,12 +327,37 @@ void proced_script(int *unCliente) {
 	free(bufferArchivo);*/
 }
 
+int recibir_int_de(int cliente){
+	int accion;
+	if(recv(cliente, &accion, sizeof(int), 0) == -1){
+		printf("Error recibiendo un int.\n");
+	}
+	return accion;
+}
+
 void atenderAConsola(int *unaConsola) {
 	int accion = recibirAccionDe(unaConsola);
 	switch (accion) { //ACA VAN TODOS LOS CASES DE LAS DIFERENTES ACCIONES QUE PUEDE SOLICITAR CONSOLA A KERNEL
 	case startProgram:
 		proced_script(unaConsola);
 		break;
+
+	case endProgram:
+	{
+		int *id_proceso_a_detener = reservarMemoria(sizeof(int));
+		*id_proceso_a_detener = recibir_int_de(*unaConsola);
+		printf("ID del proceso a conocer: %d\n", *id_proceso_a_detener);
+		list_add(lista_detenciones_pendientes,id_proceso_a_detener);
+		if(esta_ejecutandose(*id_proceso_a_detener)){
+			printf("El proceso esta ejecutandose, este finalizara cuando CPU lo libere.\n");
+		}else{
+			t_list *lista = lista_que_tiene_este_pcb(*id_proceso_a_detener);
+			t_pcb *pcb = obtener_PCB_segun_PID_en(lista,*id_proceso_a_detener);
+			finalizarUnProceso(pcb);
+			eliminar_detencion(pcb);
+		}
+		break;
+	}
 	default:
 		break;
 	}
@@ -340,13 +370,6 @@ t_pcb *obtener_PCB_segun_PID(int PID){
 	return list_find(listaPCBs_EXEC, (void*) tieneEstePID);
 }
 
-int recibir_int_de(int cliente){
-	int accion;
-	if(recv(cliente, &accion, sizeof(int), 0) == -1){
-		printf("Error recibiendo un int.\n");
-	}
-	return accion;
-}
 
 t_pcb *recibir_pcb_de(int cliente) {
 	//Recibo PCB y lo deserializo
@@ -430,8 +453,7 @@ void mostrarPcb(t_pcb *pcb_prueba) {
 	printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
 	printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
 	printf("stackPointer: %d \n", pcb_prueba->stackPointer);
-	printf("cantElementosStack: %d \n",
-			pcb_prueba->indice_stack->elements->elements_count);
+	printf("cantElementosStack: %d \n",	pcb_prueba->indice_stack->elements->elements_count);
 	printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
 	printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
 	printf("exit_code: %d \n\n", pcb_prueba->exit_code);

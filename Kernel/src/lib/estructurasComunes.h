@@ -41,7 +41,7 @@ enum confirmacion {
 };
 
 enum acciones {
-	startProgram
+	startProgram, endProgram
 };
 
 typedef struct{

@@ -97,6 +97,7 @@ void conectarseConFS(int *servFS,
 
 int obtenerTamanioDePagina(int *servMemoria) {
 	int tamPaginaMemoria;
+	printf("Estoy Pansado el tamanio");
 	if (recv((*servMemoria), &tamPaginaMemoria, sizeof(int), 0) == -1) {
 		printf("Error recibiendo longitud del archivo\n");
 		return -1;
@@ -321,10 +322,6 @@ cliente_CPU *obtenerClienteCPUSegunFD(int fd){
 	return list_find(listaCPUs, (void*) tieneEsteFD);
 }
 
-bool esta_ejecutandose(int pid){
-	return tiene_este_pcb(listaPCBs_EXEC,pid);
-}
-
 void habilitarConsolaKernel() {
 	char* lineaIngresada;
 	char* subcomando = reservarMemoria(100);
@@ -430,6 +427,7 @@ void habilitarConsolaKernel() {
 			}
 			free(opcion);
 			break;
+
 		}
 		case 'd':
 		{

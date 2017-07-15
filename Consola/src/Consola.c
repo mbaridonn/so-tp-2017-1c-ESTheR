@@ -30,7 +30,7 @@ enum procesos {
 };
 
 enum acciones {
-	startProgram
+	startProgram, endProgram
 };
 
 enum confirmacionMem {
@@ -56,9 +56,7 @@ void solicitarA(int *cliente, char *nombreCli) {
 }
 
 void msjConexionCon(char *s) {
-	printf(
-			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
-			s);
+	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
 void *reservarMemoria(int tamanioArchivo) {
@@ -259,10 +257,29 @@ void iniciarPrograma(int *cliente) {
 	free(buffer);
 }
 
-void finalizarPrograma() {
+void finalizarPrograma(int *cliente) {
+
+	int accion;
+	char *opcion = reservarMemoria(100);
+	int id_proceso_a_detener;
+
+	solicitarA(cliente, "Kernel");
+	accion = endProgram;
+	informarAccion(cliente, &accion);
+
+	printf("Ingrese el ID del proceso a finalizar: ");
+	fgets(opcion, 100, stdin);
+	id_proceso_a_detener = atoi(opcion);
+
+	send(*cliente, &id_proceso_a_detener, sizeof(int), 0);
+
+	free(opcion);
+
 	/*Finalizar Programa: Como su nombre lo indica este comando finalizará un Programa
 	 AnSISOP, terminando el thread correspondiente al PID que se desee finalizar.*/
+
 }
+
 
 void desconectarConsola() {
 	/*Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola
@@ -285,7 +302,8 @@ void elegirComando(int *cliente) {
 		printf("Los siguientes comandos estan disponibles para ejecutar:\n");
 		printf("1-iniciarPrograma\n");
 		printf("2-desconectarConsola\n");
-		printf("3-limpiarMensajes\n");
+		printf("3-finalizarPrograma\n");
+		printf("4-limpiarMensajes\n");
 
 		printf("Ingrese el numero de comando para ejecutarlo:\n");
 
@@ -300,6 +318,9 @@ void elegirComando(int *cliente) {
 			desconectarConsola();
 			break;
 		case '3':
+			finalizarPrograma(cliente);
+			break;
+		case '4':
 			limpiarMensajes();
 			break;
 		default:
