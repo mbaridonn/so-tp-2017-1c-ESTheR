@@ -37,6 +37,12 @@ enum confirmacionMem {
 	noHayPaginas, hayPaginas
 };
 
+void llenarSocket(struct sockaddr_in *direccionServidor) {
+	(*direccionServidor).sin_family = AF_INET;
+	(*direccionServidor).sin_addr.s_addr = inet_addr(config->ipKernel);
+	(*direccionServidor).sin_port = htons(config->puerto);
+}
+
 void informarAccion(int *cliente, int *accion) {
 	u_int32_t acc = (*accion);
 	send((*cliente), &acc, sizeof(u_int32_t), 0);
@@ -50,7 +56,9 @@ void solicitarA(int *cliente, char *nombreCli) {
 }
 
 void msjConexionCon(char *s) {
-	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+	printf(
+			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
+			s);
 } //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 
 void *reservarMemoria(int tamanioArchivo) {
@@ -64,7 +72,8 @@ void *reservarMemoria(int tamanioArchivo) {
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config->ipKernel = strdup(config_get_string_value(archivo_Modelo,"IP_KERNEL"));
+	config->ipKernel = strdup(
+			config_get_string_value(archivo_Modelo, "IP_KERNEL"));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
 }
 void mostrarArchivoConfig() {
@@ -97,7 +106,8 @@ void mostrarConfirmacion(int confirmacion) {
 	if (conf == hayPaginas) {
 		printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
 	} else {
-		printf("Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
+		printf(
+				"Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
 	}
 }
 
@@ -112,7 +122,7 @@ void esperarConfirmacionDeKernel(int *kernel) {
 }
 
 void mostrarDiferenciaInicioFinEjecucion() {
-	int difHoras,difMinutos,difSegundos;
+	int difHoras, difMinutos, difSegundos;
 
 	if (segInicio > segFin) {
 		--minFin;
@@ -143,11 +153,11 @@ void mostrarFechaHoraEjecucion(int opcion) {
 	printf("Minuto: %d\n", tmRetorno->tm_min);
 	printf("Segundo: %d\n", tmRetorno->tm_sec);
 
-	if(opcion == 1){
+	if (opcion == 1) {
 		horaInicio = tmRetorno->tm_hour;
 		minInicio = tmRetorno->tm_min;
 		segInicio = tmRetorno->tm_sec;
-	}else{
+	} else {
 		horaFin = tmRetorno->tm_hour;
 		minFin = tmRetorno->tm_min;
 		segFin = tmRetorno->tm_sec;
@@ -164,7 +174,7 @@ void mostrarFinEjecucion() {
 	mostrarFechaHoraEjecucion(2);
 }
 
-void esperarMensajesDeKernel(){
+void esperarMensajesDeKernel() {
 	//printf("Esperando mensajes de Kernel...\n");
 }
 
@@ -178,13 +188,13 @@ void crearHiloDelPrograma() {
 	}
 }
 
-void recibirPID(int *cliente){
+void recibirPID(int *cliente) {
 	u_int32_t pid;
 	if (recv((*cliente), &pid, sizeof(u_int32_t), 0) == -1) {
 		printf("Error recibiendo el PID\n");
 		exit(-1);
 	}
-	printf("PID: %d asignado a ese programa\n\n",pid);
+	printf("PID: %d asignado a ese programa\n\n", pid);
 }
 
 void iniciarPrograma(int *cliente) {
@@ -301,33 +311,31 @@ void elegirComando(int *cliente) {
 	} while (seguirAbierto);
 }
 
-int main(void) {
-
-	leerArchivo();
-
-	struct sockaddr_in direccionServidor;
-	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = inet_addr(config->ipKernel);
-	direccionServidor.sin_port = htons(config->puerto);
-
-	int cliente;
-
-	conectar(&cliente, &direccionServidor);
-	int procesoConectado = handshake(&cliente, consola);
+void conectarseConKernel(int *cliente, struct sockaddr_in *direccionServidor) {
+	conectar(cliente, direccionServidor);
+	int procesoConectado = handshake(cliente, consola);
 
 	switch (procesoConectado) {
-	case kernel:
+		case kernel:
 		msjConexionCon("Kernel");
-		elegirComando(&cliente);
-
+		elegirComando(cliente);
 		break;
 
-	default:
+		default:
 		printf("No me puedo conectar con vos.\n");
 		break;
 	}
 
-	close(cliente);
+	close(*cliente);
+}
+
+int main(void) {
+	int cliente;
+	struct sockaddr_in direccionServidor;
+
+	leerArchivo();
+	llenarSocket(&direccionServidor);
+	conectarseConKernel(&cliente, &direccionServidor);
 
 	return 0;
 }
