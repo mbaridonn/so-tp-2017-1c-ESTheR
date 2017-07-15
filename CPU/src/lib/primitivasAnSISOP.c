@@ -378,6 +378,7 @@ t_valor_variable asignarValorCompartida(t_nombre_compartida var_compartida_nombr
 //OPERACIONES DE KERNEL
 
 void wait(t_nombre_semaforo identificador_semaforo){
+	printf("El identificador de semaforo es: %s\n",identificador_semaforo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_wait);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -385,6 +386,9 @@ void wait(t_nombre_semaforo identificador_semaforo){
 	int confirmacion = recibirUIntDeKernel();
 	if(confirmacion == k_cpu_bloquear){
 		esta_bloqueado = true;
+		printf("Kernel me dijo que me bloquee: nro %d\n",confirmacion);
+	}else{
+		printf("Kernel me dijo que continue: nro %d\n",confirmacion);
 	}
 }
 

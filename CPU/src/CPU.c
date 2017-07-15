@@ -289,6 +289,7 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel,serv_memoria);
 	while (!terminoElPrograma() && !(codigoError = hayError())
 			&& hay_que_seguir_ejecutando() && !estaBloqueado()) {
+		printf("Esta bloqueado: %d\n",estaBloqueado());
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
 		un_pcb->indice_codigo[un_pcb->program_counter].start,
 				un_pcb->indice_codigo[un_pcb->program_counter].offset);

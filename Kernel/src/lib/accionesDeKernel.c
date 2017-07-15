@@ -270,14 +270,14 @@ void enviarPIDaConsola(int pid, int *consola){
 
 int obtenerValorDeVariableCompartida(char* nombreVariable){
 	int i=0;
-	while(config->SHARED_VARS[i]!=NULL && strcmp(nombreVariable,config->SHARED_VARS[i])!=0) i++;
+	while(config->SHARED_VARS[i]!=NULL && str_compare(nombreVariable,config->SHARED_VARS[i])!=0) i++;
 	if (config->SHARED_VARS[i]==NULL) return 0; //ACÁ EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
 	else return config->SHARED_VARS_VALUES[i];
 }
 
 void asignarValorAVariableCompartida(char *nombreVariable, int valorVariable){
 	int i=0;
-	while(config->SHARED_VARS[i]!=NULL && strcmp(nombreVariable,config->SHARED_VARS[i])!=0) i++;
+	while(config->SHARED_VARS[i]!=NULL && str_compare(nombreVariable,config->SHARED_VARS[i])!=0) i++;
 	if (config->SHARED_VARS[i]!=NULL) config->SHARED_VARS_VALUES[i]=valorVariable;
 	//SI NO SE ENCUENTRA, EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
 }
@@ -577,30 +577,33 @@ void atenderACPU(cliente_CPU *unaCPU){
 	}
 	case cpu_k_wait:
 	{
-		enviarSenialACPU(&(unaCPU->clie_CPU));
 		char *identificador_semaforo = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		int i=0;
-		while(config->SEM_IDS[i]!=NULL && strcmp(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
+		while(config->SEM_IDS[i]!=NULL && str_compare(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
 		if (config->SEM_IDS[i]!=NULL) config->SEM_INIT[i]--;
+		printf("El SEM_ID es: %s y el SEM_INIT es %d\n",config->SEM_IDS[i],config->SEM_INIT[i]);
 		if(config->SEM_INIT[i] < 0){
 			bloqueo *un_bloqueo = crear_bloqueo(PID,i);
 			list_add(lista_bloqueos,un_bloqueo);
-			enviarIntACPU(&(unaCPU->clie_CPU),k_cpu_bloquear);
+			int accion_a_enviar = k_cpu_bloquear;
+			enviarIntACPU(&(unaCPU->clie_CPU),accion_a_enviar);
+			printf("Le dije a CPU que se bloquee\n");
 		}else{
 			enviarIntACPU(&(unaCPU->clie_CPU),k_cpu_continuar);
+			printf("Le dije a CPU que continue\n");
 		}
 		free(identificador_semaforo);
 		break;
 	}
 	case cpu_k_signal:
 	{
-		enviarSenialACPU(&(unaCPU->clie_CPU));
 		char *identificador_semaforo = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		int i=0;
-		while(config->SEM_IDS[i]!=NULL && strcmp(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
+		while(config->SEM_IDS[i]!=NULL && str_compare(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
 		if (config->SEM_IDS[i]!=NULL) config->SEM_INIT[i]++;
 		if(config->SEM_INIT[i] <= 0){
 			wake_up(i);
+			printf("Desbloquee un proceso!\n");
 		}
 		free(identificador_semaforo);
 		break;
