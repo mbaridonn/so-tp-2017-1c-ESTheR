@@ -83,6 +83,7 @@ t_list *listaPCBs_BLOCK;
 t_list *listaPCBs_EXIT;
 t_list *listaCPUs;
 t_list *lista_pedidos_script;
+t_list *lista_detenciones_pendientes;
 
 int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;
 u_int32_t tamanioPagMemoria;

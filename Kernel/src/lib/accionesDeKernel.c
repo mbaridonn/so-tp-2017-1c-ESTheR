@@ -188,27 +188,34 @@ void avisarAccionAFS(int accion) {
 	esperarSenialDeFS();
 }
 
-bool tiene_este_pcb(t_list *lista,t_pcb *pcb){
+t_pcb *obtener_PCB_segun_PID_en(t_list *lista,int pid){
 	bool esElPCB(t_pcb *unPCB){
-		return unPCB->id_proceso == pcb->id_proceso;
+			return unPCB->id_proceso == pid;
+	}
+	return list_find(lista,esElPCB);
+}
+
+bool tiene_este_pcb(t_list *lista,int pid){
+	bool esElPCB(t_pcb *unPCB){
+		return unPCB->id_proceso == pid;
 	}
 	return list_any_satisfy(lista,esElPCB);
 }
 
-t_list *lista_que_tiene_este_pcb(t_pcb *pcb){
-	if(tiene_este_pcb(listaPCBs_NEW,pcb)){
+t_list *lista_que_tiene_este_pcb(int pid){
+	if(tiene_este_pcb(listaPCBs_NEW,pid)){
 		return listaPCBs_NEW;
 	}
-	if(tiene_este_pcb(listaPCBs_READY,pcb)){
+	if(tiene_este_pcb(listaPCBs_READY,pid)){
 		return listaPCBs_READY;
 	}
-	if(tiene_este_pcb(listaPCBs_EXEC,pcb)){
+	if(tiene_este_pcb(listaPCBs_EXEC,pid)){
 		return listaPCBs_EXEC;
 	}
-	if(tiene_este_pcb(listaPCBs_BLOCK,pcb)){
+	if(tiene_este_pcb(listaPCBs_BLOCK,pid)){
 		return listaPCBs_BLOCK;
 	}
-	if(tiene_este_pcb(listaPCBs_EXIT,pcb)){
+	if(tiene_este_pcb(listaPCBs_EXIT,pid)){
 		return listaPCBs_EXIT;
 	}
 	return NULL;
@@ -216,7 +223,7 @@ t_list *lista_que_tiene_este_pcb(t_pcb *pcb){
 
 void poner_proceso_en_EXIT(t_pcb *pcb){
 	t_list *lista;
-	lista = lista_que_tiene_este_pcb(pcb);
+	lista = lista_que_tiene_este_pcb(pcb->id_proceso);
 	transicion_colas_proceso(lista,listaPCBs_EXIT,pcb);
 }
 
@@ -365,14 +372,39 @@ void actualizar_info_pcb(t_pcb *pcb){
 	list_add(listaPCBs_EXEC,pcb);
 }
 
+bool hubo_detencion_forzosa(t_pcb *pcb){
+	bool esElPID(int *pid){
+			return *pid == pcb->id_proceso;
+	}
+	return list_any_satisfy(lista_detenciones_pendientes,esElPID);
+}
+
+void pid_destroyer(int *pid){
+	free(pid);
+}
+
+void eliminar_detencion(t_pcb *pcb){
+	bool esElPID(int *pid){
+				return *pid == pcb->id_proceso;
+	}
+	cant_procesos_detenidos++;
+	list_remove_and_destroy_by_condition(lista_detenciones_pendientes,esElPID,pid_destroyer);
+}
+
 void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
+	if(hubo_detencion_forzosa(pcb)){
+		finalizarUnProceso(pcb);
+		eliminar_detencion(pcb);
+		return;
+	}
 	switch(motivo_liberacion){
 	case mot_finalizo:
 		finalizarUnProceso(pcb);
 		cant_procesos_finalizados++;
 		break;
 	case mot_error:
-		finalizarUnProceso(pcb); // Esta bien no?
+		finalizarUnProceso(pcb);
+		cant_procesos_finalizados++;
 		break;
 	case mot_quantum:
 		transicion_colas_proceso(listaPCBs_EXEC,listaPCBs_READY,pcb);

@@ -321,6 +321,10 @@ cliente_CPU *obtenerClienteCPUSegunFD(int fd){
 	return list_find(listaCPUs, (void*) tieneEsteFD);
 }
 
+bool esta_ejecutandose(int pid){
+	return tiene_este_pcb(listaPCBs_EXEC,pid);
+}
+
 void habilitarConsolaKernel() {
 	char* lineaIngresada;
 	char* subcomando = reservarMemoria(100);
@@ -337,6 +341,7 @@ void habilitarConsolaKernel() {
 		comando = lineaIngresada[0];
 		switch (comando) {
 		case 'l':
+		{
 			printf("Listado de procesos:\n"
 							"-System: Todos los del Sistema\n"
 							"-New: Cola de Nuevos\n"
@@ -384,15 +389,21 @@ void habilitarConsolaKernel() {
 			}
 
 			break;
+		}
 		case 'i':
+		{
 			printf("Info");
 
 			break;
+		}
 		case 't':
+		{
 			printf("Tabla Global:");
 
 			break;
+		}
 		case 'g':
+		{
 			printf("Ingrese el nuevo grado de multiprogramación: ");
 			char *opcion = reservarMemoria(100);
 			fgets(opcion, 100, stdin);
@@ -400,22 +411,42 @@ void habilitarConsolaKernel() {
 			printf("El nuevo grado de multiprogramación es: %s\n", opcion);
 			free(opcion);
 			break;
+		}
 		case 'f':
-
-			printf("Proceso Finalizado\n");
-
-				break;
+		{
+			printf("Ingrese el ID del proceso a finalizar: ");
+			char *opcion = reservarMemoria(100);
+			fgets(opcion, 100, stdin);
+			int *id_proceso_a_detener = reservarMemoria(sizeof(int));
+			*id_proceso_a_detener = atoi(opcion);
+			list_add(lista_detenciones_pendientes,id_proceso_a_detener);
+			if(esta_ejecutandose(*id_proceso_a_detener)){
+				printf("El proceso esta ejecutandose, este finalizara cuando CPU lo libere.\n");
+			}else{
+				t_list *lista = lista_que_tiene_este_pcb(*id_proceso_a_detener);
+				t_pcb *pcb = obtener_PCB_segun_PID_en(lista,*id_proceso_a_detener);
+				finalizarUnProceso(pcb);
+				eliminar_detencion(pcb);
+			}
+			free(opcion);
+			break;
+		}
 		case 'd':
+		{
 			planificacionActivada = 0;
 			printf("Planificación detenida\n");
-
 				break;
+		}
 		case 'c':
+		{
 			limpiarMensajes();
 				break;
+		}
 		default:
+		{
 			printf("'%c' no es un comando valido\n", comando);
 			break;
+		}
 		}
 	} 	while(seguirAbierto);
 	free(lineaIngresada);
@@ -501,6 +532,7 @@ int main(void) {
 	listaPCBs_EXIT = list_create();
 	listaCPUs = list_create();
 	lista_pedidos_script = list_create();
+	lista_detenciones_pendientes = list_create();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
