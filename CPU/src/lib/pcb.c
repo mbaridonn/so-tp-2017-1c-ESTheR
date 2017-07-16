@@ -16,7 +16,7 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
-t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag) {
+t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag, int stackSize) {
 	t_pcb *punteroPCB;
 	punteroPCB = reservarMemoria(sizeof(t_pcb));
 	punteroPCB->id_proceso = ++id_proceso_actual;
@@ -25,6 +25,7 @@ t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag) {
 	punteroPCB->cant_instrucciones = metadata->instrucciones_size;
 	punteroPCB->cant_paginas_de_codigo = cant_pags_script;
 	punteroPCB->indice_codigo = metadata->instrucciones_serializado;
+	punteroPCB->contadorPags = punteroPCB->cant_paginas_de_codigo + stackSize;
 	punteroPCB->stackPointer = cant_pags_script * tamPag;
 	punteroPCB->indice_stack = queue_create();
 	punteroPCB->etiquetas_size = metadata->etiquetas_size;

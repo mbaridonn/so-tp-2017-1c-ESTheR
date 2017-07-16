@@ -470,6 +470,7 @@ void kernel_mem_finalizarProceso(){
 
 void kernel_mem_leerPaginas(){
 	int pid = recibir_process_id(), nroPagina = recibir_int_de_Kernel(), offset = recibir_int_de_Kernel(), tamanio = recibir_int_de_Kernel();
+	printf("Ejecuto comando: leerPagina(%d,%d,%d,%d)\n",pid,nroPagina,offset,tamanio);
 	char *bytesLeidos = leerPagina(pid,nroPagina,offset,tamanio);
 	if(send(clienteKernel,bytesLeidos,tamanio,0)==-1){
 		printf("Error al enviar bytesLeidos a Kernel.\n");
@@ -510,6 +511,7 @@ char *recibirBufferDeKernel(int *tamanio){
 void kernel_mem_escribirPaginas(){
 	int pid = recibir_process_id(), nroPagina = recibir_int_de_Kernel(), offset = recibir_int_de_Kernel(), tamanio;
 	char *bytesAEscribir = recibirBufferDeKernel(&tamanio);
+	printf("Ejecuto comando: escribirPagina(%d,%d,%d,%d)\n",pid,nroPagina,offset,tamanio);
 	escribirPagina(pid,nroPagina,offset,tamanio,bytesAEscribir);
 	free(bytesAEscribir);
 
@@ -517,9 +519,15 @@ void kernel_mem_escribirPaginas(){
 
 void kernel_mem_liberarPagina(){
 	int pid = recibir_int_de_Kernel(), nroPagina = recibir_int_de_Kernel();
+	printf("Ejecuto comando: liberarPaginaDeProceso(%d,%d)\n",pid,nroPagina);
 	liberarPaginaDeProceso(pid,nroPagina);
 }
 
+void kernel_mem_asignar_paginas(){
+	int pid = recibir_int_de_Kernel(), cantPags = recibir_int_de_Kernel();
+	printf("Ejecuto comando: asignarPaginasAProceso(%d,%d)\n",pid,cantPags);
+	asignarPaginasAProceso(pid, cantPags);
+}
 
 void atenderKernel() {
 	while (1) {
@@ -531,6 +539,9 @@ void atenderKernel() {
 			break;
 		case k_mem_finalizar_programa:
 			kernel_mem_finalizarProceso();
+			break;
+		case k_mem_asignar_paginas:
+			kernel_mem_asignar_paginas();
 			break;
 		case k_mem_leer_paginas:
 			kernel_mem_leerPaginas();
@@ -675,30 +686,29 @@ int proximoFrameLibre(int frameBase) {
 	}
 }
 
-void asignarPaginasAProceso(int PID, int pagsRequeridas) {//HAY QUE USAR MUTEX!!
+void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 	mili_sleep(*retardoMemoria);
 
 	pthread_mutex_lock(&mutexAsignarPagina);
 
-	int nroPag = 0;
-	int frameAAsignar;
-	u_int32_t aux;
-	while (nroPag < pagsRequeridas) {
+	int cantPagsAsignadas = 0, frameAAsignar, nroPag;
+	u_int32_t confirmacion;
+	while (cantPagsAsignadas < pagsRequeridas) {
+		nroPag = cantPagsPorPID[PID];
 		frameAAsignar = proximoFrameLibre(hash(PID, nroPag));
 		if (frameAAsignar == -1) {	//No se encontró ninguna página libre
-			printf("Sólo se pudieron asignar %d páginas al proceso %d\n",
-					nroPag, PID);
-			aux = noHayPaginas;
-			send(clienteKernel, &aux, sizeof(u_int32_t), 0);
+			printf("Sólo se pudieron asignar %d páginas al proceso %d\n", cantPagsAsignadas, PID);
+			confirmacion = noHayPaginas;
+			send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0);
 			return;
 		}
 		estructuraAdm[frameAAsignar].PID = PID;
 		estructuraAdm[frameAAsignar].numPag = nroPag;
-		nroPag++;
+		cantPagsAsignadas++;
 		cantPagsPorPID[PID]++;
 	}
-	aux = hayPaginas;
-	send(clienteKernel, &aux, sizeof(u_int32_t), 0);
+	confirmacion = hayPaginas;
+	send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0);
 	printf("Se pudieron asignar las páginas al proceso %d\n", PID);
 
 	pthread_mutex_unlock(&mutexAsignarPagina);

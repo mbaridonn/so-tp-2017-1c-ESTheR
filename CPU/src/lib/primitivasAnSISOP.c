@@ -403,7 +403,7 @@ t_puntero reservar(t_valor_variable espacio){
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_reservar);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
-	//enviarIntAKernel(pcbAEjecutar->) FALTA ENVIAR CONTADOR_PAGINAS (HASTA QUE NO SE AGREGUE VA A FALLAR, XQ KERNEL LO ESPERA!!)
+	enviarIntAKernel(pcbAEjecutar->contadorPags);
 	enviarIntAKernel(espacio);
 	int confirmacion = recibirUIntDeKernel();
 	u_int32_t direccion = recibirUIntDeKernel();
@@ -415,7 +415,7 @@ t_puntero reservar(t_valor_variable espacio){
 		codigoError = -9;
 	} else {
 		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
-		//INCREMENTAR PCB->CONTADOR_DE_PAGINAS (PENDIENTE!!!!)
+		pcbAEjecutar->contadorPags++;
 	}
 	return direccion;//OJO! DEVUELVE 0 SI NO SE PUDO RESERVAR
 }
@@ -431,7 +431,7 @@ void liberar(t_puntero puntero){
 		codigoError = -11;//Defino nuevo Exit Code -11: error al liberar Memoria (!!)
 	} else if (confirmacion==exitoLiberacionPagina){
 		printf("Se pudo liberar Memoria, y tambien la pagina\n");
-		//DECREMENTAR PCB->CONTADOR_DE_PAGINAS (PENDIENTE!!!!)
+		pcbAEjecutar->contadorPags--;
 	} else /*confirmacion==falloLiberacionPagina || confirmacion==sePudoLiberarMemoria*/{
 		printf("Se pudo liberar Memoria\n");
 	}

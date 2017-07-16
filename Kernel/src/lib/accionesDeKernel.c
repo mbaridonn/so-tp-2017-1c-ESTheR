@@ -490,6 +490,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
 	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 	int PID = recibir_int_de(unaCPU->clie_CPU);
+	printf("Me llego el PID %d y la accion %d\n", PID, accion);
 	switch(accion){
 	case cpuLibre:
 	{
@@ -591,7 +592,9 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int contador_paginas = recibir_int_de(unaCPU->clie_CPU);
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int espacio_requerido = recibir_int_de(unaCPU->clie_CPU);
+		printf("Me llego el contPags %d y el esp req %d\n", contador_paginas, espacio_requerido);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, contador_paginas);
 		u_int32_t direccion = reservarMemoriaDinamica(espacio_requerido);
 		enviarIntACPU(&(unaCPU->clie_CPU),direccion);
@@ -601,6 +604,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		u_int32_t direccion = recibir_int_de(unaCPU->clie_CPU);
+		printf("Me llego la direccion %d\n", direccion);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, 0/*No es necesario*/);
 		liberarMemoriaDinamica(direccion);
 		break;

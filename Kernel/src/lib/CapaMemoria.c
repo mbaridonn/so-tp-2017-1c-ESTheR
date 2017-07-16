@@ -139,7 +139,7 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 		contador_paginas++;
 		entradaTablaHeap* entradaNueva = reservarMemoria(sizeof(entradaTablaHeap));
 		entradaNueva->PID = PID;
-		entradaNueva->nroPag = contador_paginas;
+		entradaNueva->nroPag = contador_paginas-1;
 		entradaNueva->tamanioDisponible = tamPag - (2 * sizeof(heapMetadata) + espacioRequerido);
 		list_add(tablaHeap, entradaNueva);
 		//Insertar Metadata en Memoria
@@ -148,9 +148,9 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 		metadataInicio.tamanio = espacioRequerido;
 		metadataFin.estaLibre = true;
 		metadataFin.tamanio = tamPag - (2 * sizeof(heapMetadata) + espacioRequerido);
-		solicitarEscrituraAMemoria(PID, contador_paginas, 0, sizeof(heapMetadata), &metadataInicio);
-		solicitarEscrituraAMemoria(PID, contador_paginas, sizeof(heapMetadata)+espacioRequerido, sizeof(heapMetadata), &metadataFin);
-		ptrInicioBloque = contador_paginas * tamPag + sizeof(metadataInicio);//ESTÁ BIEN??
+		solicitarEscrituraAMemoria(PID, contador_paginas-1, 0, sizeof(heapMetadata), &metadataInicio);
+		solicitarEscrituraAMemoria(PID, contador_paginas-1, sizeof(heapMetadata)+espacioRequerido, sizeof(heapMetadata), &metadataFin);
+		ptrInicioBloque = (contador_paginas-1) * tamPag + sizeof(metadataInicio);
 	}
 
 	enviarIntACPU(&clieCPU, sePudoReservarMemoria);
