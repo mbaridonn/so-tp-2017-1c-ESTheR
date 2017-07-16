@@ -12,9 +12,11 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
+struct tm *tmInicio;
 int horaInicio;
 int minInicio;
 int segInicio;
+struct tm *tmFin;
 int horaFin;
 int minFin;
 int segFin;
@@ -127,6 +129,14 @@ void esperarConfirmacionDeKernel(int *kernel) {
 	mostrarConfirmacion(confirmacion);
 }
 
+void mostrarInicioEjecucion(){
+	log_info(consola_log,"Inicio Ejecucion: %ld",tmInicio);
+}
+
+void mostrarFinEjecucion(){
+	log_info(consola_log,"Fin Ejecucion: %ld",tmFin);
+}
+
 void mostrarDiferenciaInicioFinEjecucion() {
 	int difHoras, difMinutos, difSegundos;
 
@@ -153,41 +163,34 @@ void mostrarDiferenciaInicioFinEjecucion() {
 	//Revisar si vale la pena usar logs
 }
 
-void mostrarFechaHoraEjecucion(int opcion) {
-	struct tm *tmRetorno;
+void mostrarFechaHoraEjecucion(){
+	mostrarInicioEjecucion();
+	mostrarFinEjecucion();
+	mostrarDiferenciaInicioFinEjecucion();
+}
+
+void guardarFechaHoraEjecucion(int opcion) {
 	time_t tiempoEnSegundos = time(NULL);
-	struct tm *tm = localtime(&tiempoEnSegundos);
-	tmRetorno = tm;
-	log_info(consola_log, "Fecha: %s", asctime(tmRetorno));
-	//printf("Fecha: %s\n", asctime(tmRetorno));
-	log_info(consola_log, "Hora: %d", tmRetorno->tm_hour);
-	//printf("Hora: %d\n", tmRetorno->tm_hour);
-	log_info(consola_log, "Minuto: %d", tmRetorno->tm_min);
-	//printf("Minuto: %d\n", tmRetorno->tm_min);
-	log_info(consola_log, "Segundo: %d", tmRetorno->tm_sec);
-	//printf("Segundo: %d\n", tmRetorno->tm_sec);
 
 	if (opcion == 1) {
-		horaInicio = tmRetorno->tm_hour;
-		minInicio = tmRetorno->tm_min;
-		segInicio = tmRetorno->tm_sec;
+		tmInicio = localtime(&tiempoEnSegundos);
+		horaInicio = tmInicio->tm_hour;
+		minInicio = tmInicio->tm_min;
+		segInicio = tmInicio->tm_sec;
 	} else {
-		horaFin = tmRetorno->tm_hour;
-		minFin = tmRetorno->tm_min;
-		segFin = tmRetorno->tm_sec;
+		tmFin = localtime(&tiempoEnSegundos);
+		horaFin = tmFin->tm_hour;
+		minFin = tmFin->tm_min;
+		segFin = tmFin->tm_sec;
 	}
 }
 
-void mostrarInicioEjecucion() {
-	//log_info(consola_log, "Fecha y hora de inicio de ejecucion:");
-	printf("Fecha y hora de inicio de ejecucion:\n");
-	mostrarFechaHoraEjecucion(1);
+void guardarInicioEjecucion() {
+	guardarFechaHoraEjecucion(1);
 }
 
-void mostrarFinEjecucion() {
-	//log_info(consola_log, "Fecha y hora de fin de ejecucion:");
-	printf("Fecha y hora de fin de ejecucion:\n");
-	mostrarFechaHoraEjecucion(2);
+void guardarFinEjecucion() {
+	guardarFechaHoraEjecucion(2);
 }
 
 void esperarMensajesDeKernel() {
@@ -253,7 +256,7 @@ void iniciarPrograma(int *cliente) {
 		accion = startProgram;
 		informarAccion(cliente, &accion);
 
-		mostrarInicioEjecucion();
+		guardarInicioEjecucion();
 	}
 
 	fseek(archivo, 0, SEEK_END);
