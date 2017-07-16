@@ -51,18 +51,22 @@ void informarAccion(int *cliente, int *accion) {
 void solicitarA(int *cliente, char *nombreCli) {
 	char a[2] = "a";
 	send((*cliente), a, 2, 0);
-	printf("Esperando atencion de %s..\n", nombreCli);
+	log_info(consola_log, "Esperando atencion de %s..\n", nombreCli);
+	//printf("Esperando atencion de %s..\n", nombreCli);
 	recv((*cliente), a, 2, 0);
 }
 
 void msjConexionCon(char *s) {
-	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
-} //Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
+	log_info(consola_log, "\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n", s);
+	//printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
+	//Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
+}
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
-		printf("No hay más espacio \n");
+		log_error(consola_log, "No hay más espacio");
+		//printf("No hay más espacio \n");
 		exit(-1);
 	}
 	return puntero;
@@ -70,8 +74,7 @@ void *reservarMemoria(int tamanioArchivo) {
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config->ipKernel = strdup(
-			config_get_string_value(archivo_Modelo, "IP_KERNEL"));
+	config->ipKernel = strdup(config_get_string_value(archivo_Modelo, "IP_KERNEL"));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
 }
 void mostrarArchivoConfig() {
@@ -89,31 +92,36 @@ void mostrarArchivoConfig() {
 
 void leerArchivo() {
 	if (access(RUTAARCHIVO, F_OK) == -1) {
-		printf("No se encontró el Archivo \n");
+		log_error(consola_log, "No se encontró el Archivo");
+		//printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
 	t_config *archivo_config = config_create(RUTAARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	//mostrarArchivoConfig();
-	printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
+	log_info(consola_log, "Leí el archivo y extraje el puerto: %d ", config->puerto);
+	//printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
 void mostrarConfirmacion(int confirmacion) {
 	u_int32_t conf = confirmacion;
 	if (conf == hayPaginas) {
-		printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
+		log_info(consola_log, "Paginas suficientes - El proceso se almaceno exitosamente");
+		//printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
 	} else {
-		printf(
-				"Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
+		log_error(consola_log, "Paginas insuficientes - El proceso no pudo almacenarse en MP");
+		//printf("Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
 	}
 }
 
 void esperarConfirmacionDeKernel(int *kernel) {
 	u_int32_t confirmacion;
-	printf("Esperando la confirmacion de Kernel..\n");
+	log_info(consola_log, "Esperando la confirmacion de Kernel..");
+	//printf("Esperando la confirmacion de Kernel..\n");
 	if (recv((*kernel), &confirmacion, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo la confirmacion de parte de Kernel.\n");
+		log_error(consola_log, "Error recibiendo la confirmacion de parte de Kernel");
+		//printf("Error recibiendo la confirmacion de parte de Kernel.\n");
 		exit(-1);
 	}
 	mostrarConfirmacion(confirmacion);
@@ -136,9 +144,13 @@ void mostrarDiferenciaInicioFinEjecucion() {
 	difMinutos = minFin - minInicio;
 	difHoras = horaFin - horaInicio;
 
-	printf("Hora: %d\n", difHoras);
-	printf("Minuto: %d\n", difMinutos);
-	printf("Segundo: %d\n", difSegundos);
+	log_info(consola_log, "Hora: %d", difHoras);
+	//printf("Hora: %d\n", difHoras);
+	log_info(consola_log, "Minuto: %d", difMinutos);
+	//printf("Minuto: %d\n", difMinutos);
+	log_info(consola_log, "Segundo: %d", difSegundos);
+	//printf("Segundo: %d\n", difSegundos);
+	//Revisar si vale la pena usar logs
 }
 
 void mostrarFechaHoraEjecucion(int opcion) {
@@ -146,10 +158,14 @@ void mostrarFechaHoraEjecucion(int opcion) {
 	time_t tiempoEnSegundos = time(NULL);
 	struct tm *tm = localtime(&tiempoEnSegundos);
 	tmRetorno = tm;
-	printf("Fecha: %s\n", asctime(tmRetorno));
-	printf("Hora: %d\n", tmRetorno->tm_hour);
-	printf("Minuto: %d\n", tmRetorno->tm_min);
-	printf("Segundo: %d\n", tmRetorno->tm_sec);
+	log_info(consola_log, "Fecha: %s", asctime(tmRetorno));
+	//printf("Fecha: %s\n", asctime(tmRetorno));
+	log_info(consola_log, "Hora: %d", tmRetorno->tm_hour);
+	//printf("Hora: %d\n", tmRetorno->tm_hour);
+	log_info(consola_log, "Minuto: %d", tmRetorno->tm_min);
+	//printf("Minuto: %d\n", tmRetorno->tm_min);
+	log_info(consola_log, "Segundo: %d", tmRetorno->tm_sec);
+	//printf("Segundo: %d\n", tmRetorno->tm_sec);
 
 	if (opcion == 1) {
 		horaInicio = tmRetorno->tm_hour;
@@ -163,11 +179,13 @@ void mostrarFechaHoraEjecucion(int opcion) {
 }
 
 void mostrarInicioEjecucion() {
+	//log_info(consola_log, "Fecha y hora de inicio de ejecucion:");
 	printf("Fecha y hora de inicio de ejecucion:\n");
 	mostrarFechaHoraEjecucion(1);
 }
 
 void mostrarFinEjecucion() {
+	//log_info(consola_log, "Fecha y hora de fin de ejecucion:");
 	printf("Fecha y hora de fin de ejecucion:\n");
 	mostrarFechaHoraEjecucion(2);
 }
@@ -178,10 +196,13 @@ void esperarMensajesDeKernel() {
 
 void crearHiloDelPrograma() {
 	pthread_t hilo_programa;
-	printf("Creado hilo para este programa.\n");
-	printf("Se mostrarán por pantalla las respuestas del Kernel.\n\n");
+	log_info(consola_log, "Creado hilo para este programa");
+	//printf("Creado hilo para este programa.\n");
+	log_info(consola_log, "Se mostrarán por pantalla las respuestas del Kernel");
+	//printf("Se mostrarán por pantalla las respuestas del Kernel.\n\n");
 	if (pthread_create(&hilo_programa, NULL, esperarMensajesDeKernel, NULL)) {
-		printf("Error al crear el thread de comandos.\n");
+		log_error(consola_log, "Error al crear el thread de comandos");
+		//printf("Error al crear el thread de comandos.\n");
 		exit(-1);
 	}
 }
@@ -189,10 +210,12 @@ void crearHiloDelPrograma() {
 void recibirPID(int *cliente) {
 	u_int32_t pid;
 	if (recv((*cliente), &pid, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo el PID\n");
+		log_error(consola_log, "Error recibiendo el PID");
+		//printf("Error recibiendo el PID\n");
 		exit(-1);
 	}
-	printf("PID: %d asignado a ese programa\n\n", pid);
+	log_info(consola_log, "PID: %d asignado a ese programa\n",pid);
+	//printf("PID: %d asignado a ese programa\n\n", pid);
 }
 
 void iniciarPrograma(int *cliente) {
@@ -217,11 +240,13 @@ void iniciarPrograma(int *cliente) {
 	nombreScript = strtok(NULL, "\n");
 
 	if (strcmp("iniciarPrograma", comando) != 0) {
-		printf("El comando ingresado no existe");
+		log_error(consola_log, "El comando ingresado no existe");
+		//printf("El comando ingresado no existe");
 	} else {
 		archivo = fopen(nombreScript, "rb"); //USAR PATH ABSOLUTO?
 		if (archivo == NULL) {
-			printf("No se pudo leer el archivo\n");
+			log_error(consola_log, "No se pudo leer el archivo");
+			//printf("No se pudo leer el archivo\n");
 			exit(-1);
 		}
 		solicitarA(cliente, "Kernel");
@@ -240,14 +265,18 @@ void iniciarPrograma(int *cliente) {
 	fclose(archivo);
 	buffer[fsize] = '\0';
 	if (send(*cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando longitud del archivo\n");
+		log_error(consola_log, "Error enviando longitud del archivo");
+		//printf("Error enviando longitud del archivo\n");
 		exit(-1);
 	}
 	if (send(*cliente, buffer, fsize + 1, 0) == -1) {
-		printf("Error enviando archivo\n");
+		log_error(consola_log, "Error enviando archivo");
+		//printf("Error enviando archivo\n");
 		exit(-1);
 	}
-	printf("El archivo se envió correctamente\n\n");
+
+	log_info(consola_log, "El archivo se envió correctamente\n");
+	//printf("El archivo se envió correctamente\n\n");
 
 	esperarConfirmacionDeKernel(cliente);
 	recibirPID(cliente);
@@ -284,13 +313,15 @@ void finalizarPrograma(int *cliente) {
 void desconectarConsola() {
 	/*Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola
 	 con el kernel, dando por muertos todos los programas de manera abortiva.*/
-	printf("\nConsola desconectada. \n\n");
+	log_info(consola_log, "\nConsola desconectada. \n");
+	//printf("\nConsola desconectada. \n\n");
 	exit(-1);
 }
 
 void limpiarMensajes() {
 	system("clear");
-	printf("Consola limpiada! \n\n");
+	log_info(consola_log,"Consola limpiada! \n");
+	//printf("Consola limpiada! \n\n");
 }
 
 void elegirComando(int *cliente) {
@@ -324,7 +355,8 @@ void elegirComando(int *cliente) {
 			limpiarMensajes();
 			break;
 		default:
-			printf("\nOpcion invalida. Vuelva a elegir una opcion \n\n");
+			log_error(consola_log, "\nOpcion invalida. Vuelva a elegir una opcion \n");
+			//printf("\nOpcion invalida. Vuelva a elegir una opcion \n\n");
 			break;
 		}
 
@@ -343,7 +375,8 @@ void conectarseConKernel(int *cliente, struct sockaddr_in *direccionServidor) {
 		break;
 
 		default:
-		printf("No me puedo conectar con vos.\n");
+			log_error(consola_log, "No me puedo conectar con vos");
+			//printf("No me puedo conectar con vos.\n");
 		break;
 	}
 
@@ -354,9 +387,12 @@ int main(void) {
 	int cliente;
 	struct sockaddr_in direccionServidor;
 
+	inicializarLog();
+
 	leerArchivo();
 	llenarSocket(&direccionServidor);
 	conectarseConKernel(&cliente, &direccionServidor);
 
+	log_destroy(consola_log);
 	return 0;
 }
