@@ -161,6 +161,8 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	int nroPagDelBloque = puntero / tamPag;
 	int offsetDelBloque = puntero % tamPag - sizeof(heapMetadata);//Quiero apuntar al metadata, no al bloque de datos
 
+	printf("nroPag: %d\n", nroPagDelBloque);
+
 	bool esEntradaDeProcesoYPagina(entradaTablaHeap* entrada) {
 		return entrada->PID == PID && entrada->nroPag == nroPagDelBloque;
 	}

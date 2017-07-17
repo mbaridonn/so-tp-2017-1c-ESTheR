@@ -392,7 +392,7 @@ void wait(t_nombre_semaforo identificador_semaforo){
 	}
 }
 
-void signal(t_nombre_semaforo identificador_semaforo){
+void signal_ANSISOP(t_nombre_semaforo identificador_semaforo){
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_signal);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);

@@ -903,21 +903,21 @@ void finalizarPrograma(int PID) {
 void liberarPaginaDeProceso(int PID, int nroPag){
 	mili_sleep(*retardoMemoria);
 
-	int paginaABorrar;
+	int frameALiberar;
 	u_int32_t confirmacion;
-	if ((paginaABorrar = buscarPagina(PID, nroPag)) == -1) { //No se encontró la pagina
-		exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
-	}
-	paginaABorrar = paginaABorrar / tamFrame; //buscarPagina devuelve la pos en bytes
-	if(paginaABorrar == cantPagsPorPID[PID]-1){//Si es la última página
-		estructuraAdm[paginaABorrar].PID = -1;//La elimino
+
+	if(nroPag == cantPagsPorPID[PID]-1/*Es la última pág*/ && (frameALiberar = buscarPagina(PID, nroPag))!=-1/*Se encontró el frame*/){
+		frameALiberar = frameALiberar / tamFrame; //buscarPagina devuelve la pos en bytes
+		estructuraAdm[frameALiberar].PID = -1;//La elimino
 		cantPagsPorPID[PID]--;
 		confirmacion = exitoLiberacionPagina;
 		printf("Se libero la pagina %d del proceso %d\n", nroPag, PID);
-	} else {//SI NO ES LA ÚLTIMA, NO SE HACE NADA (EN REALIDAD, SE DEBERÍA ELIMINAR IGUAL). FALLA SILENCIOSA !!!
+	} else {//SI NO ES LA ÚLTIMA, NO SE HACE NADA (EN REALIDAD, SE DEBERÍA ELIMINAR IGUAL!!)
+		//En ese caso, habría que replantear la condición (SIEMPRE HAY QUE CHEQUEAR QUE EXISTA EL FRAME)
 		printf("No se puede liberar la pagina %d del proceso %d\n", nroPag, PID);
 		confirmacion = falloLiberacionPagina;
 	}
+
 	if(send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0)==-1){
 		printf("Error enviando confirmacion de liberar pagina.\n");
 	}

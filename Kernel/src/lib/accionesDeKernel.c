@@ -305,7 +305,7 @@ void proced_script(int *unCliente) {
 	recibirArchivoDe(unCliente, bufferArchivo, fsize);
 	printf("%s\n\n", bufferArchivo);
 	u_int32_t cant_pags_script = divisionRoundUp(fsize, tamanioPagMemoria);
-	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script,tamanioPagMemoria);
+	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script,tamanioPagMemoria,config->STACK_SIZE);
 	pedido_script *pedido = crear_pedido_script((*unCliente),pcb->id_proceso,bufferArchivo,fsize);
 	list_add(lista_pedidos_script,pedido);
 	list_add(listaPCBs_NEW, pcb);
@@ -460,6 +460,7 @@ void mostrarPcb(t_pcb *pcb_prueba) {
 	printf("cant_paginas_de_codigo: %d \n", pcb_prueba->cant_paginas_de_codigo);
 	printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
 	printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
+	printf("contadorPags: %u \n", pcb_prueba->contadorPags);
 	printf("stackPointer: %d \n", pcb_prueba->stackPointer);
 	printf("cantElementosStack: %d \n",	pcb_prueba->indice_stack->elements->elements_count);
 	printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);

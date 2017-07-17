@@ -16,7 +16,7 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
-t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag) {
+t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag, int stackSize) {
 	t_pcb *punteroPCB;
 	punteroPCB = reservarMemoria(sizeof(t_pcb));
 	punteroPCB->id_proceso = ++id_proceso_actual;
@@ -25,6 +25,7 @@ t_pcb *crearPCB(char *bufferScript,u_int32_t cant_pags_script, int tamPag) {
 	punteroPCB->cant_instrucciones = metadata->instrucciones_size;
 	punteroPCB->cant_paginas_de_codigo = cant_pags_script;
 	punteroPCB->indice_codigo = metadata->instrucciones_serializado;
+	punteroPCB->contadorPags = punteroPCB->cant_paginas_de_codigo + stackSize;
 	punteroPCB->stackPointer = cant_pags_script * tamPag;
 	punteroPCB->indice_stack = queue_create();
 	punteroPCB->etiquetas_size = metadata->etiquetas_size;
@@ -69,6 +70,7 @@ void serializar_pcb(t_pcb *pcb, void **buffer, int *buffer_size) {
 	serializar_data(&pcb->cant_instrucciones, sizeof(int), buffer, buffer_size);
 	serializar_data(&pcb->cant_paginas_de_codigo, sizeof(int), buffer, buffer_size);
 	serialize_instrucciones(pcb->indice_codigo, pcb->cant_instrucciones, buffer, buffer_size);
+	serializar_data(&pcb->contadorPags, sizeof(int), buffer, buffer_size);
 	serializar_data(&pcb->stackPointer, sizeof(uint32_t), buffer, buffer_size);
 	serialize_stack(pcb->indice_stack, buffer, buffer_size);
 	serializar_data(&pcb->etiquetas_size, sizeof(int), buffer, buffer_size);
@@ -105,6 +107,7 @@ void deserializar_pcb(t_pcb **pcb, void *data_serializada, int *indice_data_seri
 	deserializar_data(&(*pcb)->cant_instrucciones, sizeof(int), data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->cant_paginas_de_codigo, sizeof(int), data_serializada, indice_data_serializada);
 	deserialize_instrucciones(&(*pcb)->indice_codigo, (*pcb)->cant_instrucciones, data_serializada, indice_data_serializada);
+	deserializar_data(&(*pcb)->contadorPags, sizeof(int), data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->stackPointer, sizeof(int), data_serializada, indice_data_serializada);
 	(*pcb)->indice_stack = queue_create(); //TODO: Por que se necesita esto aca y en deserialize_stack TAMBIEN?
 	deserialize_stack(&(*pcb)->indice_stack, data_serializada, indice_data_serializada);

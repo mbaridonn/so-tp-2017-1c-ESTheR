@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <signal.h>
+#include <signal.h>
 #include <commons/config.h>
 
 #include "lib/pcb.h"
@@ -49,7 +49,7 @@ AnSISOP_funciones functions = { .AnSISOP_definirVariable = definirVariable,
 		.AnSISOP_finalizar = finalizar, .AnSISOP_retornar = retornar };
 
 AnSISOP_kernel kernel_functions = { .AnSISOP_wait = wait, .AnSISOP_signal =
-		signal, .AnSISOP_reservar = reservar, .AnSISOP_liberar = liberar,
+		signal_ANSISOP, .AnSISOP_reservar = reservar, .AnSISOP_liberar = liberar,
 		.AnSISOP_abrir = abrir, .AnSISOP_borrar = borrar, .AnSISOP_cerrar =
 				cerrar, .AnSISOP_moverCursor = moverCursor, .AnSISOP_escribir =
 				escribir, .AnSISOP_leer = leer };
@@ -322,14 +322,13 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	if (codigoError != 0) {
 		un_pcb->exit_code = codigoError;
 		motivo_liberacion = mot_error;
-		//VER QUE MÁS HAY QUE HACER !!
 	}
 	if(terminoElPrograma()){
 		motivo_liberacion = mot_finalizo;
 	}
 	if(instrucciones_ejecutadas == quantum){
 		motivo_liberacion = mot_quantum;
-	} // FALTA los ifs de wait y signal
+	}
 	if(estaBloqueado()){
 		motivo_liberacion = mot_bloqueado;
 	}
@@ -384,8 +383,8 @@ void enviar_un_PCB_a_Kernel(t_pcb *pcb) {
 		//printf("El envio de pcb a Kernel fallo\n");
 		exit(-1);
 	}
-	log_info(cpu_log, "PCB enviado a CPU exitosamente", stackSize, tamPag);
-	//printf("PCB enviado a CPU exitosamente\n");
+	log_info(cpu_log, "PCB enviado a Kernel exitosamente", stackSize, tamPag);
+	//printf("PCB enviado a Kernel exitosamente\n");
 }
 
 void enviar_motivo_liberacion(){
@@ -404,12 +403,12 @@ void devolver_pcb_y_liberarse(t_pcb *pcb) {
 }
 
 void desconectarCPU(int senial){
-	//if (senial == SIGUSR1) descCPU = true;
+	if (senial == SIGUSR1) descCPU = true;
 }
 
 int main(void) {
 
-	//signal(SIGUSR1, desconectarCPU);
+	signal(SIGUSR1, desconectarCPU);
 
 	descCPU = false;
 
@@ -426,22 +425,6 @@ int main(void) {
 	direccionServidor2.sin_addr.s_addr = inet_addr(config->ipMemoria);
 	direccionServidor2.sin_port = htons(config->puertoMemoria/*8125*/);
 
-	//INICIO PRUEBA ANSISOP
-	/*char *programa = strdup(PROGRAMA);
-	 t_metadata_program *metadata = metadata_desde_literal(programa);
-	 int programCounter = 0;
-	 while(!terminoElPrograma()){
-	 char* const linea = conseguirDatosDeLaMemoria(programa,
-	 metadata->instrucciones_serializado[programCounter].start,
-	 metadata->instrucciones_serializado[programCounter].offset);
-	 printf("\t Evaluando -> %s", linea);
-	 analizadorLinea(linea, &functions, &kernel_functions);
-	 free(linea);
-	 programCounter++;
-	 }
-	 metadata_destruir(metadata);*/
-	//FIN PRUEBA ANSISOP
-	//testearSerializado();
 	conectarse_con_memoria(&direccionServidor2);
 	conectarse_con_kernel(&direccionServidor);
 
@@ -451,6 +434,10 @@ int main(void) {
 		ejecutar_instrucciones(pcb);
 		devolver_pcb_y_liberarse(pcb);
 		free(pcb);
+	}
+
+	if(descCPU){
+		//ENVIAR MENSAJE A MEMORIA PARA QUE NO ROMPA AL DESCONECTAR CPU (PENDIENTE!!!)
 	}
 
 	log_destroy(cpu_log);

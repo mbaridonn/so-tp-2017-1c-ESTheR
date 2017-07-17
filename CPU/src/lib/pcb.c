@@ -70,6 +70,7 @@ void serializar_pcb(t_pcb *pcb, void **buffer, int *buffer_size) {
 	serializar_data(&pcb->cant_instrucciones, sizeof(int), buffer, buffer_size);
 	serializar_data(&pcb->cant_paginas_de_codigo, sizeof(int), buffer, buffer_size);
 	serialize_instrucciones(pcb->indice_codigo, pcb->cant_instrucciones, buffer, buffer_size);
+	serializar_data(&pcb->contadorPags, sizeof(int), buffer, buffer_size);
 	serializar_data(&pcb->stackPointer, sizeof(uint32_t), buffer, buffer_size);
 	serialize_stack(pcb->indice_stack, buffer, buffer_size);
 	serializar_data(&pcb->etiquetas_size, sizeof(int), buffer, buffer_size);
@@ -106,6 +107,7 @@ void deserializar_pcb(t_pcb **pcb, void *data_serializada, int *indice_data_seri
 	deserializar_data(&(*pcb)->cant_instrucciones, sizeof(int), data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->cant_paginas_de_codigo, sizeof(int), data_serializada, indice_data_serializada);
 	deserialize_instrucciones(&(*pcb)->indice_codigo, (*pcb)->cant_instrucciones, data_serializada, indice_data_serializada);
+	deserializar_data(&(*pcb)->contadorPags, sizeof(int), data_serializada, indice_data_serializada);
 	deserializar_data(&(*pcb)->stackPointer, sizeof(int), data_serializada, indice_data_serializada);
 	(*pcb)->indice_stack = queue_create(); //TODO: Por que se necesita esto aca y en deserialize_stack TAMBIEN?
 	deserialize_stack(&(*pcb)->indice_stack, data_serializada, indice_data_serializada);
