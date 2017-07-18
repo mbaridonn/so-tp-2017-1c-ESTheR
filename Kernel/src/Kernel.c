@@ -562,7 +562,6 @@ int main(void) {
 	lista_pedidos_script = list_create();
 	lista_detenciones_pendientes = list_create();
 	lista_bloqueos = list_create();
-	lista_info = list_create();
 	lista_estadisticas_de_procesos = list_create();
 
 	struct sockaddr_in direccionServidor;

@@ -90,12 +90,6 @@ typedef struct {
 	int STACK_SIZE;
 } t_configuracion;
 
-typedef struct{
-	int pid;
-	int cant_intr_priv;
-	int cant_raf;
-}info;
-
 t_configuracion *config;
 
 t_list *listaPCBs_NEW;
@@ -107,7 +101,6 @@ t_list *listaCPUs;
 t_list *lista_pedidos_script;
 t_list *lista_detenciones_pendientes;
 t_list *lista_bloqueos;
-t_list *lista_info;
 t_list *lista_estadisticas_de_procesos;
 
 

@@ -482,14 +482,6 @@ bloqueo *crear_bloqueo(int pid, int pos_semaforo){
 	return un_bloqueo;
 }
 
-info *crear_info(int pid, int cant_intr_priv, int cant_raf){
-	info *info_de_un_proceso = reservarMemoria(sizeof(info));
-	info_de_un_proceso->pid = pid;
-	info_de_un_proceso->cant_intr_priv = cant_intr_priv;
-	info_de_un_proceso->cant_raf = cant_raf;
-	return info_de_un_proceso;
-}
-
 void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
 	if(hubo_detencion_forzosa(pcb)){
 		finalizarUnProceso(pcb);
