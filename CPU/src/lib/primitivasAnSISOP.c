@@ -79,7 +79,7 @@ void enviarIntAMemoria(int valor){
 }
 
 char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
-	char* instruccion = reservarMemoria(tamanio);
+	char* instruccion = reservarMemoria(tamanio+1);
 	avisarAccionAMemoria(cpu_mem_leer);
 	//Uso la misma función, aunque estoy pasando parámetros
 	avisarAccionAMemoria(PID);
@@ -89,7 +89,7 @@ char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
 	if (recv(serv_memoria, instruccion, tamanio, 0) == -1) {
 		printf("Error al recibir instrucción de Memoria\n");
 	}
-	printf("Instruccion recibida: %s\n", instruccion);
+	instruccion[tamanio] = '\0';
 	return instruccion;
 }
 
@@ -252,7 +252,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 t_valor_variable dereferenciar(t_puntero direccion_variable){
 	printf("ANSISOP_dereferenciar posicion: %d \n", direccion_variable);
 
-	int pagina = (direccion_variable / tamPag) + pcbAEjecutar->cant_paginas_de_codigo;
+	int pagina = (direccion_variable / tamPag) /*+ pcbAEjecutar->cant_paginas_de_codigo*/;
 	int offset = direccion_variable % tamPag;
 	int tamanio = TAM_VARIABLE;
 
@@ -269,7 +269,7 @@ t_valor_variable dereferenciar(t_puntero direccion_variable){
 void asignar(t_puntero direccion_variable, t_valor_variable valor){
 	printf("ANSISOP_asignar (valor: %d, direccion_variable: %d)\n", valor, direccion_variable);
 	int pagina, offset, tamanio;
-	pagina = (direccion_variable / tamPag) + pcbAEjecutar->cant_paginas_de_codigo;
+	pagina = (direccion_variable / tamPag) /*+ pcbAEjecutar->cant_paginas_de_codigo*/;
 	offset = direccion_variable % tamPag;
 	tamanio = TAM_VARIABLE;
 
@@ -487,14 +487,15 @@ void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posic
 }
 
 void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valor_variable tamanio){
-	printf("ANSISOP_escribir(fd:%d, tamanio:%d\n", descriptor_archivo, tamanio);
+	printf("ANSISOP_escribir(fd:%d, tamanio:%d)\n", descriptor_archivo, tamanio);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_escribir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarIntAKernel(descriptor_archivo);
 	enviarIntAKernel(tamanio);
 	esperarSenialDeKernel();
-	if (send(serv_kernel, informacion, tamanio, 0) == -1) {
+	printf("Bytes a escribir: %.*s \n", tamanio, (char*)informacion);
+	if (send(serv_kernel, informacion, tamanio, 0) == -1) {//CÓMO ESTOY OBTENIENDO informacion??
 		printf("Error al enviar bytes a escribir\n");
 		exit(-1);
 	}

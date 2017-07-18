@@ -569,7 +569,7 @@ void atenderKernel() {
 				//printf("Error recibiendo los bytes a escribir\n");
 				exit(-1);
 			}
-			printf("EscribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);//FORMA DE IMPRIMIR STRING CON LONGITUD!!
+			printf("escribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);//FORMA DE IMPRIMIR STRING CON LONGITUD!!
 			guardarDatos(path,offset,size,buffer);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;

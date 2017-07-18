@@ -586,8 +586,10 @@ void atenderACPU(cliente_CPU *unaCPU){
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int tamanio = recibir_int_de(unaCPU->clie_CPU);
 		char* bytesAEscribir = reservarMemoria(tamanio);
-		if (recv(&(unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
+		if (recv((unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
 			printf("Error al recibir bytes a escribir de CPU\n");
+			exit(-1);
 		}
 		printf("escribirArchivo(%d, %d, %d)\n", PID, fd, tamanio);
 		int confirmacion = escribirArchivo(PID,fd,bytesAEscribir,tamanio);
