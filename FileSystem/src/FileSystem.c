@@ -71,8 +71,7 @@ void *reservarMemoria(int tamanioArchivo) {
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO");
-	config->puntoMontaje = strdup(
-			config_get_string_value(archivo_Modelo, "PUNTO_MONTAJE"));
+	config->puntoMontaje = strdup(config_get_string_value(archivo_Modelo, "PUNTO_MONTAJE"));
 }
 
 void mostrarArchivoConfig() {
@@ -143,10 +142,8 @@ void leerArchivoConfiguracionFS() {
 	}
 	t_config *archivo_config_fs = config_create(path);
 	configFS = reservarMemoria(sizeof(t_configuracion_filesystem));
-	configFS->tamBloque = config_get_int_value(archivo_config_fs,
-			"TAMANIO_BLOQUES");
-	configFS->cantBloques = config_get_int_value(archivo_config_fs,
-			"CANTIDAD_BLOQUES");
+	configFS->tamBloque = config_get_int_value(archivo_config_fs,"TAMANIO_BLOQUES");
+	configFS->cantBloques = config_get_int_value(archivo_config_fs,"CANTIDAD_BLOQUES");
 	config_destroy(archivo_config_fs);
 }
 
@@ -340,8 +337,8 @@ char* obtenerDatos(char* pathRelativo, int offset, int size) {
 	fclose(bloque);
 
 	if (sizeRestante) { //Hay que leer el resto de otro bloque
-		char *bytesRestantesLeidos = obtenerDatos(pathRelativo,
-				offset + (size - sizeRestante), sizeRestante); //Lee lo que esta en el bloque que sigue
+		char *bytesRestantesLeidos = obtenerDatos(pathRelativo,offset + (size - sizeRestante), sizeRestante);
+		//Lee lo que esta en el bloque que sigue
 		//SI obtenerDatos ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
 		int i = strlen(bytesLeidos);
 		int j = 0;
@@ -425,8 +422,7 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 		cantBloques = divisionRoundUp(tamArchivo, configFS->tamBloque);
 
 	//Asigno bloques extra (de ser necesario)
-	int cantBloquesNecesaria = divisionRoundUp((offset + size),
-			configFS->tamBloque);
+	int cantBloquesNecesaria = divisionRoundUp((offset + size), configFS->tamBloque);
 	if (cantBloquesNecesaria > cantBloques) {
 		agregarBloques(archivo, cantBloquesNecesaria - cantBloques);
 		//SI agregarBloques ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
@@ -447,8 +443,7 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 
 	if (offsetEnBloque + size > configFS->tamBloque) { //Si se pasa del bloque
 		int sizeRestante = size - (configFS->tamBloque - offsetEnBloque);
-		guardarDatos(pathRelativo, offset + (size - sizeRestante), sizeRestante,
-				&buffer[size - sizeRestante]);
+		guardarDatos(pathRelativo, offset + (size - sizeRestante), sizeRestante, &buffer[size - sizeRestante]);
 		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
 	}
 
@@ -510,13 +505,15 @@ void atenderKernel() {
 	while (1) {
 		char* path;
 		int accionPedida = accionPedidaPorKernel();
-		printf("Me llego la accion %d\n", accionPedida);
+		log_info(fileSystem_log, "Me llego la accion %d\n", accionPedida);
+		//printf("Me llego la accion %d\n", accionPedida);
 		enviarSenialAKernel();
 		switch (accionPedida) {
 		case k_fs_validar_archivo:
 		{
 			path = recibirPath();
-			printf("Valido que exista archivo %s\n", path);
+			log_info(fileSystem_log, "Valido que exista archivo %s\n", path);
+			//printf("Valido que exista archivo %s\n", path);
 			bool existe = validarArchivo(path);
 			if (send(clienteKernel, &existe, sizeof(bool), 0) == -1) {
 				log_error(fileSystem_log, "Error enviando si el archivo existe");
@@ -528,13 +525,15 @@ void atenderKernel() {
 		}
 		case k_fs_crear_archivo:
 			path = recibirPath();
-			printf("Creo archivo en el path %s\n", path);
+			log_info(fileSystem_log, "Creo archivo en el path %s\n", path);
+			//printf("Creo archivo en el path %s\n", path);
 			crearArchivo(path);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;
 		case k_fs_borrar_archivo:
 			path = recibirPath();
-			printf("Borro archivo en el path %s\n", path);
+			log_info(fileSystem_log, "Borro archivo en el path %s\n", path);
+			//printf("Borro archivo en el path %s\n", path);
 			borrarArchivo(path);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;
@@ -546,7 +545,8 @@ void atenderKernel() {
 			enviarSenialAKernel();
 			size = accionPedidaPorKernel();//Uso accionPedidaPorKernel para recibir parámetro
 			enviarSenialAKernel();
-			printf("LeerArchivo(%s,%d,%d)\n", path, offset, size);
+			log_info(fileSystem_log, "LeerArchivo(%s,%d,%d)\n", path, offset, size);
+			//printf("LeerArchivo(%s,%d,%d)\n", path, offset, size);
 			char* bytesLeidos = obtenerDatos(path, offset, size);
 			if (send(clienteKernel, bytesLeidos, size, 0) == -1) {
 				log_error(fileSystem_log, "Error enviando el archivo leido");
@@ -569,7 +569,8 @@ void atenderKernel() {
 				//printf("Error recibiendo los bytes a escribir\n");
 				exit(-1);
 			}
-			printf("escribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);//FORMA DE IMPRIMIR STRING CON LONGITUD!!
+			log_info(fileSystem_log, "escribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);
+			//printf("escribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);//FORMA DE IMPRIMIR STRING CON LONGITUD!!
 			guardarDatos(path,offset,size,buffer);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;
