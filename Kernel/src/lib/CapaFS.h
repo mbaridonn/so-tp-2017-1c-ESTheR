@@ -31,5 +31,6 @@ int borrarArchivo(int PID, u_int32_t fileDescriptor);
 void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int posicion);
 char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio);
 int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio);
+int *obtener_FDs_de_proceso(int PID);
 
 #endif /* CAPAFS_H_ */

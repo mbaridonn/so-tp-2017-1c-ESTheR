@@ -287,14 +287,14 @@ void enviarPIDaConsola(int pid, int *consola){
 
 int obtenerValorDeVariableCompartida(char* nombreVariable){
 	int i=0;
-	while(config->SHARED_VARS[i]!=NULL && str_compare(nombreVariable,config->SHARED_VARS[i])!=0) i++;
+	while(config->SHARED_VARS[i]!=NULL && !str_compare(nombreVariable,config->SHARED_VARS[i])) i++;
 	if (config->SHARED_VARS[i]==NULL) return 0; //ACÁ EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
 	else return config->SHARED_VARS_VALUES[i];
 }
 
 void asignarValorAVariableCompartida(char *nombreVariable, int valorVariable){
 	int i=0;
-	while(config->SHARED_VARS[i]!=NULL && str_compare(nombreVariable,config->SHARED_VARS[i])!=0) i++;
+	while(config->SHARED_VARS[i]!=NULL && !str_compare(nombreVariable,config->SHARED_VARS[i])) i++;
 	if (config->SHARED_VARS[i]!=NULL) config->SHARED_VARS_VALUES[i]=valorVariable;
 	//SI NO SE ENCUENTRA, EN REALIDAD SE DEBERÍA PRODUCIR UN ERROR
 }
@@ -705,7 +705,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		char *identificador_semaforo = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		int i=0;
-		while(config->SEM_IDS[i]!=NULL && str_compare(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
+		while(config->SEM_IDS[i]!=NULL && !str_compare(identificador_semaforo,config->SEM_IDS[i])) i++;
 		if (config->SEM_IDS[i]!=NULL) config->SEM_INIT[i]++;
 		if(config->SEM_INIT[i] <= 0){
 			wake_up(i);
