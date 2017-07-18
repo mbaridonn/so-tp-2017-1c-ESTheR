@@ -497,8 +497,8 @@ char *recibirPath(){
 	}
 	path = reservarMemoria(tamPath*sizeof(char));
 	enviarSenialAKernel();
-	if (recv(clienteKernel, &tamPath, sizeof(int), 0) == -1) {
-		log_error(fileSystem_log, "Error recibiendo el tamanio del Path");
+	if (recv(clienteKernel, path, tamPath, 0) == -1) {
+		log_error(fileSystem_log, "Error recibiendo el Path");
 		//printf("Error recibiendo el tamanio del Path\n");
 		exit(-1);
 	}
@@ -510,12 +510,14 @@ void atenderKernel() {
 	while (1) {
 		char* path;
 		int accionPedida = accionPedidaPorKernel();
+		printf("Me llego la accion %d\n", accionPedida);
 		enviarSenialAKernel();
 		switch (accionPedida) {
 		case k_fs_validar_archivo:
 		{
 			path = recibirPath();
-			bool existe = validarArchivo(path);//POR QUÉ NO PUEDO DECLARAR EL CHAR* EN EL CASE PERO EL BOOL SI??
+			printf("Valido que exista archivo %s\n", path);
+			bool existe = validarArchivo(path);
 			if (send(clienteKernel, &existe, sizeof(bool), 0) == -1) {
 				log_error(fileSystem_log, "Error enviando si el archivo existe");
 				//printf("Error enviando si el archivo existe\n");
@@ -526,11 +528,13 @@ void atenderKernel() {
 		}
 		case k_fs_crear_archivo:
 			path = recibirPath();
+			printf("Creo archivo en el path %s\n", path);
 			crearArchivo(path);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;
 		case k_fs_borrar_archivo:
 			path = recibirPath();
+			printf("Borro archivo en el path %s\n", path);
 			borrarArchivo(path);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;
@@ -542,8 +546,9 @@ void atenderKernel() {
 			enviarSenialAKernel();
 			size = accionPedidaPorKernel();//Uso accionPedidaPorKernel para recibir parámetro
 			enviarSenialAKernel();
+			printf("LeerArchivo(%s,%d,%d)\n", path, offset, size);
 			char* bytesLeidos = obtenerDatos(path, offset, size);
-			if (send(clienteKernel, bytesLeidos, size, 0) == -1) {//TENGO QUE ESPERAR MÁS??
+			if (send(clienteKernel, bytesLeidos, size, 0) == -1) {
 				log_error(fileSystem_log, "Error enviando el archivo leido");
 				//printf("Error enviando el archivo leido\n");
 				exit(-1);
@@ -564,6 +569,7 @@ void atenderKernel() {
 				//printf("Error recibiendo los bytes a escribir\n");
 				exit(-1);
 			}
+			printf("EscribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);//FORMA DE IMPRIMIR STRING CON LONGITUD!!
 			guardarDatos(path,offset,size,buffer);
 			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 			break;

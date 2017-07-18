@@ -523,6 +523,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		char* path = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		t_banderas *flags = recibirBanderasDeCPU(&(unaCPU->clie_CPU));
+		printf("Me llego el path %s \n", path);
 		u_int32_t fd = abrirArchivo(PID,path,*flags);
 		enviarIntACPU(&(unaCPU->clie_CPU), fd);
 		free(path);
@@ -533,6 +534,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
+		printf("cerrarArchivo(%d, %d)\n", PID, fd);
 		cerrarArchivo(PID,fd);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
@@ -541,6 +543,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
+		printf("borrarArchivo(%d, %d)\n", PID, fd);
 		int confirmacion = borrarArchivo(PID,fd);//Recibe si se pudo completar o si se produjo error
 		enviarIntACPU(&(unaCPU->clie_CPU),confirmacion);
 		break;
@@ -551,6 +554,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int posicion = recibir_int_de(unaCPU->clie_CPU);
+		printf("moverCursorArchivo(%d, %d, %d)\n", PID, fd, posicion);
 		moverCursorArchivo(PID,fd,posicion);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
@@ -561,6 +565,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int tamanio = recibir_int_de(unaCPU->clie_CPU);
+		printf("leerArchivo(%d, %d, %d)\n", PID, fd, tamanio);
 		char* bytesLeidos = leerArchivo(PID,fd,tamanio);
 		if(bytesLeidos != NULL){
 			enviarIntACPU(&(unaCPU->clie_CPU), tamanio);
@@ -584,6 +589,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		if (recv(&(unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
 			printf("Error al recibir bytes a escribir de CPU\n");
 		}
+		printf("escribirArchivo(%d, %d, %d)\n", PID, fd, tamanio);
 		int confirmacion = escribirArchivo(PID,fd,bytesAEscribir,tamanio);
 		enviarIntACPU(&(unaCPU->clie_CPU), confirmacion);
 		free(bytesAEscribir);

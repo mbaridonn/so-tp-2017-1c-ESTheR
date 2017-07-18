@@ -267,7 +267,7 @@ t_valor_variable dereferenciar(t_puntero direccion_variable){
 }
 
 void asignar(t_puntero direccion_variable, t_valor_variable valor){
-	printf("ANSISOP_asignar (valor: %d, direccion_variable: %d\n)", valor, direccion_variable);
+	printf("ANSISOP_asignar (valor: %d, direccion_variable: %d)\n", valor, direccion_variable);
 	int pagina, offset, tamanio;
 	pagina = (direccion_variable / tamPag) + pcbAEjecutar->cant_paginas_de_codigo;
 	offset = direccion_variable % tamPag;
@@ -438,6 +438,7 @@ void liberar(t_puntero puntero){
 }
 
 t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
+	printf("ANSISOP_abrir: %s \n", direccion);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_abrir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -455,6 +456,7 @@ t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
 }
 
 void borrar(t_descriptor_archivo descriptor_archivo){
+	printf("ANSISOP_borrar: %d\n", descriptor_archivo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_borrar_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -466,6 +468,7 @@ void borrar(t_descriptor_archivo descriptor_archivo){
 }
 
 void cerrar(t_descriptor_archivo descriptor_archivo){
+	printf("ANSISOP_cerrar: %d\n", descriptor_archivo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_cerrar_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -474,6 +477,7 @@ void cerrar(t_descriptor_archivo descriptor_archivo){
 }
 
 void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posicion){
+	printf("ANSISOP_moverCursor: %d, %d\n", descriptor_archivo, posicion);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_mover_cursor_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -483,6 +487,7 @@ void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posic
 }
 
 void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valor_variable tamanio){
+	printf("ANSISOP_escribir(fd:%d, tamanio:%d\n", descriptor_archivo, tamanio);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_escribir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -503,13 +508,14 @@ void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valo
 }
 
 void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valor_variable tamanio){
+	printf("ANSISOP_leer(fd:%d, informacion:%d, tamanio:%d)\n", descriptor_archivo, informacion, tamanio);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_leer_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarIntAKernel(descriptor_archivo);
 	enviarIntAKernel(tamanio);
 	int respuesta = recibirUIntDeKernel();
-	char* bytesLeidos;
+	char* bytesLeidos = reservarMemoria(tamanio);
 	if (respuesta!=k_cpu_error){
 		enviarSenialAKernel();
 		if (recv(serv_kernel, bytesLeidos, tamanio, 0) == -1) {
@@ -527,4 +533,5 @@ void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valo
 
 	solicitarEscrituraAMemoria(pcbAEjecutar->id_proceso, nroPag, offset, tamanio, bytesLeidos);
 	//CREO QUE NO SE PUEDE USAR asignar(informacion, bytesLeidos) PORQUE EL TAMANIO PUEDE SER MAYOR AL DE UNA VARIABLE (4 BYTES)
+	free(bytesLeidos);
 }
