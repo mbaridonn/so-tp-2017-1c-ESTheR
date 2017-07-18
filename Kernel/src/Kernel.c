@@ -276,6 +276,8 @@ void planificar() {
 			tomarAccionSegunConfirmacion(confirmacion, pcb);
 			avisar_a_consola_si_hubo_exito(confirmacion,pcb);
 			cant_historica_procesos_memoria++;
+			estadisticas_proceso *estadisticas = crear_estadisticas_para(pcb->id_proceso);
+			list_add(lista_estadisticas_de_procesos,estadisticas);
 		}
 		if(proceso_ready_puede_pasar_a_EXEC()){
 			cpuDesocupada = obtenerCPUDesocupada();
@@ -298,7 +300,31 @@ void abrirHiloPlanificador() {
 
 void limpiarMensajes() {
 	system("clear");
-	printf("Consola limpiada! \n\n");
+	printf("Consola limpiada!\n");
+}
+
+void mostrar_info_de(int PID){
+	bool es_estadistica_de(estadisticas_proceso *est){
+				return est->pid == PID;
+	}
+	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+	printf("Cantidad de rafagas ejecutadas: %d\n",estadisticas->cant_rafagas_ejec);
+	printf("Cantidad de operaciones privilegiadas ejecutadas: %d\n",estadisticas->cant_syscalls_ejec);
+	printf("Cantidad de acciones alocar: %d y cantidad de bytes alocados: %d\n",estadisticas->cant_op_alocar,estadisticas->cant_bytes_alocados);
+	printf("Cantidad de acciones liberar: %d y cantidad de bytes liberados: %d\n",estadisticas->cant_op_liberar,estadisticas->cant_bytes_liberados);
+	int *lista_de_FDs;
+	lista_de_FDs = obtener_FDs_de_proceso(PID);
+	int i = 0;
+	printf("File Descriptors del proceso: ");
+	while(lista_de_FDs[i]!=0){
+		printf("%d ",lista_de_FDs[i]);
+		i++;
+	}
+	if(lista_de_FDs[0]==0){
+		printf("el proceso no tiene abierto ningun archivo.");
+	}
+	printf("\n");
+	free(lista_de_FDs);
 }
 
 void list_read_id(t_list *listaProcesos){
@@ -390,7 +416,11 @@ void habilitarConsolaKernel() {
 		case 'i':
 		{
 			printf("Info");
-
+			printf("Ingrese el ID del proceso a finalizar: ");
+			char *opcion = reservarMemoria(100);
+			fgets(opcion, 100, stdin);
+			mostrar_info_de(atoi(opcion));
+			free(opcion);
 			break;
 		}
 		case 't':
@@ -533,6 +563,7 @@ int main(void) {
 	lista_detenciones_pendientes = list_create();
 	lista_bloqueos = list_create();
 	lista_info = list_create();
+	lista_estadisticas_de_procesos = list_create();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;

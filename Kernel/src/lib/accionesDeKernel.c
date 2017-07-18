@@ -232,6 +232,18 @@ void poner_proceso_en_EXIT(t_pcb *pcb){
 	transicion_colas_proceso(lista,listaPCBs_EXIT,pcb);
 }
 
+estadisticas_proceso *crear_estadisticas_para(int pid){
+	estadisticas_proceso *estadisticas = reservarMemoria(sizeof(estadisticas_proceso));
+	estadisticas->pid = pid;
+	estadisticas->cant_bytes_alocados = 0;
+	estadisticas->cant_bytes_liberados = 0;
+	estadisticas->cant_op_alocar = 0;
+	estadisticas->cant_op_liberar = 0;
+	estadisticas->cant_rafagas_ejec = 0;
+	estadisticas->cant_syscalls_ejec = 0;
+	return estadisticas;
+}
+
 void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
 	avisarAccionAMemoria(k_mem_finalizar_programa);
@@ -387,12 +399,61 @@ t_pcb *recibir_pcb_de(int cliente) {
 	return incomingPCB;
 }
 
+void actualizar_estadisticas_cant_rafagas_de(t_pcb *pcb){
+	bool es_estadistica_de(estadisticas_proceso *est){
+			return est->pid == pcb->id_proceso;
+	}
+	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+	estadisticas->cant_rafagas_ejec++;
+}
+
+void actualizar_estadisticas_cant_op_liberar_de(int PID){
+	bool es_estadistica_de(estadisticas_proceso *est){
+				return est->pid == PID;
+		}
+		estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+		estadisticas->cant_op_liberar++;
+}
+
+void actualizar_estadisticas_cant_bytes_liberados_de(int PID, int espacio_liberado){
+	bool es_estadistica_de(estadisticas_proceso *est){
+					return est->pid == PID;
+			}
+	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+	estadisticas->cant_bytes_liberados+=espacio_liberado;
+}
+
+void actualizar_cant_op_alocar_de(int PID){
+	bool es_estadistica_de(estadisticas_proceso *est){
+						return est->pid == PID;
+				}
+	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+	estadisticas->cant_op_alocar++;
+}
+
+void actualizar_estadisticas_cant_bytes_alocados_de(int PID, int espacio_alocado){
+	bool es_estadistica_de(estadisticas_proceso *est){
+						return est->pid == PID;
+				}
+	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+	estadisticas->cant_bytes_alocados+=espacio_alocado;
+}
+
+void actualizar_estadisticas_cant_syscalls_de(int PID){
+	bool es_estadistica_de(estadisticas_proceso *est){
+				return est->pid == PID;
+		}
+	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
+	estadisticas->cant_syscalls_ejec++;
+}
+
 void actualizar_info_pcb(t_pcb *pcb){
 	bool esElPCB(t_pcb *unPCB){
 		return unPCB->id_proceso == pcb->id_proceso;
 	}
 	list_remove_and_destroy_by_condition(listaPCBs_EXEC,(void*)esElPCB,(void*)pcb_destroy);
 	list_add(listaPCBs_EXEC,pcb);
+	actualizar_estadisticas_cant_rafagas_de(pcb);
 }
 
 bool hubo_detencion_forzosa(t_pcb *pcb){
@@ -606,6 +667,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 		printf("Me llego el contPags %d y el esp req %d\n", contador_paginas, espacio_requerido);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, contador_paginas);
 		u_int32_t direccion = reservarMemoriaDinamica(espacio_requerido);
+		actualizar_cant_op_alocar_de(PID);
+		if(direccion!=0) actualizar_estadisticas_cant_bytes_alocados_de(PID,espacio_requerido);
 		enviarIntACPU(&(unaCPU->clie_CPU),direccion);
 		break;
 	}
@@ -616,15 +679,15 @@ void atenderACPU(cliente_CPU *unaCPU){
 		printf("Me llego la direccion %d\n", direccion);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, 0/*No es necesario*/);
 		liberarMemoriaDinamica(direccion);
+		actualizar_estadisticas_cant_op_liberar_de(PID); // Se actualiza siempre, se haya podido liberar o no.
 		break;
 	}
 	case cpu_k_wait:
 	{
 		char *identificador_semaforo = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		int i=0;
-		while(config->SEM_IDS[i]!=NULL && str_compare(identificador_semaforo,config->SEM_IDS[i])!=0) i++;
+		while(config->SEM_IDS[i]!=NULL && !str_compare(identificador_semaforo,config->SEM_IDS[i])) i++;
 		if (config->SEM_IDS[i]!=NULL) config->SEM_INIT[i]--;
-		printf("El SEM_ID es: %s y el SEM_INIT es %d\n",config->SEM_IDS[i],config->SEM_INIT[i]);
 		if(config->SEM_INIT[i] < 0){
 			bloqueo *un_bloqueo = crear_bloqueo(PID,i);
 			list_add(lista_bloqueos,un_bloqueo);
@@ -652,6 +715,11 @@ void atenderACPU(cliente_CPU *unaCPU){
 		break;
 	}
 	default:
+		printf("Recibi un comando invalido!\n");
+		exit(-1);
 		break;
+	}
+	if(accion != cpuLibre){
+		actualizar_estadisticas_cant_syscalls_de(PID);
 	}
 }

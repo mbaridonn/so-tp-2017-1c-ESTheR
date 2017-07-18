@@ -62,6 +62,16 @@ typedef struct{
 	int pos_semaforo;
 }bloqueo;
 
+typedef struct{
+	int pid;
+	int cant_rafagas_ejec;
+	int cant_op_alocar;
+	int cant_bytes_alocados;
+	int cant_op_liberar;
+	int cant_bytes_liberados;
+	int cant_syscalls_ejec;
+}estadisticas_proceso;
+
 typedef struct {
 	int PUERTO_PROG;
 	int PUERTO_CPU;
@@ -98,6 +108,7 @@ t_list *lista_pedidos_script;
 t_list *lista_detenciones_pendientes;
 t_list *lista_bloqueos;
 t_list *lista_info;
+t_list *lista_estadisticas_de_procesos;
 
 
 int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;

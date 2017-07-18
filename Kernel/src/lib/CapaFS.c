@@ -18,6 +18,21 @@ void inicializarTablasDeArchivos(){
 	}
 }
 
+int *obtener_FDs_de_proceso(int PID){
+	int i,j=0;
+	int *lista = NULL;
+	for(i=0; i < CANT_ARCH_TABLA_ARCH;i++){
+		if(tablasDeArchivosDeProcesos[PID][i].flags != NULL){
+			lista = realloc(lista,sizeof(int));
+			lista[j] = i;
+			j++;
+		}
+	}
+	lista = realloc(lista,sizeof(int));
+	lista[j] = 0;
+	return lista;
+}
+
 void enviarPathAFS(char *path){
 	int tamPath = strlen(path)+1;
 	if (send(servFS, &tamPath, sizeof(int), 0) == -1) {

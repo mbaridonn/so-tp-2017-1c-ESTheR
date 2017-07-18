@@ -161,6 +161,8 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	int nroPagDelBloque = puntero / tamPag;
 	int offsetDelBloque = puntero % tamPag - sizeof(heapMetadata);//Quiero apuntar al metadata, no al bloque de datos
 
+	int espacio_liberado = 0;
+
 	printf("nroPag: %d\n", nroPagDelBloque);
 
 	bool esEntradaDeProcesoYPagina(entradaTablaHeap* entrada) {
@@ -181,6 +183,8 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	metadataAModificar = (heapMetadata*) &pagina[offsetDelBloque];
 	//Qué pasa si la dirección es de una página pero el offset no corresponde a un metadata??             (!!!)
 	metadataAModificar->estaLibre = true;
+
+	espacio_liberado = metadataAModificar->tamanio;
 
 	//Actualizo entrada de la tabla de heap
 	entradaAModificar->tamanioDisponible += /*sizeof(heapMetadata) +*/metadataAModificar->tamanio;//ES NECESARIO? CREO QUE NO
@@ -215,7 +219,7 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	} else {//No se libera la pagina
 		enviarIntACPU(&clieCPU, sePudoLiberarMemoria);
 	}
-
+	actualizar_estadisticas_cant_bytes_liberados_de(PID,espacio_liberado);
 	free(pagina);
 }
 
