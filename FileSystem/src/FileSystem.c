@@ -158,7 +158,7 @@ void crearBloques() {
 		snprintf(nombreBloque, 10, "%d.bin", i);
 		strcpy(copiaPathBloque, pathBloque);
 		strcat(copiaPathBloque, nombreBloque);
-		FILE * bloque = fopen(copiaPathBloque, "w");
+		FILE * bloque = fopen(copiaPathBloque, "a");//Creo el bloque si no existe
 		fclose(bloque);
 	}
 }
@@ -183,8 +183,7 @@ void inicializarBitmap() {
 		close(fd);
 		exit(-1);
 	}
-	char *bitmap = (char *) mmap(0, mystat.st_size, PROT_READ | PROT_WRITE,
-	MAP_PRIVATE, fd, 0);
+	char *bitmap = (char *) mmap(0, mystat.st_size, PROT_READ | PROT_WRITE,	MAP_SHARED, fd, 0);
 	if (bitmap == MAP_FAILED) {
 		log_error(fileSystem_log, "Error al mapear a memoria");
 		//printf("Error al mapear a memoria\n");
@@ -192,10 +191,6 @@ void inicializarBitmap() {
 		exit(-1);
 	}
 	bitarray = bitarray_create_with_mode(bitmap,divisionRoundUp(configFS->cantBloques, 8), LSB_FIRST);
-	/*int i;                                NECESARIO PARA PONER TODOS LOS BITS EN 0? LO HACE YA TRUNCATE?
-	 for (i = 0; i < cantBloques; i++) {
-	 bitarray_clean_bit(bitarray, i);
-	 }*/
 	// log_info(fileSystem_log,"El tamano del bitarray es de : %d\n", bitarray_get_max_bit(bitarray));
 	close(fd);
 }
@@ -616,7 +611,6 @@ int main(void) {
 		exit(-1);
 		break;
 	}
-
 
 	bitarray_destroy(bitarray);
 
