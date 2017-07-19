@@ -35,4 +35,3 @@ solicitadas con el PCB correspondiente, cargando el código de error en el campo
 -Si no se pudiera obtener espacio suficiente en Memoria para algunas de las estructuras necesarias del proceso, entonces se le rechazará
 el acceso al sistema, informándose oportunamente en el Proceso Consola correspondiente el motivo por el cual no pudo aceptarse el
 programa en el sistema.
--Consola de Kernel
