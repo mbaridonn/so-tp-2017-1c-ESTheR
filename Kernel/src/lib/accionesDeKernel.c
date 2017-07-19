@@ -308,6 +308,13 @@ pedido_script *crear_pedido_script(int clie_consola,int pid,char *bufferArchivo,
 	return pedido;
 }
 
+proceso_por_cliente *crear_proceso_por_cliente(int pid, int clie_consola){
+	proceso_por_cliente *proc_del_cliente = reservarMemoria(sizeof(proceso_por_cliente));
+	proc_del_cliente->clie_consola = clie_consola;
+	proc_del_cliente->pid = pid;
+	return proc_del_cliente;
+}
+
 void proced_script(int *unCliente) {
 
 	u_int32_t fsize = recibirTamArchivo(unCliente);

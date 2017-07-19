@@ -262,6 +262,8 @@ void avisar_a_consola_si_hubo_exito(int confirmacion, t_pcb *pcb){
 	pedido_script *pedido = obtener_pedido_segun_PID(pcb->id_proceso);
 	avisarAConsolaSegunConfirmacion(confirmacion, &(pedido->clie_consola));
 	enviarPIDaConsola(pcb->id_proceso,&(pedido->clie_consola));
+	proceso_por_cliente *proc_del_cliente = crear_proceso_por_cliente(pcb->id_proceso, pedido->clie_consola);
+	list_add(lista_proceso_por_cliente, proc_del_cliente);
 	eliminar_pedido(pedido);
 }
 
@@ -522,6 +524,30 @@ void inicializar_contadores_procesos(){
 	cant_procesos_detenidos = 0;
 }
 
+void proceso_por_cliente_destroy(proceso_por_cliente *proc){
+	free(proc);
+}
+
+void eliminar_procesos_por_cliente_de(int clie_consola){
+	bool es_el_proceso_de(proceso_por_cliente *proc){
+		return proc->clie_consola == clie_consola;
+	}
+	list_remove_and_destroy_by_condition(lista_proceso_por_cliente,(void *)es_el_proceso_de, (void*)proceso_por_cliente_destroy);
+}
+
+void finalizar_programas_de(int clie_consola){
+	int i;
+	proceso_por_cliente *proc_por_clie;
+	for(i=0; i<list_size(lista_proceso_por_cliente); i++){
+		proc_por_clie = list_get(lista_proceso_por_cliente, i);
+		if(proc_por_clie->clie_consola == clie_consola){
+			//finalizar_proceso(proc_por_clie->pid);
+		}
+	}
+	eliminar_procesos_por_cliente_de(clie_consola);
+}
+
+
 int main(void) {
 
 	inicializarTablasDeArchivos();
@@ -563,6 +589,7 @@ int main(void) {
 	lista_detenciones_pendientes = list_create();
 	lista_bloqueos = list_create();
 	lista_estadisticas_de_procesos = list_create();
+	lista_proceso_por_cliente = list_create();
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
@@ -606,8 +633,7 @@ int main(void) {
 			switch (procesoConectado) {
 			case consola:
 				msjConexionCon("una Consola\n");
-				setInformacionSockets(client_socket, procesos_por_socket,
-						consola);
+				setInformacionSockets(client_socket, procesos_por_socket, consola);
 				break;
 
 			case cpu:
@@ -642,6 +668,7 @@ int main(void) {
 			liberarPosicion(client_socket, i);
 			liberarPosicion(procesos_por_socket, i);
 			cerrarConexionClienteActual(&direccionServidor);
+			if(procesos_por_socket[i] == consola) finalizar_programas_de(client_socket[i]);
 		} else {
 			int proceso = procesos_por_socket[i];
 			switch (proceso) { // ACA VAN TODOS LOS CASES DE CUANDO HAY MOVIMIENTO EN UN SOCKET PORQUE SOLICITA ALGO

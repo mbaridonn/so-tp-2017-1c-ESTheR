@@ -44,6 +44,10 @@ enum acciones {
 	startProgram, endProgram
 };
 
+typedef struct{
+	int clie_consola;
+	int pid;
+}proceso_por_cliente;
 
 typedef struct{
 	int clie_consola;
@@ -102,6 +106,7 @@ t_list *lista_pedidos_script;
 t_list *lista_detenciones_pendientes;
 t_list *lista_bloqueos;
 t_list *lista_estadisticas_de_procesos;
+t_list *lista_proceso_por_cliente;
 
 
 int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;
