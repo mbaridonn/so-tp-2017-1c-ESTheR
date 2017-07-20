@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <commons/collections/queue.h>
+#include <commons/collections/list.h>
 #include "libreriaSockets.h"
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
@@ -21,11 +23,23 @@ int horaFin;
 int minFin;
 int segFin;
 
+t_list *lista_hilos_por_PID;
+
+struct sockaddr_in direccionServidor;
+
+int serv_kernel;
+
 typedef struct {
 	char* ipKernel;
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
+
+typedef struct{
+	pthread_t *hilo;
+	int PID;
+	char *nombre_script;
+} hilo_por_programa;
 
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
@@ -39,10 +53,10 @@ enum confirmacionMem {
 	noHayPaginas, hayPaginas
 };
 
-void llenarSocket(struct sockaddr_in *direccionServidor) {
-	(*direccionServidor).sin_family = AF_INET;
-	(*direccionServidor).sin_addr.s_addr = inet_addr(config->ipKernel);
-	(*direccionServidor).sin_port = htons(config->puerto);
+void llenarSocket() {
+	direccionServidor.sin_family = AF_INET;
+	direccionServidor.sin_addr.s_addr = inet_addr(config->ipKernel);
+	direccionServidor.sin_port = htons(config->puerto);
 }
 
 void informarAccion(int *cliente, int *accion) {
@@ -72,6 +86,11 @@ void *reservarMemoria(int tamanioArchivo) {
 		exit(-1);
 	}
 	return puntero;
+}
+
+hilo_por_programa *crear_hilo_por_programa(){
+	hilo_por_programa *hilo_por_PID = reservarMemoria(sizeof(hilo_por_programa));
+	return hilo_por_PID;
 }
 
 void settearVariables(t_config *archivo_Modelo) {
@@ -210,7 +229,7 @@ void crearHiloDelPrograma() {
 	}
 }
 
-void recibirPID(int *cliente) {
+u_int32_t recibirPID(int *cliente) {
 	u_int32_t pid;
 	if (recv((*cliente), &pid, sizeof(u_int32_t), 0) == -1) {
 		log_error(consola_log, "Error recibiendo el PID");
@@ -219,44 +238,53 @@ void recibirPID(int *cliente) {
 	}
 	log_info(consola_log, "PID: %d asignado a ese programa\n",pid);
 	//printf("PID: %d asignado a ese programa\n\n", pid);
+	return pid;
 }
 
-void iniciarPrograma(int *cliente) {
+void conectarse_con_kernel(){
+	conectar(&serv_kernel, &direccionServidor);
+	int procesoConectado = handshake(&serv_kernel, consola);
+	msjConexionCon("Kernel");
+}
+
+char *obtener_un_mensaje(){
+	u_int32_t tamanio;
+	char *buffer;
+	if(recv(serv_kernel,&tamanio,sizeof(u_int32_t),0) == -1){
+		printf("Error recibiendo el tamanio del mensaje\n");
+	}
+	buffer = reservarMemoria(tamanio);
+	if(recv(serv_kernel,buffer,tamanio,0) == -1){
+		printf("Error recibiendo el mensaje\n");
+	}
+	return buffer;
+}
+
+void recibir_y_mostrar_mensajes(){
+	while(1){
+		char *mensaje = obtener_un_mensaje();
+		printf("%s",mensaje);
+		free(mensaje);
+	}
+}
+
+hilo_por_programa *obtener_hilo_por_programa_segun_hilo(pthread_t *hilo){
+	bool es_este_hilo(hilo_por_programa *hiloPorPrograma){
+		return *(hiloPorPrograma->hilo) == *hilo;
+	}
+	return list_find(lista_hilos_por_PID,(void*) es_este_hilo);
+}
+
+void hacer_muchas_cosas(pthread_t *hilo){
 	int accion;
-	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
-	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
-	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
-	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
-	 relativos y deberán fundamentar su elección.*/
-
-	char *lineaIngresada, *comando, *nombreScript;
 	FILE *archivo;
-
-	printf("\nIngrese iniciarPrograma + nombre del script AnSISOP. \n");
-	printf("Ejemplo: iniciarPrograma script.ansisop\n\n");
-
-	lineaIngresada = reservarMemoria(100);
-
-	fgets(lineaIngresada, 100, stdin);
-
-	comando = strtok(lineaIngresada, " ");
-	nombreScript = strtok(NULL, "\n");
-
-	if (strcmp("iniciarPrograma", comando) != 0) {
-		log_error(consola_log, "El comando ingresado no existe");
-		//printf("El comando ingresado no existe");
-	} else {
-		archivo = fopen(nombreScript, "rb"); //USAR PATH ABSOLUTO?
-		if (archivo == NULL) {
-			log_error(consola_log, "No se pudo leer el archivo");
-			//printf("No se pudo leer el archivo\n");
-			exit(-1);
-		}
-		solicitarA(cliente, "Kernel");
-		accion = startProgram;
-		informarAccion(cliente, &accion);
-
-		guardarInicioEjecucion();
+	hilo_por_programa *un_hilo_por_programa = obtener_hilo_por_programa_segun_hilo(hilo);
+	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
+	archivo = fopen(un_hilo_por_programa->nombre_script, "rb"); //USAR PATH ABSOLUTO?
+	if (archivo == NULL) {
+		log_error(consola_log, "No se pudo leer el archivo");
+		//printf("No se pudo leer el archivo\n");
+		exit(-1);
 	}
 
 	fseek(archivo, 0, SEEK_END);
@@ -267,26 +295,74 @@ void iniciarPrograma(int *cliente) {
 	fread(buffer, fsize, 1, archivo);
 	fclose(archivo);
 	buffer[fsize] = '\0';
-	if (send(*cliente, &fsize, sizeof(u_int32_t), 0) == -1) {
+	solicitarA(&serv_kernel, "Kernel");
+	accion = startProgram;
+	informarAccion(&serv_kernel, &accion);
+
+	guardarInicioEjecucion();
+	if (send(serv_kernel, &fsize, sizeof(u_int32_t), 0) == -1) {
 		log_error(consola_log, "Error enviando longitud del archivo");
 		//printf("Error enviando longitud del archivo\n");
 		exit(-1);
 	}
-	if (send(*cliente, buffer, fsize + 1, 0) == -1) {
+	if (send(serv_kernel, buffer, fsize + 1, 0) == -1) {
 		log_error(consola_log, "Error enviando archivo");
 		//printf("Error enviando archivo\n");
 		exit(-1);
 	}
+	free(buffer);
 
 	log_info(consola_log, "El archivo se envió correctamente\n");
 	//printf("El archivo se envió correctamente\n\n");
 
-	esperarConfirmacionDeKernel(cliente);
-	recibirPID(cliente);
-	crearHiloDelPrograma();
 
+	esperarConfirmacionDeKernel(&serv_kernel);
+	u_int32_t pid = recibirPID(&serv_kernel);
+
+	un_hilo_por_programa->PID = pid;
+
+	recibir_y_mostrar_mensajes();
+}
+
+void cormillot(char *lineaIngresada){
+	int i = 0;
+	while(lineaIngresada[i]!='\n'){
+		i++;
+	}
+	lineaIngresada[i]='\0';
+}
+
+void iniciarPrograma() {
+	conectarse_con_kernel();
+	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
+	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
+	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
+	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
+	 relativos y deberán fundamentar su elección.*/
+
+	char *lineaIngresada, *comando, *nombreScript;
+	nombreScript = reservarMemoria(100);
+
+	lineaIngresada = reservarMemoria(100);
+
+	printf("\nIngrese nombre del script AnSISOP. \n");
+	printf("Ejemplo: script.ansisop\n\n");
+	fgets(lineaIngresada, 100, stdin);
+	cormillot(lineaIngresada);
+	strcpy(nombreScript,lineaIngresada);
 	free(lineaIngresada);
-	free(buffer);
+
+	hilo_por_programa *un_hilo_por_programa = crear_hilo_por_programa();
+	pthread_t *hilo_programa;
+	un_hilo_por_programa->hilo = hilo_programa;
+	un_hilo_por_programa->nombre_script = nombreScript;
+	list_add(lista_hilos_por_PID,un_hilo_por_programa);
+	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
+		if(pthread_create(hilo_programa,NULL,hacer_muchas_cosas,hilo_programa)){
+		printf("Error al crear el thread de iniciar programa.\n");
+		exit(-1);
+	}
+
 }
 
 void finalizarPrograma(int *cliente) {
@@ -327,7 +403,18 @@ void limpiarMensajes() {
 	//printf("Consola limpiada! \n\n");
 }
 
-void elegirComando(int *cliente) {
+void hilo_iniciar_programa(){
+	pthread_t *hilo_iniciar_programa;
+	if(pthread_create(hilo_iniciar_programa,NULL,iniciarPrograma,hilo_iniciar_programa)){
+		printf("Error al crear el thread de iniciar programa.\n");
+		exit(-1);
+	}
+	hilo_por_programa *hilo_por_PID = crear_hilo_por_programa();
+	hilo_por_PID->hilo = hilo_iniciar_programa;
+	list_add(lista_hilos_por_PID,hilo_por_PID);
+}
+
+void elegirComando() {
 	char *opcionIngresada;
 	int seguirAbierto = 1; /*Si se va a cerrar sólo en una de las opciones, tendría que ser
 	 directamente la "opcionIngresada" la condición del do-while. Por ahora la dejo así*/
@@ -346,13 +433,13 @@ void elegirComando(int *cliente) {
 
 		switch (*opcionIngresada) {
 		case '1':
-			iniciarPrograma(cliente);
+			iniciarPrograma();
 			break;
 		case '2':
 			desconectarConsola();
 			break;
 		case '3':
-			finalizarPrograma(cliente);
+			finalizarPrograma(&serv_kernel);
 			break;
 		case '4':
 			limpiarMensajes();
@@ -367,34 +454,14 @@ void elegirComando(int *cliente) {
 	} while (seguirAbierto);
 }
 
-void conectarseConKernel(int *cliente, struct sockaddr_in *direccionServidor) {
-	conectar(cliente, direccionServidor);
-	int procesoConectado = handshake(cliente, consola);
-
-	switch (procesoConectado) {
-		case kernel:
-		msjConexionCon("Kernel");
-		elegirComando(cliente);
-		break;
-
-		default:
-			log_error(consola_log, "No me puedo conectar con vos");
-			//printf("No me puedo conectar con vos.\n");
-		break;
-	}
-
-	close(*cliente);
-}
-
 int main(void) {
-	int cliente;
-	struct sockaddr_in direccionServidor;
 
+	lista_hilos_por_PID = list_create();
 	inicializarLog();
 
 	leerArchivo();
-	llenarSocket(&direccionServidor);
-	conectarseConKernel(&cliente, &direccionServidor);
+	llenarSocket();
+	elegirComando();
 
 	log_destroy(consola_log);
 	return 0;
