@@ -13,6 +13,10 @@ enum accionesFS{
 	k_fs_validar_archivo, k_fs_crear_archivo, k_fs_borrar_archivo, k_fs_leer_archivo, k_fs_escribir_archivo
 };
 
+enum notificacionesConsolaKernel{
+	finalizo_proceso, print
+};
+
 enum notificacionesKernelCPU{
 	k_cpu_error, k_cpu_accion_OK, k_cpu_bloquear, k_cpu_continuar
 };

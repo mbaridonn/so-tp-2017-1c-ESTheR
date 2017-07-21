@@ -244,6 +244,45 @@ estadisticas_proceso *crear_estadisticas_para(int pid){
 	return estadisticas;
 }
 
+void proceso_por_cliente_destroy(proceso_por_cliente *proc){
+	free(proc);
+}
+
+void eliminar_proc_por_cliente_segun_PID(int pid){
+	bool es_el_proceso_de(proceso_por_cliente *proc){
+			return proc->pid == pid;
+	}
+	list_remove_and_destroy_by_condition(lista_proceso_por_cliente,(void *)es_el_proceso_de, (void*)proceso_por_cliente_destroy);
+}
+
+int obtener_cliente_segun_PID(int pid){
+	bool es_el_proc_por_clie(proceso_por_cliente *p_x_c){
+		return p_x_c->pid == pid;
+	}
+	proceso_por_cliente *proc_por_clie = list_find(lista_proceso_por_cliente,(void*)es_el_proc_por_clie);
+	return proc_por_clie->clie_consola;
+}
+
+void avisar_accion_a_consola(int consola_clie,int accion){
+	int aux = accion;
+	if(send(consola_clie,&aux,sizeof(int),0) == -1){
+		printf("Error al enviar accion a consola\n");
+	}
+}
+
+void avisar_finalizacion_proceso_a_consola(int pid){
+	int consola_clie = obtener_cliente_segun_PID(pid);
+	avisar_accion_a_consola(consola_clie,finalizo_proceso);
+}
+
+void cerrar_conexion_con(int clie_consola){
+	setClienteActual(clie_consola);
+	int i = obtener_posicion_de_cliente(clie_consola);
+	liberar_posicion_client_socket(i);
+	liberar_posicion_procesos_por_socket(i);
+	cerrar_conexion_con_cliente_actual();
+}
+
 void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
 	avisarAccionAMemoria(k_mem_finalizar_programa);
@@ -251,7 +290,10 @@ void finalizarUnProceso(t_pcb *pcb) {
 		printf("Error enviando el process_id\n");
 		exit(-1);
 	}
-	poner_proceso_en_EXIT(pcb); // Tendria que considerar si estaba en EXEC.
+	poner_proceso_en_EXIT(pcb);
+	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
+	cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
+	eliminar_proc_por_cliente_segun_PID(pcb->id_proceso);
 	//FALTA: MEMORY LEAKS
     //Al finalizar un proceso, el Kernel deberá informar si un proceso liberó todas las estructuras en las páginas de Heap.
 
@@ -559,7 +601,9 @@ void atenderACPU(cliente_CPU *unaCPU){
 		t_pcb *pcb = recibir_pcb_de(unaCPU->clie_CPU);
 		mostrarPcb(pcb);
 		actualizar_info_pcb(pcb);
+		printf("Llegue haca aca\n");
 		mover_pcb_segun_motivo(pcb,motivo_liberacion);
+		printf("Llegue haca aca2\n");
 		unaCPU->libre = 1;
 		break;
 	}

@@ -350,6 +350,18 @@ cliente_CPU *obtenerClienteCPUSegunFD(int fd){
 	return list_find(listaCPUs, (void*) tieneEsteFD);
 }
 
+void finalizar_ejecucion_de_proceso(int *pid){
+	list_add(lista_detenciones_pendientes,pid);
+	if(esta_ejecutandose(pid)){
+				printf("El proceso esta ejecutandose, este finalizara cuando CPU lo libere.\n");
+	}else{
+		t_list *lista = lista_que_tiene_este_pcb(*pid);
+		t_pcb *pcb = obtener_PCB_segun_PID_en(lista,*pid);
+		finalizarUnProceso(pcb);
+		eliminar_detencion(pcb);
+	}
+}
+
 void habilitarConsolaKernel() {
 	char* lineaIngresada;
 	char* subcomando = reservarMemoria(100);
@@ -448,15 +460,7 @@ void habilitarConsolaKernel() {
 			fgets(opcion, 100, stdin);
 			int *id_proceso_a_detener = reservarMemoria(sizeof(int));
 			*id_proceso_a_detener = atoi(opcion);
-			list_add(lista_detenciones_pendientes,id_proceso_a_detener);
-			if(esta_ejecutandose(*id_proceso_a_detener)){
-				printf("El proceso esta ejecutandose, este finalizara cuando CPU lo libere.\n");
-			}else{
-				t_list *lista = lista_que_tiene_este_pcb(*id_proceso_a_detener);
-				t_pcb *pcb = obtener_PCB_segun_PID_en(lista,*id_proceso_a_detener);
-				finalizarUnProceso(pcb);
-				eliminar_detencion(pcb);
-			}
+			finalizar_ejecucion_de_proceso(id_proceso_a_detener);
 			free(opcion);
 			break;
 
@@ -524,16 +528,12 @@ void inicializar_contadores_procesos(){
 	cant_procesos_detenidos = 0;
 }
 
-void proceso_por_cliente_destroy(proceso_por_cliente *proc){
-	free(proc);
-}
-
-void eliminar_procesos_por_cliente_de(int clie_consola){
+/*void eliminar_procesos_por_cliente_de(int clie_consola){
 	bool es_el_proceso_de(proceso_por_cliente *proc){
 		return proc->clie_consola == clie_consola;
 	}
 	list_remove_and_destroy_by_condition(lista_proceso_por_cliente,(void *)es_el_proceso_de, (void*)proceso_por_cliente_destroy);
-}
+}*/
 
 void finalizar_programas_de(int clie_consola){
 	int i;
@@ -541,10 +541,10 @@ void finalizar_programas_de(int clie_consola){
 	for(i=0; i<list_size(lista_proceso_por_cliente); i++){
 		proc_por_clie = list_get(lista_proceso_por_cliente, i);
 		if(proc_por_clie->clie_consola == clie_consola){
-			//finalizar_proceso(proc_por_clie->pid);
+			finalizar_ejecucion_de_proceso(&proc_por_clie->pid);
 		}
 	}
-	eliminar_procesos_por_cliente_de(clie_consola);
+	//eliminar_procesos_por_cliente_de(clie_consola); Ya no haría falta, lo hace finalizarUnProceso.
 }
 
 
@@ -577,7 +577,7 @@ int main(void) {
 
 	leerArchivoConfig();
 
-	int client_socket[30], procesos_por_socket[30], i, procesoConectado;
+	int i, procesoConectado;
 
 	listaPCBs_NEW = list_create();
 	listaPCBs_READY = list_create();
@@ -591,7 +591,6 @@ int main(void) {
 	lista_estadisticas_de_procesos = list_create();
 	lista_proceso_por_cliente = list_create();
 
-	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
 	direccionServidor.sin_port = htons(config->PUERTO_PROG);

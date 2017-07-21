@@ -23,6 +23,10 @@ int horaFin;
 int minFin;
 int segFin;
 
+enum notificacionesConsolaKernel{
+	finalizo_proceso, print
+};
+
 t_list *lista_hilos_por_PID;
 
 struct sockaddr_in direccionServidor;
@@ -260,11 +264,36 @@ char *obtener_un_mensaje(){
 	return buffer;
 }
 
-void recibir_y_mostrar_mensajes(){
+int recibir_accion_de_kernel(){
+	int accion;
+	if(recv(serv_kernel,&accion,sizeof(int),0) == -1){
+		printf("Error al recibir accion por parte de Kernel\n");
+	}
+	return accion;
+}
+
+void matar_hilo(pthread_t *hilo){
+	pthread_cancel(*hilo);
+}
+
+void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa){
 	while(1){
-		char *mensaje = obtener_un_mensaje();
-		printf("%s",mensaje);
-		free(mensaje);
+		int accion = recibir_accion_de_kernel();
+		switch(accion){
+		case finalizo_proceso:
+			printf("El programa con PID: %d ha finalizado\n",un_hilo_por_programa->PID);
+			matar_hilo(un_hilo_por_programa->hilo);
+			break;
+		case print:
+		{
+			char *mensaje = obtener_un_mensaje();
+			printf("%s",mensaje);
+			free(mensaje);
+			break;
+		}
+		default:
+			printf("Accion recibida por Kernel invalida.\n");
+		}
 	}
 }
 
@@ -275,10 +304,9 @@ hilo_por_programa *obtener_hilo_por_programa_segun_hilo(pthread_t *hilo){
 	return list_find(lista_hilos_por_PID,(void*) es_este_hilo);
 }
 
-void hacer_muchas_cosas(pthread_t *hilo){
+void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
 	int accion;
 	FILE *archivo;
-	hilo_por_programa *un_hilo_por_programa = obtener_hilo_por_programa_segun_hilo(hilo);
 	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
 	archivo = fopen(un_hilo_por_programa->nombre_script, "rb"); //USAR PATH ABSOLUTO?
 	if (archivo == NULL) {
@@ -321,7 +349,7 @@ void hacer_muchas_cosas(pthread_t *hilo){
 
 	un_hilo_por_programa->PID = pid;
 
-	recibir_y_mostrar_mensajes();
+	recibir_y_mostrar_mensajes(un_hilo_por_programa);
 }
 
 void cormillot(char *lineaIngresada){
@@ -358,7 +386,7 @@ void iniciarPrograma() {
 	un_hilo_por_programa->nombre_script = nombreScript;
 	list_add(lista_hilos_por_PID,un_hilo_por_programa);
 	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
-		if(pthread_create(hilo_programa,NULL,hacer_muchas_cosas,hilo_programa)){
+		if(pthread_create(hilo_programa,NULL,hacer_muchas_cosas,un_hilo_por_programa)){
 		printf("Error al crear el thread de iniciar programa.\n");
 		exit(-1);
 	}

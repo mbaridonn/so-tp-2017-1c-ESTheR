@@ -13,6 +13,9 @@
 #define FALSE 0
 #define TRUE 1
 
+int client_socket[30], procesos_por_socket[30];
+struct sockaddr_in direccionServidor;
+
 int activity, master_socket, addrlen, sd, max_sd, cliente, valread;
 char buffer[1025];
 
@@ -116,6 +119,28 @@ void setClienteActual(int socket) {
 
 int clienteActualTuvoActividad() {
 	return FD_ISSET(sd, &readfds);
+}
+
+int obtener_posicion_de_cliente(int cliente){
+	int i;
+	for(i=0;i<MAX_CLIENTS;i++){
+		if(client_socket[i] == cliente){
+			return i;
+		}
+	}
+	return -99;
+}
+
+void liberar_posicion_client_socket(int i){
+	liberarPosicion(client_socket,i);
+}
+
+void liberar_posicion_procesos_por_socket(int i){
+	liberarPosicion(procesos_por_socket,i);
+}
+
+void cerrar_conexion_con_cliente_actual(){
+	cerrarConexionClienteActual(&direccionServidor);
 }
 
 int clienteActualSeDesconecto() {
