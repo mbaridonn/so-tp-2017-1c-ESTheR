@@ -14,14 +14,14 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
-struct tm *tmInicio;
+/*struct tm *tmInicio;
 int horaInicio;
 int minInicio;
 int segInicio;
 struct tm *tmFin;
 int horaFin;
 int minFin;
-int segFin;
+int segFin;*/
 
 enum notificacionesConsolaKernel{
 	finalizo_proceso, print
@@ -152,16 +152,22 @@ void esperarConfirmacionDeKernel(int *kernel) {
 	mostrarConfirmacion(confirmacion);
 }
 
-void mostrarInicioEjecucion(){
+/*void mostrarInicioEjecucion(){
 	log_info(consola_log,"Inicio Ejecucion: %ld",tmInicio);
 }
 
 void mostrarFinEjecucion(){
 	log_info(consola_log,"Fin Ejecucion: %ld",tmFin);
-}
+}*/
 
-void mostrarDiferenciaInicioFinEjecucion() {
+void mostrarDiferenciaInicioFinEjecucion(int *segInicioP,int *minInicioP,int *horaInicioP,int *segFinP,int *minFinP,int *horaFinP) {
 	int difHoras, difMinutos, difSegundos;
+	int segInicio = (*segInicioP);
+	int minInicio = (*minInicioP);
+	int horaInicio = (*horaInicioP);
+	int segFin = (*segFinP);
+	int minFin = (*minFinP);
+	int horaFin = (*horaFinP);
 
 	if (segInicio > segFin) {
 		--minFin;
@@ -178,70 +184,32 @@ void mostrarDiferenciaInicioFinEjecucion() {
 	difHoras = horaFin - horaInicio;
 
 	log_info(consola_log, "Hora: %d", difHoras);
-	//printf("Hora: %d\n", difHoras);
 	log_info(consola_log, "Minuto: %d", difMinutos);
-	//printf("Minuto: %d\n", difMinutos);
 	log_info(consola_log, "Segundo: %d", difSegundos);
-	//printf("Segundo: %d\n", difSegundos);
-	//Revisar si vale la pena usar logs
 }
 
 void mostrarFechaHoraEjecucion(){
-	mostrarInicioEjecucion();
-	mostrarFinEjecucion();
-	mostrarDiferenciaInicioFinEjecucion();
+/*	mostrarInicioEjecucion();
+	mostrarFinEjecucion();*/
+//	mostrarDiferenciaInicioFinEjecucion();
 }
 
-void guardarFechaHoraEjecucion(int opcion) {
+void guardarFechaHoraEjecucion(struct tm *tm, int *hora, int *min, int *seg) {
 	time_t tiempoEnSegundos = time(NULL);
 
-	if (opcion == 1) {
-		tmInicio = localtime(&tiempoEnSegundos);
-		horaInicio = tmInicio->tm_hour;
-		minInicio = tmInicio->tm_min;
-		segInicio = tmInicio->tm_sec;
-	} else {
-		tmFin = localtime(&tiempoEnSegundos);
-		horaFin = tmFin->tm_hour;
-		minFin = tmFin->tm_min;
-		segFin = tmFin->tm_sec;
-	}
-}
-
-void guardarInicioEjecucion() {
-	guardarFechaHoraEjecucion(1);
-}
-
-void guardarFinEjecucion() {
-	guardarFechaHoraEjecucion(2);
-}
-
-void esperarMensajesDeKernel() {
-	//printf("Esperando mensajes de Kernel...\n");
-}
-
-void crearHiloDelPrograma() {
-	pthread_t hilo_programa;
-	log_info(consola_log, "Creado hilo para este programa");
-	//printf("Creado hilo para este programa.\n");
-	log_info(consola_log, "Se mostrarán por pantalla las respuestas del Kernel");
-	//printf("Se mostrarán por pantalla las respuestas del Kernel.\n\n");
-	if (pthread_create(&hilo_programa, NULL, esperarMensajesDeKernel, NULL)) {
-		log_error(consola_log, "Error al crear el thread de comandos");
-		//printf("Error al crear el thread de comandos.\n");
-		exit(-1);
-	}
+	tm = localtime(&tiempoEnSegundos);
+	(*hora) = tm->tm_hour;
+	(*min) = tm->tm_min;
+	(*seg) = tm->tm_sec;
 }
 
 u_int32_t recibirPID(int *cliente) {
 	u_int32_t pid;
 	if (recv((*cliente), &pid, sizeof(u_int32_t), 0) == -1) {
 		log_error(consola_log, "Error recibiendo el PID");
-		//printf("Error recibiendo el PID\n");
 		exit(-1);
 	}
 	log_info(consola_log, "PID: %d asignado a ese programa\n",pid);
-	//printf("PID: %d asignado a ese programa\n\n", pid);
 	return pid;
 }
 
@@ -305,6 +273,15 @@ hilo_por_programa *obtener_hilo_por_programa_segun_hilo(pthread_t *hilo){
 }
 
 void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
+	struct tm *tmInicio;
+	int horaInicio;
+	int minInicio;
+	int segInicio;
+	struct tm *tmFin;
+	int horaFin;
+	int minFin;
+	int segFin;
+
 	int accion;
 	FILE *archivo;
 	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
@@ -327,7 +304,8 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
 	accion = startProgram;
 	informarAccion(&serv_kernel, &accion);
 
-	guardarInicioEjecucion();
+	guardarFechaHoraEjecucion(tmInicio,&horaInicio,&minInicio,&segInicio);
+	printf("hora: %d, min: %d, seg:%d\n",horaInicio,minInicio,segInicio); //hecho para testear
 	if (send(serv_kernel, &fsize, sizeof(u_int32_t), 0) == -1) {
 		log_error(consola_log, "Error enviando longitud del archivo");
 		//printf("Error enviando longitud del archivo\n");
