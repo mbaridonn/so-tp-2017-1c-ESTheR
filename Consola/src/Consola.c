@@ -14,15 +14,6 @@
 
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 
-/*struct tm *tmInicio;
-int horaInicio;
-int minInicio;
-int segInicio;
-struct tm *tmFin;
-int horaFin;
-int minFin;
-int segFin;*/
-
 enum notificacionesConsolaKernel{
 	finalizo_proceso, print
 };
@@ -38,6 +29,13 @@ typedef struct {
 	int puerto;
 } t_configuracion;
 t_configuracion *config;
+
+typedef struct{
+	int hora;
+	int minuto;
+	int segundo;
+	char *fecha;
+} tiempo_proceso;
 
 typedef struct{
 	pthread_t *hilo;
@@ -72,21 +70,17 @@ void solicitarA(int *cliente, char *nombreCli) {
 	char a[2] = "a";
 	send((*cliente), a, 2, 0);
 	log_info(consola_log, "Esperando atencion de %s..\n", nombreCli);
-	//printf("Esperando atencion de %s..\n", nombreCli);
 	recv((*cliente), a, 2, 0);
 }
 
 void msjConexionCon(char *s) {
 	log_info(consola_log, "\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n", s);
-	//printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
-	//Despues la borramos, la dejo para que tire el mensaje de con quien se conecta en el handshake.
 }
 
 void *reservarMemoria(int tamanioArchivo) {
 	void *puntero = malloc(tamanioArchivo);
 	if (puntero == NULL) {
 		log_error(consola_log, "No hay más espacio");
-		//printf("No hay más espacio \n");
 		exit(-1);
 	}
 	return puntero;
@@ -124,50 +118,36 @@ void leerArchivo() {
 	t_config *archivo_config = config_create(RUTAARCHIVO);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
-	//mostrarArchivoConfig();
 	log_info(consola_log, "Leí el archivo y extraje el puerto: %d ", config->puerto);
-	//printf("Leí el archivo y extraje el puerto: %d \n\n", config->puerto);
 }
 
 void mostrarConfirmacion(int confirmacion) {
 	u_int32_t conf = confirmacion;
 	if (conf == hayPaginas) {
 		log_info(consola_log, "Paginas suficientes - El proceso se almaceno exitosamente");
-		//printf("Paginas suficientes - El proceso se almaceno exitosamente.\n");
 	} else {
 		log_error(consola_log, "Paginas insuficientes - El proceso no pudo almacenarse en MP");
-		//printf("Paginas insuficientes - El proceso no pudo almacenarse en MP.\n");
 	}
 }
 
 void esperarConfirmacionDeKernel(int *kernel) {
 	u_int32_t confirmacion;
 	log_info(consola_log, "Esperando la confirmacion de Kernel..");
-	//printf("Esperando la confirmacion de Kernel..\n");
 	if (recv((*kernel), &confirmacion, sizeof(u_int32_t), 0) == -1) {
 		log_error(consola_log, "Error recibiendo la confirmacion de parte de Kernel");
-		//printf("Error recibiendo la confirmacion de parte de Kernel.\n");
 		exit(-1);
 	}
 	mostrarConfirmacion(confirmacion);
 }
 
-/*void mostrarInicioEjecucion(){
-	log_info(consola_log,"Inicio Ejecucion: %ld",tmInicio);
-}
-
-void mostrarFinEjecucion(){
-	log_info(consola_log,"Fin Ejecucion: %ld",tmFin);
-}*/
-
-void mostrarDiferenciaInicioFinEjecucion(int *segInicioP,int *minInicioP,int *horaInicioP,int *segFinP,int *minFinP,int *horaFinP) {
+void mostrarDiferenciaInicioFinEjecucion(tiempo_proceso *tiempoInicio, tiempo_proceso *tiempoFin) {
 	int difHoras, difMinutos, difSegundos;
-	int segInicio = (*segInicioP);
-	int minInicio = (*minInicioP);
-	int horaInicio = (*horaInicioP);
-	int segFin = (*segFinP);
-	int minFin = (*minFinP);
-	int horaFin = (*horaFinP);
+	int segInicio = tiempoInicio->segundo;
+	int minInicio = tiempoInicio->minuto;
+	int horaInicio = tiempoInicio->hora;
+	int segFin = tiempoFin->segundo;
+	int minFin = tiempoFin->minuto;
+	int horaFin = tiempoFin->hora;
 
 	if (segInicio > segFin) {
 		--minFin;
@@ -183,24 +163,23 @@ void mostrarDiferenciaInicioFinEjecucion(int *segInicioP,int *minInicioP,int *ho
 	difMinutos = minFin - minInicio;
 	difHoras = horaFin - horaInicio;
 
-	log_info(consola_log, "Hora: %d", difHoras);
-	log_info(consola_log, "Minuto: %d", difMinutos);
-	log_info(consola_log, "Segundo: %d", difSegundos);
+	log_info(consola_log, "Diferencia: Horas:%d Minutos:%d Segundos:%d", difHoras,difMinutos,difSegundos);
 }
 
-void mostrarFechaHoraEjecucion(){
-/*	mostrarInicioEjecucion();
-	mostrarFinEjecucion();*/
-//	mostrarDiferenciaInicioFinEjecucion();
+void mostrarTiempoInicioFinDiferencia(tiempo_proceso *tiempoInicio, tiempo_proceso  *tiempoFin){
+	printf("Fecha Inicio:%s\n",tiempoInicio->fecha);
+	printf("Fecha Fin:%s\n",tiempoFin->fecha);
+	mostrarDiferenciaInicioFinEjecucion(tiempoInicio,tiempoFin);
 }
 
-void guardarFechaHoraEjecucion(struct tm *tm, int *hora, int *min, int *seg) {
+void guardarFechaHoraEjecucion(tiempo_proceso *tiempo){
+	struct tm *tm;
 	time_t tiempoEnSegundos = time(NULL);
-
 	tm = localtime(&tiempoEnSegundos);
-	(*hora) = tm->tm_hour;
-	(*min) = tm->tm_min;
-	(*seg) = tm->tm_sec;
+	strcpy(tiempo->fecha,asctime(tm));
+	tiempo->hora = tm->tm_hour;
+	tiempo->minuto = tm->tm_min;
+	tiempo->segundo = tm->tm_sec;
 }
 
 u_int32_t recibirPID(int *cliente) {
@@ -244,12 +223,14 @@ void matar_hilo(pthread_t *hilo){
 	pthread_cancel(*hilo);
 }
 
-void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa){
+void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,tiempo_proceso *tiempoInicio,tiempo_proceso *tiempoFin){
 	while(1){
 		int accion = recibir_accion_de_kernel();
 		switch(accion){
 		case finalizo_proceso:
 			printf("El programa con PID: %d ha finalizado\n",un_hilo_por_programa->PID);
+			guardarFechaHoraEjecucion(tiempoFin);
+			mostrarTiempoInicioFinDiferencia(tiempoInicio,tiempoFin);
 			matar_hilo(un_hilo_por_programa->hilo);
 			break;
 		case print:
@@ -273,14 +254,10 @@ hilo_por_programa *obtener_hilo_por_programa_segun_hilo(pthread_t *hilo){
 }
 
 void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
-	struct tm *tmInicio;
-	int horaInicio;
-	int minInicio;
-	int segInicio;
-	struct tm *tmFin;
-	int horaFin;
-	int minFin;
-	int segFin;
+	tiempo_proceso *tiempoInicio = reservarMemoria(sizeof(tiempo_proceso));
+	tiempo_proceso *tiempoFin = reservarMemoria(sizeof(tiempo_proceso));
+	tiempoInicio->fecha = reservarMemoria(50);
+	tiempoFin->fecha = reservarMemoria(50);
 
 	int accion;
 	FILE *archivo;
@@ -288,7 +265,6 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
 	archivo = fopen(un_hilo_por_programa->nombre_script, "rb"); //USAR PATH ABSOLUTO?
 	if (archivo == NULL) {
 		log_error(consola_log, "No se pudo leer el archivo");
-		//printf("No se pudo leer el archivo\n");
 		exit(-1);
 	}
 
@@ -304,30 +280,31 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
 	accion = startProgram;
 	informarAccion(&serv_kernel, &accion);
 
-	guardarFechaHoraEjecucion(tmInicio,&horaInicio,&minInicio,&segInicio);
-	printf("hora: %d, min: %d, seg:%d\n",horaInicio,minInicio,segInicio); //hecho para testear
+	guardarFechaHoraEjecucion(tiempoInicio);
+
 	if (send(serv_kernel, &fsize, sizeof(u_int32_t), 0) == -1) {
 		log_error(consola_log, "Error enviando longitud del archivo");
-		//printf("Error enviando longitud del archivo\n");
 		exit(-1);
 	}
 	if (send(serv_kernel, buffer, fsize + 1, 0) == -1) {
 		log_error(consola_log, "Error enviando archivo");
-		//printf("Error enviando archivo\n");
 		exit(-1);
 	}
 	free(buffer);
 
 	log_info(consola_log, "El archivo se envió correctamente\n");
-	//printf("El archivo se envió correctamente\n\n");
-
 
 	esperarConfirmacionDeKernel(&serv_kernel);
 	u_int32_t pid = recibirPID(&serv_kernel);
 
 	un_hilo_por_programa->PID = pid;
 
-	recibir_y_mostrar_mensajes(un_hilo_por_programa);
+	recibir_y_mostrar_mensajes(un_hilo_por_programa,tiempoInicio,tiempoFin);
+
+	free(tiempoInicio->fecha);
+	free(tiempoInicio);
+	free(tiempoFin->fecha);
+	free(tiempoFin);
 }
 
 void cormillot(char *lineaIngresada){
@@ -368,11 +345,11 @@ void iniciarPrograma() {
 		printf("Error al crear el thread de iniciar programa.\n");
 		exit(-1);
 	}
-
 }
 
 void finalizarPrograma(int *cliente) {
-
+	/*Finalizar Programa: Como su nombre lo indica este comando finalizará un Programa
+		 AnSISOP, terminando el thread correspondiente al PID que se desee finalizar.*/
 	int accion;
 	char *opcion = reservarMemoria(100);
 	int id_proceso_a_detener;
@@ -388,10 +365,6 @@ void finalizarPrograma(int *cliente) {
 	send(*cliente, &id_proceso_a_detener, sizeof(int), 0);
 
 	free(opcion);
-
-	/*Finalizar Programa: Como su nombre lo indica este comando finalizará un Programa
-	 AnSISOP, terminando el thread correspondiente al PID que se desee finalizar.*/
-
 }
 
 
@@ -399,14 +372,12 @@ void desconectarConsola() {
 	/*Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola
 	 con el kernel, dando por muertos todos los programas de manera abortiva.*/
 	log_info(consola_log, "\nConsola desconectada. \n");
-	//printf("\nConsola desconectada. \n\n");
 	exit(-1);
 }
 
 void limpiarMensajes() {
 	system("clear");
 	log_info(consola_log,"Consola limpiada! \n");
-	//printf("Consola limpiada! \n\n");
 }
 
 void hilo_iniciar_programa(){
@@ -422,8 +393,7 @@ void hilo_iniciar_programa(){
 
 void elegirComando() {
 	char *opcionIngresada;
-	int seguirAbierto = 1; /*Si se va a cerrar sólo en una de las opciones, tendría que ser
-	 directamente la "opcionIngresada" la condición del do-while. Por ahora la dejo así*/
+	int seguirAbierto = 1;
 
 	do {
 		printf("Los siguientes comandos estan disponibles para ejecutar:\n");
@@ -452,7 +422,6 @@ void elegirComando() {
 			break;
 		default:
 			log_error(consola_log, "\nOpcion invalida. Vuelva a elegir una opcion \n");
-			//printf("\nOpcion invalida. Vuelva a elegir una opcion \n\n");
 			break;
 		}
 
