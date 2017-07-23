@@ -301,6 +301,7 @@ void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar){
 	printf("ANSISOP_llamarConRetorno (etiqueta: %s, retornar: %d)\n", etiqueta, donde_retornar);
 	t_stack_entry* nuevaLineaStackEjecucionActual;
 	nuevaLineaStackEjecucionActual = stack_entry_create();
+	nuevaLineaStackEjecucionActual->ret_vars = malloc(sizeof(t_ret_var));
 	nuevaLineaStackEjecucionActual->ret_vars->page_number = donde_retornar / tamPag;
 	nuevaLineaStackEjecucionActual->ret_vars->offset = donde_retornar % tamPag;
 	nuevaLineaStackEjecucionActual->ret_vars->tamanio = TAM_VARIABLE;
