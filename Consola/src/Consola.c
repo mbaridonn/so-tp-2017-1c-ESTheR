@@ -198,16 +198,27 @@ void conectarse_con_kernel(int *serv_kernel){
 	msjConexionCon("Kernel");
 }
 
+void enviarSenialAKernel(int serv_kernel) {
+	char senial[2] = "a";
+	if (send(serv_kernel, senial, 2, 0) == -1) {
+		printf("Error al enviar la senial\n");
+		exit(-1);
+	}
+}
+
 char *obtener_un_mensaje(int serv_kernel){
-	u_int32_t tamanio;
+	int tamanio;
 	char *buffer;
-	if(recv(serv_kernel,&tamanio,sizeof(u_int32_t),0) == -1){
+	enviarSenialAKernel(serv_kernel);
+	if(recv(serv_kernel,&tamanio,sizeof(int),0) == -1){
 		printf("Error recibiendo el tamanio del mensaje\n");
 	}
-	buffer = reservarMemoria(tamanio);
+	buffer = reservarMemoria(tamanio+1);
 	if(recv(serv_kernel,buffer,tamanio,0) == -1){
 		printf("Error recibiendo el mensaje\n");
 	}
+	buffer[tamanio] = '\0';
+	enviarSenialAKernel(serv_kernel);
 	return buffer;
 }
 
@@ -239,7 +250,7 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,tiempo_p
 		case print:
 		{
 			char *mensaje = obtener_un_mensaje(un_hilo_por_programa->serv_kernel);
-			printf("%s",mensaje);
+			printf("Mensaje de PID %d: %s\n",un_hilo_por_programa->PID,mensaje);
 			free(mensaje);
 			break;
 		}
@@ -261,7 +272,7 @@ void mostrar_datos_de_hilo_por_programa(hilo_por_programa *un_hilo_por_programa)
 }
 
 void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
-	mostrar_datos_de_hilo_por_programa(un_hilo_por_programa);
+	//mostrar_datos_de_hilo_por_programa(un_hilo_por_programa);
 	tiempo_proceso *tiempoInicio = reservarMemoria(sizeof(tiempo_proceso));
 	tiempo_proceso *tiempoFin = reservarMemoria(sizeof(tiempo_proceso));
 	tiempoInicio->fecha = reservarMemoria(50);
@@ -269,7 +280,6 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa){
 
 	int accion;
 	FILE *archivo;
-	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
 	archivo = fopen(un_hilo_por_programa->nombre_script, "rb"); //USAR PATH ABSOLUTO?
 	if (archivo == NULL) {
 		log_error(consola_log, "No se pudo leer el archivo");
@@ -327,9 +337,7 @@ void cormillot(char *lineaIngresada){
 
 void iniciarPrograma() {
 	int serv_kernel;
-	printf("ME VOY A CONECTAR CON KERNEL-SITO JAJAJAJAJA\n");
 	conectarse_con_kernel(&serv_kernel);
-	printf("ME CONECTE CON KERNELSITO JAJAJAJAJA\n");
 	/*Iniciar Programa: Este comando iniciará un nuevo Programa AnSISOP, recibiendo por
 	 parámetro el path del script AnSISOP a ejecutar. Una vez iniciado el programa la consola
 	 quedará a la espera de nuevos comandos, pudiendo ser el iniciar nuevos Programas AnSISOP
@@ -353,8 +361,7 @@ void iniciarPrograma() {
 	un_hilo_por_programa->nombre_script = nombreScript;
 	un_hilo_por_programa->serv_kernel = serv_kernel;
 	list_add(lista_hilos_por_PID,un_hilo_por_programa);
-	printf("El nombre del script es: %s\n",un_hilo_por_programa->nombre_script);
-	mostrar_datos_de_hilo_por_programa(un_hilo_por_programa);
+	//mostrar_datos_de_hilo_por_programa(un_hilo_por_programa);
 		if(pthread_create(&hilo_programa,NULL,hacer_muchas_cosas,un_hilo_por_programa)){
 		printf("Error al crear el thread de iniciar programa.\n");
 		exit(-1);

@@ -248,7 +248,23 @@ char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tam
 
 int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio){
 	if(fileDescriptor == 1){
-		//IMPRIMIR BYTES A ESCRIBIR POR CONSOLA (PENDIENTE!!)
+		int consola = obtener_cliente_segun_PID(PID), tam = tamanio;
+		int accion = print;
+		if(send(consola,&accion,sizeof(int),0)<0){
+			printf("Error enviando accion a consola\n");
+			exit(-1);
+		}
+		esperarSenialDeCPU(&consola);
+		if(send(consola,&tam,sizeof(int),0)<0){
+			printf("Error enviando tamanio a consola\n");
+			exit(-1);
+		}
+		if(send(consola,bytesAEscribir,tamanio,0)<0){
+			printf("Error enviando bytesAEscribir a consola\n");
+			exit(-1);
+		}
+		printf("Le envie los bytes a consola JEJEJEJ\n");
+		esperarSenialDeCPU(&consola);
 		return k_cpu_accion_OK;
 	}
 

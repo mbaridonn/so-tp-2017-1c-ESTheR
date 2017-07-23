@@ -370,7 +370,6 @@ void proced_script(int *unCliente) {
 	pedido_script *pedido = crear_pedido_script((*unCliente),pcb->id_proceso,bufferArchivo,fsize);
 	list_add(lista_pedidos_script,pedido);
 	list_add(listaPCBs_NEW, pcb);
-	printf("El largo de la cola de New es: %d\n",list_size(listaPCBs_NEW));
 
 	/*Envia archivo a Memoria
 	avisarAccionAMemoria(k_mem_inicializarPrograma);//FALTA SLEEP (PENDIENTE!!)
