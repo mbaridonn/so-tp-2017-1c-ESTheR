@@ -16,7 +16,7 @@
 #define RUTA_CARPETA_SCRIPTS "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/scripts/"
 
 enum notificacionesConsolaKernel {
-	finalizo_proceso, print
+	finalizo_proceso, print, finalizacion_forzosa
 };
 
 t_list *lista_hilos_por_PID;
@@ -89,6 +89,13 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
+hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid){
+	bool es_este_pid(hilo_por_programa *hiloPorPrograma){
+		return hiloPorPrograma->PID == pid;
+	}
+	return list_find(lista_hilos_por_PID, (void*) es_este_pid);
+}
+
 hilo_por_programa *crear_hilo_por_programa() {
 	hilo_por_programa *hilo_por_PID = reservarMemoria(
 			sizeof(hilo_por_programa));
@@ -148,6 +155,24 @@ void esperarConfirmacionDeKernel(int *kernel) {
 		exit(-1);
 	}
 	mostrarConfirmacion(confirmacion);
+}
+
+void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
+	free(un_hilo_por_programa->nombre_script);
+	close(un_hilo_por_programa->serv_kernel);
+	pthread_cancel(un_hilo_por_programa->hilo);
+}
+
+void finalizar_programa_segun_PID(int pid){
+	hilo_por_programa *unHiloPorPrograma;
+	unHiloPorPrograma =	obtener_hilo_por_programa_segun_pid(pid);
+
+	/*guardarFechaHoraEjecucion(tiempoFin);
+	mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
+	mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
+	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n",pid);
+	matar_hilo(unHiloPorPrograma);
+
 }
 
 void mostrarDiferenciaInicioFinEjecucion(tiempo_proceso *tiempoInicio,
@@ -243,12 +268,6 @@ int recibir_accion_de_kernel(int serv_kernel) {
 	return accion;
 }
 
-void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
-	free(un_hilo_por_programa->nombre_script);
-	close(un_hilo_por_programa->serv_kernel);
-	pthread_cancel(un_hilo_por_programa->hilo);
-}
-
 void mostrarCantidadImpresiones(int cantImpresiones){
 	log_info(consola_log,"Cantidad de impresiones: %d",cantImpresiones);
 }
@@ -278,17 +297,13 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
 			free(mensaje);
 			break;
 		}
+		case finalizacion_forzosa:
+			finalizar_programa_segun_PID(un_hilo_por_programa->PID);
+			break;
 		default:
 			printf("Accion recibida por Kernel invalida.\n");
 		}
 	}
-}
-
-hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid){
-	bool es_este_pid(hilo_por_programa *hiloPorPrograma){
-		return hiloPorPrograma->PID == pid;
-	}
-	return list_find(lista_hilos_por_PID, (void*) es_este_pid);
 }
 
 void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
@@ -399,18 +414,12 @@ void finalizarPrograma() {
 	 AnSISOP, terminando el thread correspondiente al PID que se desee finalizar.*/
 	char *opcion = reservarMemoria(100);
 	int id_proceso_a_detener;
-	hilo_por_programa *unHiloPorPrograma;
 
 	printf("Ingrese el ID del proceso a finalizar:\n");
 	fgets(opcion, 100, stdin);
 	id_proceso_a_detener = atoi(opcion);
 
-	unHiloPorPrograma =	obtener_hilo_por_programa_segun_pid(id_proceso_a_detener);
-
-	matar_hilo(unHiloPorPrograma);
-
-	printf("Fue matado exitosamente el proceso de PID: %d\n",id_proceso_a_detener);
-
+	finalizar_programa_segun_PID(id_proceso_a_detener);
 	free(opcion);
 }
 

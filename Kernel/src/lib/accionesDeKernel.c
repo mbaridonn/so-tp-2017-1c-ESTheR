@@ -292,7 +292,7 @@ void finalizarUnProceso(t_pcb *pcb) {
 	}
 	poner_proceso_en_EXIT(pcb);
 	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
-	cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
+	//cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
 	eliminar_proc_por_cliente_segun_PID(pcb->id_proceso);
 	//FALTA: MEMORY LEAKS
     //Al finalizar un proceso, el Kernel deberá informar si un proceso liberó todas las estructuras en las páginas de Heap.

@@ -362,6 +362,19 @@ void finalizar_ejecucion_de_proceso(int *pid){
 	}
 }
 
+void enviar_accion_a_consola(int clie_consola,int accion){
+	int una_accion = accion;
+	if(send(clie_consola,&una_accion,sizeof(int),0)<0){
+		printf("Error enviando accion a consola\n");
+		exit(-1);
+	}
+}
+
+void realizar_finalizacion_forsoza(int pid){
+	int clie_consola = obtener_cliente_segun_PID(pid);
+	enviar_accion_a_consola(clie_consola,finalizacion_forzosa);
+}
+
 void habilitarConsolaKernel() {
 	char* lineaIngresada;
 	char* subcomando = reservarMemoria(100);
@@ -458,9 +471,8 @@ void habilitarConsolaKernel() {
 			printf("Ingrese el ID del proceso a finalizar: ");
 			char *opcion = reservarMemoria(100);
 			fgets(opcion, 100, stdin);
-			int *id_proceso_a_detener = reservarMemoria(sizeof(int));
-			*id_proceso_a_detener = atoi(opcion);
-			finalizar_ejecucion_de_proceso(id_proceso_a_detener);
+			int id_proceso_a_detener = atoi(opcion);
+			realizar_finalizacion_forsoza(id_proceso_a_detener);
 			free(opcion);
 			break;
 
