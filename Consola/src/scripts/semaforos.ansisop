@@ -1,0 +1,4 @@
+begin
+wait mutexArch
+wait mutexArch
+end

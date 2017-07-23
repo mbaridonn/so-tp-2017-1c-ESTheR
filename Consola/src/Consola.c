@@ -284,18 +284,11 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
 	}
 }
 
-hilo_por_programa *obtener_hilo_por_programa_segun_hilo(pthread_t hilo) {
-	bool es_este_hilo(hilo_por_programa *hiloPorPrograma) {
-		return hiloPorPrograma->hilo == hilo;
+hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid){
+	bool es_este_pid(hilo_por_programa *hiloPorPrograma){
+		return hiloPorPrograma->PID == pid;
 	}
-	return list_find(lista_hilos_por_PID, (void*) es_este_hilo);
-}
-
-void mostrar_datos_de_hilo_por_programa(hilo_por_programa *un_hilo_por_programa) {
-	printf("Thread: %d\nPID: %d\nserv_kernel: %d\nNombre Script: %s\n",
-			un_hilo_por_programa->hilo, un_hilo_por_programa->PID,
-			un_hilo_por_programa->serv_kernel,
-			un_hilo_por_programa->nombre_script);
+	return list_find(lista_hilos_por_PID, (void*) es_este_pid);
 }
 
 void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
@@ -393,7 +386,6 @@ void iniciarPrograma() {
 	un_hilo_por_programa->nombre_script = nombreScript;
 	un_hilo_por_programa->serv_kernel = serv_kernel;
 	list_add(lista_hilos_por_PID, un_hilo_por_programa);
-	//mostrar_datos_de_hilo_por_programa(un_hilo_por_programa);
 	if (pthread_create(&hilo_programa, NULL, hacer_muchas_cosas,
 			un_hilo_por_programa)) {
 		printf("Error al crear el thread de iniciar programa.\n");
@@ -402,22 +394,22 @@ void iniciarPrograma() {
 	un_hilo_por_programa->hilo = hilo_programa;
 }
 
-void finalizarPrograma(int *cliente) {
+void finalizarPrograma() {
 	/*Finalizar Programa: Como su nombre lo indica este comando finalizará un Programa
 	 AnSISOP, terminando el thread correspondiente al PID que se desee finalizar.*/
-	int accion;
 	char *opcion = reservarMemoria(100);
 	int id_proceso_a_detener;
+	hilo_por_programa *unHiloPorPrograma;
 
-	solicitarA(cliente, "Kernel");
-	accion = endProgram;
-	informarAccion(cliente, &accion);
-
-	printf("Ingrese el ID del proceso a finalizar: ");
+	printf("Ingrese el ID del proceso a finalizar:\n");
 	fgets(opcion, 100, stdin);
 	id_proceso_a_detener = atoi(opcion);
 
-	send(*cliente, &id_proceso_a_detener, sizeof(int), 0);
+	unHiloPorPrograma =	obtener_hilo_por_programa_segun_pid(id_proceso_a_detener);
+
+	matar_hilo(unHiloPorPrograma);
+
+	printf("Fue matado exitosamente el proceso de PID: %d\n",id_proceso_a_detener);
 
 	free(opcion);
 }
@@ -458,7 +450,7 @@ void elegirComando() {
 			desconectarConsola();
 			break;
 		case '3':
-			//finalizarPrograma(&serv_kernel);
+			finalizarPrograma();
 			break;
 		case '4':
 			limpiarMensajes();

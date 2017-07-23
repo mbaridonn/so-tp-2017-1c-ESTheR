@@ -352,7 +352,7 @@ cliente_CPU *obtenerClienteCPUSegunFD(int fd){
 
 void finalizar_ejecucion_de_proceso(int *pid){
 	list_add(lista_detenciones_pendientes,pid);
-	if(esta_ejecutandose(pid)){
+	if(esta_ejecutandose(*pid)){
 				printf("El proceso esta ejecutandose, este finalizara cuando CPU lo libere.\n");
 	}else{
 		t_list *lista = lista_que_tiene_este_pcb(*pid);
@@ -541,10 +541,9 @@ void finalizar_programas_de(int clie_consola){
 	for(i=0; i<list_size(lista_proceso_por_cliente); i++){
 		proc_por_clie = list_get(lista_proceso_por_cliente, i);
 		if(proc_por_clie->clie_consola == clie_consola){
-			finalizar_ejecucion_de_proceso(&proc_por_clie->pid);
+			finalizar_ejecucion_de_proceso(&(proc_por_clie->pid));
 		}
 	}
-	//eliminar_procesos_por_cliente_de(clie_consola); Ya no haría falta, lo hace finalizarUnProceso.
 }
 
 
@@ -663,11 +662,16 @@ int main(void) {
 		setClienteActual(socketQueTuvoActividad(client_socket));
 		i = numeroSocketQueTuvoActividad(client_socket);
 		if (clienteActualSeDesconecto()) {
+			int loFinalice = 0;
+			if(procesos_por_socket[i] == consola){
+				finalizar_programas_de(client_socket[i]);
+				loFinalice = 1;
+			}
 			liberarSiEraCPU(procesos_por_socket[i]);
 			liberarPosicion(client_socket, i);
 			liberarPosicion(procesos_por_socket, i);
-			cerrarConexionClienteActual(&direccionServidor);
-			if(procesos_por_socket[i] == consola) finalizar_programas_de(client_socket[i]);
+			if(!loFinalice)
+				cerrarConexionClienteActual(&direccionServidor);
 		} else {
 			int proceso = procesos_por_socket[i];
 			switch (proceso) { // ACA VAN TODOS LOS CASES DE CUANDO HAY MOVIMIENTO EN UN SOCKET PORQUE SOLICITA ALGO

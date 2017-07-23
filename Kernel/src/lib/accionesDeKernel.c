@@ -512,7 +512,7 @@ bool hubo_detencion_forzosa(t_pcb *pcb){
 }
 
 void pid_destroyer(int *pid){
-	free(pid);
+//	free(pid);
 }
 
 void eliminar_detencion(t_pcb *pcb){
