@@ -41,6 +41,7 @@ typedef struct {
 	int PID;
 	int serv_kernel;
 	char *nombre_script;
+	int cantImpresiones;
 } hilo_por_programa;
 
 enum procesos {
@@ -179,8 +180,8 @@ void mostrarDiferenciaInicioFinEjecucion(tiempo_proceso *tiempoInicio,
 
 void mostrarTiempoInicioFinDiferencia(tiempo_proceso *tiempoInicio,
 		tiempo_proceso *tiempoFin) {
-	printf("Fecha Inicio:%s\n", tiempoInicio->fecha);
-	printf("Fecha Fin:%s\n", tiempoFin->fecha);
+	log_info(consola_log,"Fecha Inicio:%s", tiempoInicio->fecha);
+	log_info(consola_log,"Fecha Fin:%s", tiempoFin->fecha);
 	mostrarDiferenciaInicioFinEjecucion(tiempoInicio, tiempoFin);
 }
 
@@ -248,6 +249,10 @@ void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
 	pthread_cancel(un_hilo_por_programa->hilo);
 }
 
+void mostrarCantidadImpresiones(int cantImpresiones){
+	log_info(consola_log,"Cantidad de impresiones: %d",cantImpresiones);
+}
+
 void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
 		tiempo_proceso *tiempoInicio, tiempo_proceso *tiempoFin) {
 	while (1) {
@@ -261,11 +266,13 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
 					un_hilo_por_programa->PID);
 			guardarFechaHoraEjecucion(tiempoFin);
 			mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
+			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
 			matar_hilo(un_hilo_por_programa);
 			break;
 		case print: {
 			char *mensaje = obtener_un_mensaje(
 					un_hilo_por_programa->serv_kernel);
+			(un_hilo_por_programa->cantImpresiones)++;
 			printf("Mensaje de PID %d: %s\n", un_hilo_por_programa->PID,
 					mensaje);
 			free(mensaje);
@@ -342,6 +349,7 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
 	u_int32_t pid = recibirPID(&(un_hilo_por_programa->serv_kernel));
 
 	un_hilo_por_programa->PID = pid;
+	un_hilo_por_programa->cantImpresiones = 0;
 
 	recibir_y_mostrar_mensajes(un_hilo_por_programa, tiempoInicio, tiempoFin);
 

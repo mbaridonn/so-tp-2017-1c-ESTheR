@@ -1,9 +1,6 @@
 Tareas pendientes:
 
 CONSOLA
--Consola debe recibir mensajes del programa e imprimirlos por pantalla (indicando a qué proceso pertenecen). También tiene que mostrar
-los resultados de la ejecución de un programa:
-	-Cantidad de impresiones por pantalla
 -Finalizar Programa: finaliza un Programa AnSISOP, terminando el thread correspondiente al PID que se desee finalizar. 
 -Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola con el kernel, dando por muertos todos los 
 programas de manera abortiva.
