@@ -42,6 +42,8 @@ typedef struct {
 	int serv_kernel;
 	char *nombre_script;
 	int cantImpresiones;
+	tiempo_proceso *tiempo_inicio;
+	tiempo_proceso *tiempo_fin;
 } hilo_por_programa;
 
 enum procesos {
@@ -99,6 +101,10 @@ hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid) {
 hilo_por_programa *crear_hilo_por_programa() {
 	hilo_por_programa *hilo_por_PID = reservarMemoria(
 			sizeof(hilo_por_programa));
+	hilo_por_PID->tiempo_inicio = reservarMemoria(sizeof(tiempo_proceso));
+	hilo_por_PID->tiempo_fin = reservarMemoria(sizeof(tiempo_proceso));
+	hilo_por_PID->tiempo_inicio->fecha = reservarMemoria(50);
+	hilo_por_PID->tiempo_fin->fecha = reservarMemoria(50);
 	hilo_por_PID->PID = -1;
 	return hilo_por_PID;
 }
@@ -157,25 +163,20 @@ void esperarConfirmacionDeKernel(int *kernel) {
 	mostrarConfirmacion(confirmacion);
 }
 
-void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
+void liberar_hilo_por_programa(hilo_por_programa *un_hilo_por_programa){
 	free(un_hilo_por_programa->nombre_script);
-	close(un_hilo_por_programa->serv_kernel);
-	pthread_cancel(un_hilo_por_programa->hilo);
+	free(un_hilo_por_programa->tiempo_inicio->fecha);
+	free(un_hilo_por_programa->tiempo_inicio);
+	free(un_hilo_por_programa->tiempo_fin->fecha);
+	free(un_hilo_por_programa->tiempo_fin);
+	free(un_hilo_por_programa);
 }
 
-void finalizar_programa_segun_PID(int pid) {
-	hilo_por_programa *unHiloPorPrograma = NULL;
-	unHiloPorPrograma = obtener_hilo_por_programa_segun_pid(pid);
-
-	/*guardarFechaHoraEjecucion(tiempoFin);
-	 mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
-	 mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
-	if(unHiloPorPrograma == NULL){
-		printf("El proceso %d no pertenece a esta consola\n\n", pid);
-	}else{
-	matar_hilo(unHiloPorPrograma);
-	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
-	}
+void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
+	close(un_hilo_por_programa->serv_kernel);
+	pthread_t thread = un_hilo_por_programa->hilo;
+	liberar_hilo_por_programa(un_hilo_por_programa);
+	pthread_cancel(thread);
 }
 
 void mostrarDiferenciaInicioFinEjecucion(tiempo_proceso *tiempoInicio,
@@ -275,8 +276,25 @@ void mostrarCantidadImpresiones(int cantImpresiones) {
 	log_info(consola_log, "Cantidad de impresiones: %d", cantImpresiones);
 }
 
-void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
-		tiempo_proceso *tiempoInicio, tiempo_proceso *tiempoFin) {
+void finalizar_programa_segun_PID(int pid) {
+	hilo_por_programa *unHiloPorPrograma = NULL;
+	unHiloPorPrograma = obtener_hilo_por_programa_segun_pid(pid);
+
+	/*guardarFechaHoraEjecucion(tiempoFin);
+	 mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
+	 mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
+	if(unHiloPorPrograma == NULL){
+		printf("El proceso %d no pertenece a esta consola\n\n", pid);
+	}else{
+	guardarFechaHoraEjecucion(unHiloPorPrograma->tiempo_fin);
+	mostrarTiempoInicioFinDiferencia(unHiloPorPrograma->tiempo_inicio, unHiloPorPrograma->tiempo_fin);
+	mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);
+	matar_hilo(unHiloPorPrograma);
+	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
+	}
+}
+
+void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 	while (1) {
 		printf("Esperando accion de KernelSITO desde PID: %d\n",
 				un_hilo_por_programa->PID);
@@ -286,8 +304,8 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
 		case finalizo_proceso:
 			printf("El programa con PID: %d ha finalizado\n",
 					un_hilo_por_programa->PID);
-			guardarFechaHoraEjecucion(tiempoFin);
-			mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
+			guardarFechaHoraEjecucion(un_hilo_por_programa->tiempo_fin);
+			mostrarTiempoInicioFinDiferencia(un_hilo_por_programa->tiempo_inicio, un_hilo_por_programa->tiempo_fin);
 			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
 			matar_hilo(un_hilo_por_programa);
 			break;
@@ -311,10 +329,6 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
 
 void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
 	//mostrar_datos_de_hilo_por_programa(un_hilo_por_programa);
-	tiempo_proceso *tiempoInicio = reservarMemoria(sizeof(tiempo_proceso));
-	tiempo_proceso *tiempoFin = reservarMemoria(sizeof(tiempo_proceso));
-	tiempoInicio->fecha = reservarMemoria(50);
-	tiempoFin->fecha = reservarMemoria(50);
 
 	int accion;
 	FILE *archivo;
@@ -341,7 +355,7 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
 	accion = startProgram;
 	informarAccion(&(un_hilo_por_programa->serv_kernel), &accion);
 
-	guardarFechaHoraEjecucion(tiempoInicio);
+	guardarFechaHoraEjecucion(un_hilo_por_programa->tiempo_inicio);
 
 	if (send(un_hilo_por_programa->serv_kernel, &fsize, sizeof(u_int32_t), 0)
 			== -1) {
@@ -362,12 +376,7 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
 	un_hilo_por_programa->PID = pid;
 	un_hilo_por_programa->cantImpresiones = 0;
 
-	recibir_y_mostrar_mensajes(un_hilo_por_programa, tiempoInicio, tiempoFin);
-
-	free(tiempoInicio->fecha);
-	free(tiempoInicio);
-	free(tiempoFin->fecha);
-	free(tiempoFin);
+	recibir_y_mostrar_mensajes(un_hilo_por_programa);
 }
 
 void cormillot(char *lineaIngresada) {

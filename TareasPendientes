@@ -5,8 +5,6 @@ GENERAL
 -Faltan logs en bibliotecas de CPU y Memoria
 
 CONSOLA
--Evitar que una Consola A pueda matar procesos iniciados por Consola B.
--Cuando se finaliza programa por Consola o Kernel, se debe mostrar cantImpresiones, diferencia tiempo ejecucion y fin ejecucion
 EXTRA- Desconectar Consola: No se cierran las conexiones en el Kernel
 
 FILE SYSTEM
