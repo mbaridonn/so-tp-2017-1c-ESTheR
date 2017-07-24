@@ -120,7 +120,13 @@ int max(int a, int b) {
 
 //Comienzan funciones del FS
 
-bool validarArchivo(char* path) {
+bool validarArchivo(char* pathRelativo) {
+	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
+	strcpy(path, config->puntoMontaje);
+	char pathArchivos[10] = "Archivos/";
+	strcat(path, pathArchivos);
+	strcat(path, pathRelativo);
+
 	FILE * archivo = fopen(path, "r");
 	if (!archivo) {
 		return false;
@@ -528,6 +534,8 @@ void atenderKernel() {
 			log_info(fileSystem_log, "Valido que exista archivo %s\n", path);
 			//printf("Valido que exista archivo %s\n", path);
 			bool existe = validarArchivo(path);
+			if(existe) log_info(fileSystem_log, "El archivo existe\n", path);
+			else log_info(fileSystem_log, "El archivo no existe\n", path);
 			if (send(clienteKernel, &existe, sizeof(bool), 0) == -1) {
 				log_error(fileSystem_log, "Error enviando si el archivo existe");
 				//printf("Error enviando si el archivo existe\n");
