@@ -715,25 +715,18 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 }
 
 void inicializarPrograma(int PID, int cantPags) {
-	/*Hay que asignar páginas necesarias para el segmento de código y para el de datos. Inmediatamente despues de
-	 las paginas asignadas al codigo, le vas a asignar las paginas al stack de tal manera que esten contiguas (no necesariamente).
-	 1) gracias al PCB sabes cuantas paginas va a ocupar el codigo de tu programa, en el campo 'Paginas de codigo'
-	 2) las paginas del stack estan seteados por archivo de configuracion cuanto pueden pesar (el campo STACK_SIZE)
-	 Chequear al momento de escribir en una pagina nueva que la pagina nueva no sea de un PID distinto o que no este asignada
-	 a nadie. Nunca ningun proceso le manda a escribir a la memoria mas de lo que tiene una pagina*/
-
 	//No agrego mili_sleep(retardoMemoria), ya lo hace en asignarPaginasAProceso
 
 	if (cantPagsPorPID[PID]) {//Chequea que el programa no esté ya inicializado (es decir, que la cant de pags sea distinata de cero)
 		printf("El programa ya se encuentra inicializado\n");
 		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 	}
-	asignarPaginasAProceso(PID, cantPags);//Si asignarPaginasAProceso me manda un error, lo tendría que tratar (por ahora hay un exit)
+	asignarPaginasAProceso(PID, cantPags);
 }
 
 int cantEntradasDeProcesoEnCache(int PID) {
 	int i, cantEntradas = 0;
-	for (i = 0; (cantEntradas < 3) && (i < entradasCache); i++) {
+	for (i = 0; (cantEntradas < cacheXProceso/*3?*/) && (i < entradasCache); i++) {
 		if (memoriaCache[i].PID == PID)
 			cantEntradas++;
 	}
@@ -756,49 +749,49 @@ void setearEntradaCache(int* entrada, int PID, int nroPag, int contenido) {
 
 void ingresarEntradaEnCache(int PID, int nroPag) {
 
-	pthread_mutex_lock(&mutexIngresarEntradaEnCache);
+	if(cacheXProceso > 0){
 
-	int entradaAReemplazar = -1;
-	//Si ya se encuentra en cache, se actualiza la misma entrada
-	int j;
-	for (j = 0; (entradaAReemplazar == -1) && (j < entradasCache); j++) {
-		if (memoriaCache[j].PID == PID && memoriaCache[j].numPag == nroPag)
-			entradaAReemplazar = j;
-	}
-	if (entradaAReemplazar != -1) {
-		bool esEntradaDeProcesoYPagina(int* entrada) {
-			return memoriaCache[*entrada].PID == PID
-					&& memoriaCache[*entrada].numPag == nroPag;
-		}
-		list_remove_and_destroy_by_condition(colaEntradasCache,
-				(void*) esEntradaDeProcesoYPagina, (void*) int_destroy);
-	} else {
-		//Si se alcanzó el máximo, hay que sustituir una pág de ese proceso
-		if (cantEntradasDeProcesoEnCache(PID) >= cacheXProceso) {
-			bool esEntradaDeProceso(int *entrada) {
-				return memoriaCache[*entrada].PID == PID;
-			}
-			entradaAReemplazar = *(int*) list_find(colaEntradasCache,
-					(void*) esEntradaDeProceso);//Obtengo entrada más "antigua" del proceso
-			//Elimino la entradaAReemplazar de la lista
-			list_remove_and_destroy_by_condition(colaEntradasCache, (void*) esEntradaDeProceso, (void*) int_destroy);
-		} else {		//Si no se alcanzó el limite, la sustitución es global.
-			//Si hay entradas libres, lo asigno ahí
-			int i;
-			for (i = 0; (entradaAReemplazar == -1) && (i < entradasCache); i++) {
-				if (memoriaCache[i].PID == -1)
-					entradaAReemplazar = i;
-			}
-			//Sino, se corre el algoritmo de reemplazo LRU
-			if (entradaAReemplazar == -1) {
-				entradaAReemplazar = *(int*) list_get(colaEntradasCache, 0);//Obtengo entrada más "antigua"
-				list_remove_and_destroy_element(colaEntradasCache, 0, (void*) int_destroy);//Y la elimino de la lista
-			}
-		}
-	}
-	setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
+		pthread_mutex_lock(&mutexIngresarEntradaEnCache);
 
-	pthread_mutex_unlock(&mutexIngresarEntradaEnCache);
+		int entradaAReemplazar = -1;
+		//Si ya se encuentra en cache, se actualiza la misma entrada
+		int j;
+		for (j = 0; (entradaAReemplazar == -1) && (j < entradasCache); j++) {
+			if (memoriaCache[j].PID == PID && memoriaCache[j].numPag == nroPag)
+				entradaAReemplazar = j;
+		}
+		if (entradaAReemplazar != -1) {
+			bool esEntradaDeProcesoYPagina(int* entrada) {
+				return memoriaCache[*entrada].PID == PID && memoriaCache[*entrada].numPag == nroPag;
+			}
+			list_remove_and_destroy_by_condition(colaEntradasCache, (void*) esEntradaDeProcesoYPagina, (void*) int_destroy);
+		} else {
+			//Si se alcanzó el máximo, hay que sustituir una pág de ese proceso
+			if (cantEntradasDeProcesoEnCache(PID) >= cacheXProceso) {
+				bool esEntradaDeProceso(int *entrada) {
+					return memoriaCache[*entrada].PID == PID;
+				}
+				entradaAReemplazar = *(int*) list_find(colaEntradasCache, (void*) esEntradaDeProceso);//Obtengo entrada más "antigua" del proceso
+				//Elimino la entradaAReemplazar de la lista
+				list_remove_and_destroy_by_condition(colaEntradasCache, (void*) esEntradaDeProceso, (void*) int_destroy);
+			} else { //Si no se alcanzó el limite, la sustitución es global.
+				//Si hay entradas libres, lo asigno ahí
+				int i;
+				for (i = 0; (entradaAReemplazar == -1) && (i < entradasCache); i++) {
+					if (memoriaCache[i].PID == -1)
+						entradaAReemplazar = i;
+				}
+				//Sino, se corre el algoritmo de reemplazo LRU
+				if (entradaAReemplazar == -1) {
+					entradaAReemplazar = *(int*) list_get(colaEntradasCache, 0);//Obtengo entrada más "antigua"
+					list_remove_and_destroy_element(colaEntradasCache, 0, (void*) int_destroy);//Y la elimino de la lista
+				}
+			}
+		}
+		setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
+
+		pthread_mutex_unlock(&mutexIngresarEntradaEnCache);
+	}
 }
 
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
