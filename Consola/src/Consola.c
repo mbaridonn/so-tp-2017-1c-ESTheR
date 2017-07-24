@@ -89,8 +89,8 @@ void *reservarMemoria(int tamanioArchivo) {
 	return puntero;
 }
 
-hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid){
-	bool es_este_pid(hilo_por_programa *hiloPorPrograma){
+hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid) {
+	bool es_este_pid(hilo_por_programa *hiloPorPrograma) {
 		return hiloPorPrograma->PID == pid;
 	}
 	return list_find(lista_hilos_por_PID, (void*) es_este_pid);
@@ -163,14 +163,14 @@ void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
 	pthread_cancel(un_hilo_por_programa->hilo);
 }
 
-void finalizar_programa_segun_PID(int pid){
+void finalizar_programa_segun_PID(int pid) {
 	hilo_por_programa *unHiloPorPrograma;
-	unHiloPorPrograma =	obtener_hilo_por_programa_segun_pid(pid);
+	unHiloPorPrograma = obtener_hilo_por_programa_segun_pid(pid);
 
 	/*guardarFechaHoraEjecucion(tiempoFin);
-	mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
-	mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
-	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n",pid);
+	 mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
+	 mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
+	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n", pid);
 	matar_hilo(unHiloPorPrograma);
 
 }
@@ -205,8 +205,8 @@ void mostrarDiferenciaInicioFinEjecucion(tiempo_proceso *tiempoInicio,
 
 void mostrarTiempoInicioFinDiferencia(tiempo_proceso *tiempoInicio,
 		tiempo_proceso *tiempoFin) {
-	log_info(consola_log,"Fecha Inicio:%s", tiempoInicio->fecha);
-	log_info(consola_log,"Fecha Fin:%s", tiempoFin->fecha);
+	log_info(consola_log, "Fecha Inicio:%s", tiempoInicio->fecha);
+	log_info(consola_log, "Fecha Fin:%s", tiempoFin->fecha);
 	mostrarDiferenciaInicioFinEjecucion(tiempoInicio, tiempoFin);
 }
 
@@ -268,8 +268,8 @@ int recibir_accion_de_kernel(int serv_kernel) {
 	return accion;
 }
 
-void mostrarCantidadImpresiones(int cantImpresiones){
-	log_info(consola_log,"Cantidad de impresiones: %d",cantImpresiones);
+void mostrarCantidadImpresiones(int cantImpresiones) {
+	log_info(consola_log, "Cantidad de impresiones: %d", cantImpresiones);
 }
 
 void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa,
@@ -384,17 +384,32 @@ void iniciarPrograma() {
 	 o algunas de las siguientes opciones. Quedará a decisión del grupo utilizar paths absolutos o
 	 relativos y deberán fundamentar su elección.*/
 
-	char *lineaIngresada, *nombreScript;
-	nombreScript = reservarMemoria(100);
+	int existeArchivo;
+	char *lineaIngresada, *nombreScript, *path;
 
-	lineaIngresada = reservarMemoria(100);
+	do {
+		printf("\nIngrese nombre del script AnSISOP. \n");
+		printf("Ejemplo: script.ansisop\n\n");
 
-	printf("\nIngrese nombre del script AnSISOP. \n");
-	printf("Ejemplo: script.ansisop\n\n");
-	fgets(lineaIngresada, 100, stdin);
-	cormillot(lineaIngresada);
-	strcpy(nombreScript, lineaIngresada);
-	free(lineaIngresada);
+		nombreScript = reservarMemoria(100);
+		lineaIngresada = reservarMemoria(100);
+		path = reservarMemoria(100);
+
+		fgets(lineaIngresada, 100, stdin);
+		cormillot(lineaIngresada);
+		strcpy(nombreScript, lineaIngresada);
+		free(lineaIngresada);
+		strcpy(path, RUTA_CARPETA_SCRIPTS);
+		strcat(path, nombreScript);
+		if (access(path, F_OK) != -1) {
+			existeArchivo = 1;
+		} else {
+			existeArchivo = 0;
+			printf("No existe el archivo ingresado :(. Vuelva a intentarlo.\n");
+			free(nombreScript);
+		}
+		free(path);
+	} while (!existeArchivo);
 
 	hilo_por_programa *un_hilo_por_programa = crear_hilo_por_programa();
 	pthread_t hilo_programa;

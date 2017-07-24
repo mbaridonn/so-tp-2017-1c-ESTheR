@@ -1,4 +1,4 @@
-being
+begin
 variable a
 a = 99
 prints n a
