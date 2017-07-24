@@ -164,15 +164,18 @@ void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
 }
 
 void finalizar_programa_segun_PID(int pid) {
-	hilo_por_programa *unHiloPorPrograma;
+	hilo_por_programa *unHiloPorPrograma = NULL;
 	unHiloPorPrograma = obtener_hilo_por_programa_segun_pid(pid);
 
 	/*guardarFechaHoraEjecucion(tiempoFin);
 	 mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
 	 mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
-	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n", pid);
+	if(unHiloPorPrograma == NULL){
+		printf("El proceso %d no pertenece a esta consola\n\n", pid);
+	}else{
 	matar_hilo(unHiloPorPrograma);
-
+	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
+	}
 }
 
 void mostrarDiferenciaInicioFinEjecucion(tiempo_proceso *tiempoInicio,
