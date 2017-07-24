@@ -610,6 +610,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		int valorVariable = obtenerValorDeVariableCompartida(nombreVariable);//SI NO EXISTE, DEVUELVE 0 (DEBERÍA PRODUCIR ERROR)
+		printf("obtener_valor_compartida(%s) = %d\n", nombreVariable, valorVariable);
 		enviarIntACPU(&(unaCPU->clie_CPU),valorVariable);
 		free(nombreVariable);
 		break;
@@ -617,7 +618,9 @@ void atenderACPU(cliente_CPU *unaCPU){
 	case cpu_k_asignar_valor_compartida:
 	{
 		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
+		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int valorVariable = recibir_int_de(unaCPU->clie_CPU);
+		printf("cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, valorVariable);
 		asignarValorAVariableCompartida(nombreVariable, valorVariable);//SI NO EXISTE, NO HACE NADA (DEBERÍA PRODUCIR ERROR)
 		free(nombreVariable);
 		break;

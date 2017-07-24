@@ -356,8 +356,10 @@ t_valor_variable obtenerValorCompartida(t_nombre_compartida var_compartida_nombr
 	string_append(&nombreVariable, var_compartida_nombre);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_obtener_valor_compartida);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarPathAKernel(nombreVariable);//Asumo que el nombre termina con un \0
 	int valor = recibirUIntDeKernel(); //EN REALIDAD, PODRÍA FALLAR Y SE DEBERÍA PRODUCIR UN ERROR
+	printf("obtenerValorCompartida(%s) = %d\n", nombreVariable, valor);
 	free(nombreVariable);
 	return valor;
 }
@@ -369,8 +371,10 @@ t_valor_variable asignarValorCompartida(t_nombre_compartida var_compartida_nombr
 	string_append(&nombreVariable, var_compartida_nombre);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_asignar_valor_compartida);
+	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarPathAKernel(nombreVariable);//Asumo que el nombre termina con un \0
 	enviarIntAKernel(var_compartida_valor);
+	printf("cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, var_compartida_valor);
 	//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE. EN REALIDAD, PODRÍA FALLAR Y SE DEBERÍA PRODUCIR UN ERROR
 	free(nombreVariable);
 	return var_compartida_valor;
