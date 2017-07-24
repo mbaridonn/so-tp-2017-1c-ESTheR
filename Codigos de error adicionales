@@ -1,0 +1,3 @@
+-10 = stackOverflow
+-11 = error al liberar memoria, no estaba asignada al proceso
+-12 = CPU desconectada con SIGKILL
