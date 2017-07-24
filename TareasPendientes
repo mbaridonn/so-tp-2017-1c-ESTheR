@@ -5,9 +5,9 @@ GENERAL
 -Faltan logs en bibliotecas de CPU y Memoria
 
 CONSOLA
-Cuando se finaliza programa por Consola o Kernel, se debe mostrar cantImpresiones, diferencia tiempo ejecucion y fin ejecucion
+-Evitar que una Consola A pueda matar procesos iniciados por Consola B.
+-Cuando se finaliza programa por Consola o Kernel, se debe mostrar cantImpresiones, diferencia tiempo ejecucion y fin ejecucion
 EXTRA- Desconectar Consola: No se cierran las conexiones en el Kernel
-Evitar que una Consola A pueda matar procesos iniciados por Consola B.
 
 FILE SYSTEM
 -El FS no permite la creación de nuevos archivos si no hay bloques libres.
@@ -16,7 +16,6 @@ EXTRA-En caso de que se tengan que crear subdirectorios antes de crear el archiv
 los que sean necesarios.
 
 MEMORIA
--ROMPE cuando cambiamos el configMemoria, CACHE_X_PROC de 3 a 0
 -No deberia morir cuando se desconecta CPU.
 -Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
 EXTRA- La cache debería almacenar el contenido de la página, no una referencia al frame. Dump cache debería mostrar el contenido de la
