@@ -195,15 +195,11 @@ void inicializarBitmap() {
 	close(fd);
 }
 
-int tamanioArchivo(char* path) { // Está bien? O lo tendría que obtener de la metadata del archivo??? NECESARIO??
-	FILE * archivo = fopen(path, "r");
-	if (!archivo) {
-		return -1;
-	}
-	fseek(archivo, 0L, SEEK_END);
-	int tamanio = ftell(archivo);
-	fseek(archivo, 0L, SEEK_SET);
-	return tamanio;
+int tamanioArchivo(char* path) {
+	struct stat st;
+	if (stat(path, &st) == 0)
+		return st.st_size;
+	return -1;
 }
 
 int primerBloqueVacio() {
@@ -216,23 +212,44 @@ int primerBloqueVacio() {
 }
 
 void crearDirectorio(char* path) {
-	int i = strlen(path) - 1;
+	/*int i = strlen(path) - 1;
 	while (path[i] != '/')
 		i--; //i termina teniendo la posición de la última barra
 	char* directorio = strndup(path, i + 1); //Se copia hasta la posición de la última barra inclusive
 	mkdir(directorio, 0700);
-	free(directorio);
+	free(directorio);*/
+
+	const size_t len = strlen(path);
+	char _path[200];
+	char *p;
+	/* Copy string so its mutable */
+	strcpy(_path, path);
+	/* Iterate the string */
+	for (p = _path + 1; *p; p++) {
+		if (*p == '/') {
+			/* Temporarily truncate */
+			*p = '\0';
+			mkdir(_path, S_IRWXU);
+			*p = '/';
+		}
+	}
 }
 
 void crearArchivo(char* pathRelativo) {
+	if(primerBloqueVacio() == -1){
+		//DEBERÍA ENVIAR UN MENSAJE DE ERROR A KERNEL SI NO HAY MÁS BLOQUES (PENDIENTE!!)
+		//TAMBIÉN HABRÍA QUE AGREGAR UN MENSAJE DE OK, EN ESE CASO
+		return;
+	}
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
 	strcpy(path, config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
 	strcat(path, pathArchivos);
 	strcat(path, pathRelativo);
-	FILE * archivo = fopen(path, "w");
+	FILE * archivo = fopen(path, "a");//Creo el bloque si no existe
 	if (!archivo) { //Si los directorios todavía no están creados, hay que hacerlo
-		crearDirectorio(path); //SÓLO FUNCIONA PARA CREAR UN SUBDIRECTORIO. SI HAY MÁS FALLA
+		crearDirectorio(path);
+		log_info(fileSystem_log,"Creados directorios necesarios");
 		archivo = fopen(path, "w");
 		if (!archivo) {
 			log_error(fileSystem_log, "Error al crear archivo despúes de crear el directorio");
@@ -241,19 +258,20 @@ void crearArchivo(char* pathRelativo) {
 		}
 	}
 	fclose(archivo);
-	//Crear File Metadata
-	t_config *fileMetadata = config_create(path);
-	char keyTamanio[8] = "TAMANIO";
-	char valorTamanio[2] = "0";
-	config_set_value(fileMetadata, keyTamanio, valorTamanio);
-	char keyBloques[8] = "BLOQUES";
-	char valorBloques[10];
-	int bloqueAAsignar = primerBloqueVacio();
-	snprintf(valorBloques, 10, "[%d]", bloqueAAsignar);
-	config_set_value(fileMetadata, keyBloques, valorBloques);
-	bitarray_set_bit(bitarray, bloqueAAsignar);
-	config_save(fileMetadata);
-	config_destroy(fileMetadata);
+	if (tamanioArchivo(path)==0){//Si el archivo está vacío, creo File Metadata
+		t_config *fileMetadata = config_create(path);
+		char keyTamanio[8] = "TAMANIO";
+		char valorTamanio[2] = "0";
+		config_set_value(fileMetadata, keyTamanio, valorTamanio);
+		char keyBloques[8] = "BLOQUES";
+		char valorBloques[10];
+		int bloqueAAsignar = primerBloqueVacio();
+		snprintf(valorBloques, 10, "[%d]", bloqueAAsignar);
+		config_set_value(fileMetadata, keyBloques, valorBloques);
+		bitarray_set_bit(bitarray, bloqueAAsignar);
+		config_save(fileMetadata);
+		config_destroy(fileMetadata);
+	}
 }
 
 void borrarArchivo(char *pathRelativo) {
@@ -365,7 +383,7 @@ void agregarBloques(t_config *archivo, int cantBloquesAAgregar) {
 	if (cantBloquesAAgregar > cantidadDeBloquesLibres()) {
 		log_error(fileSystem_log, "No hay suficientes bloques para asignar al archivo");
 		//printf("No hay suficientes bloques para asignar al archivo\n");
-		exit(-1);		//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE
+		exit(-1);		//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE              (PENDIENTE!!)
 	}
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
 	int cantBloques;
@@ -420,7 +438,7 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 	int cantBloquesNecesaria = divisionRoundUp((offset + size), configFS->tamBloque);
 	if (cantBloquesNecesaria > cantBloques) {
 		agregarBloques(archivo, cantBloquesNecesaria - cantBloques);
-		//SI agregarBloques ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)
+		//SI agregarBloques ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)      (PENDIENTE!!)
 		config_destroy(archivo);
 		archivo = config_create(path); //Necesito cargarlo de nuevo para poder ver los cambios
 	}

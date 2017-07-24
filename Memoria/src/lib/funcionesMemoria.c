@@ -9,7 +9,7 @@
 #include "funcionesMemoria.h"
 
 pthread_mutex_t mutexAsignarPagina = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutexIngresarEntradaEnCache = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutexCache = PTHREAD_MUTEX_INITIALIZER;
 
 int tamFrame = 0;
 int cantFrames = 0;
@@ -124,12 +124,12 @@ void inicializarCantPagsPorPID() {
 }
 
 void limpiarCache() {
-	pthread_mutex_lock(&mutexIngresarEntradaEnCache);
+	pthread_mutex_lock(&mutexCache);
 	int i;
 	for (i = 0; i < entradasCache; i++) {
 		memoriaCache[i].PID = -1; //Supongo que PID -1 significa entrada vacía
 	}
-	pthread_mutex_unlock(&mutexIngresarEntradaEnCache);
+	pthread_mutex_unlock(&mutexCache);
 }
 
 void dumpCache() {
@@ -751,7 +751,7 @@ void ingresarEntradaEnCache(int PID, int nroPag) {
 
 	if(cacheXProceso > 0){
 
-		pthread_mutex_lock(&mutexIngresarEntradaEnCache);
+		pthread_mutex_lock(&mutexCache);
 
 		int entradaAReemplazar = -1;
 		//Si ya se encuentra en cache, se actualiza la misma entrada
@@ -790,17 +790,19 @@ void ingresarEntradaEnCache(int PID, int nroPag) {
 		}
 		setearEntradaCache(&entradaAReemplazar, PID, nroPag, buscarPagina(PID, nroPag));
 
-		pthread_mutex_unlock(&mutexIngresarEntradaEnCache);
+		pthread_mutex_unlock(&mutexCache);
 	}
 }
 
 char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	//Si la página se encuentra en caché, no hace falta acceder a memoria (se omite el retardo)
 	int k, estaEnCache = -1;
+	pthread_mutex_lock(&mutexCache);
 	for (k = 0; (estaEnCache == -1) && (k < entradasCache); k++) {
 		if (memoriaCache[k].PID == PID && memoriaCache[k].numPag == nroPag)
 			estaEnCache = 1;
 	}
+	pthread_mutex_unlock(&mutexCache);
 	//En cualquier caso actualizo la caché, ya sea para agregar la entrada(si no está), o para actualizar el último acceso
 	ingresarEntradaEnCache(PID, nroPag);
 	if (estaEnCache != 1) {
@@ -886,10 +888,12 @@ void finalizarPrograma(int PID) {
 	}
 	//Elimino las páginas del proceso en caché
 	int i;
+	pthread_mutex_lock(&mutexCache);
 	for (i = 0; i < entradasCache; i++) {
 		if (memoriaCache[i].PID == PID)
 			memoriaCache[i].PID = -1;
 	}
+	pthread_mutex_unlock(&mutexCache);
 	printf("Se ha finalizado el proceso %d\n", PID);
 }
 

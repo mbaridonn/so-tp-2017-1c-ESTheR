@@ -10,10 +10,8 @@ CONSOLA
 EXTRA- Desconectar Consola: No se cierran las conexiones en el Kernel
 
 FILE SYSTEM
--El FS no permite la creación de nuevos archivos si no hay bloques libres.
--Si no hay más bloques libres, tiene que avisar a Kernel.
-EXTRA-En caso de que se tengan que crear subdirectorios antes de crear el archivo, actualmente sólo se puede crear uno. Se deberían poder crear
-los que sean necesarios.
+-El FS no debería permitir la creación de nuevos archivos si no hay bloques libres.
+-Si no hay más bloques libres para escribir, tiene que avisar a Kernel.
 
 MEMORIA
 -Cuando se desconecta una CPU, se debería eliminar el hilo correspondiente.
