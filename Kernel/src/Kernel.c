@@ -529,9 +529,17 @@ void enviar_quantum(int cpu){
 	}
 }
 
+void enviar_quantum_sleep(int cpu){
+	if(send(cpu,&config->QUANTUM_SLEEP,sizeof(int),0) == -1){
+		printf("Error al enviar el quantum a CPU.\n");
+		exit(-1);
+	}
+}
+
 void enviar_planificacion_y_quantum(int cpu){
 	enviar_planificacion(cpu);
 	enviar_quantum(cpu);
+	enviar_quantum_sleep(cpu);
 }
 
 void inicializar_contadores_procesos(){

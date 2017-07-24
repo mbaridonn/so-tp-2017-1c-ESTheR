@@ -15,9 +15,9 @@
 #define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
 
 int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas,
-		stackSize, tamPag, motivo_liberacion;
+		stackSize, tamPag, motivo_liberacion, quantum_sleep;
 
-bool descCPU;
+bool descCPU, matarProceso;
 
 enum algoritmos_planificacion {
 	FIFO, RR
@@ -159,6 +159,11 @@ void testearSerializado() {
 	mostrarPcb(pcb_a_deserializar);
 }
 
+void mili_sleep(int retardo){
+	float nuevo_retardo = (float)retardo/(float)1000;
+	sleep(nuevo_retardo);
+}
+
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
 	config->ipKernel = strdup(config_get_string_value(archivo_Modelo, "IP_KERNEL"));
@@ -256,9 +261,18 @@ void recibir_quantum() {
 	}
 }
 
+void recibir_quantum_sleep() {
+	if (recv(serv_kernel, &quantum_sleep, sizeof(int), 0) == -1) {
+		log_error(cpu_log, "Error al recibir el quantum sleep de planificacion");
+		//printf("Error al recibir el quantum de planificacion.\n");
+		exit(-1);
+	}
+}
+
 void recibir_planificacion_y_quantum() {
 	recibir_planificacion();
 	recibir_quantum();
+	recibir_quantum_sleep();
 	if (planificacion == FIFO) {
 		log_info(cpu_log, "Me llego que la planificacion es FIFO y el QUANTUM en:%d\n", quantum);
 		//printf("Me llego que la planificacion es FIFO y el QUANTUM en:%d\n",quantum);
@@ -327,7 +341,9 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 		un_pcb->program_counter++;
 		instrucciones_ejecutadas++;
 		free(instruccion);
+		mili_sleep(quantum_sleep);
 	}
+	if (matarProceso) codigoError = -12;//Defino nuevo Exit Code -12: CPU desconectada con SIGKILL (!!)
 	if (codigoError != 0) {
 		un_pcb->exit_code = codigoError;
 		motivo_liberacion = mot_error;
@@ -413,13 +429,19 @@ void devolver_pcb_y_liberarse(t_pcb *pcb) {
 
 void desconectarCPU(int senial){
 	if (senial == SIGUSR1) descCPU = true;
+	if (senial == SIGINT){
+		descCPU = true;
+		matarProceso = true;
+	}
 }
 
 int main(void) {
 
 	signal(SIGUSR1, desconectarCPU);
+	signal(SIGINT, desconectarCPU);
 
 	descCPU = false;
+	matarProceso = false;
 
 	inicializarLog();
 	leerArchivo();
