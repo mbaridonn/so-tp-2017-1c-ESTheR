@@ -676,7 +676,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		if(bytesLeidos != NULL){
 			enviarIntACPU(&(unaCPU->clie_CPU), tamanio);
 			esperarSenialDeCPU(&(unaCPU->clie_CPU));
-			if (send(&(unaCPU->clie_CPU), bytesLeidos, tamanio, 0) == -1) {
+			if (send(unaCPU->clie_CPU, bytesLeidos, tamanio, 0) == -1) {
 				printf("Error enviando los bytes leidos\n");
 				exit(-1);
 			}
@@ -693,7 +693,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		int tamanio = recibir_int_de(unaCPU->clie_CPU);
 		char* bytesAEscribir = reservarMemoria(tamanio);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
-		if (recv((unaCPU->clie_CPU), bytesAEscribir, tamanio, 0) == -1) {
+		if (recv(unaCPU->clie_CPU, bytesAEscribir, tamanio, 0) == -1) {
 			printf("Error al recibir bytes a escribir de CPU\n");
 			exit(-1);
 		}

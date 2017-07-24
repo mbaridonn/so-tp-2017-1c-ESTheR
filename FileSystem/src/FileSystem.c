@@ -350,7 +350,7 @@ char* obtenerDatos(char* pathRelativo, int offset, int size) {
 	snprintf(nombreBloque, 10, "%s.bin", bloquesArchivo[bloqueInicial]);
 	strcat(pathBloque, nombreBloque);
 	FILE * bloque = fopen(pathBloque, "r");
-	char *bytesLeidos = reservarMemoria(size);
+	char *bytesLeidos = reservarMemoria(size+1);//Sumo uno para evitar SEGFAULT al agregar el último '\0'
 	fread(bytesLeidos, size - sizeRestante, sizeof(char), bloque); //En caso de que haya que leer más de otra pág
 	bytesLeidos[size - sizeRestante] = '\0';
 	fclose(bloque);
@@ -574,6 +574,7 @@ void atenderKernel() {
 				//printf("Error enviando el archivo leido\n");
 				exit(-1);
 			}
+			free(bytesLeidos);
 			break;
 		}
 		case k_fs_escribir_archivo:

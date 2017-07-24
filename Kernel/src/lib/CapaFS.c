@@ -232,7 +232,7 @@ char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tam
 		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
 		avisarAccionAFS(tablasDeArchivosDeProcesos[PID][posicionReal].offset);//Uso avisarAccion para pasar parámetro
 		avisarAccionAFS(tamanio);//Uso avisarAccion para pasar parámetro
-		char* bytesLeidos;
+		char* bytesLeidos = malloc(tamanio);
 		if (recv(servFS, bytesLeidos, tamanio, 0) == -1) {
 			printf("Error recibiendo el archivo leido\n");
 			exit(-1);
