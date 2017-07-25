@@ -181,7 +181,7 @@ int borrarArchivo(int PID, u_int32_t fileDescriptor){
 		avisarAccionAFS(k_fs_borrar_archivo);
 		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
-		cerrarArchivo(PID,fileDescriptor);
+		//cerrarArchivo(PID,fileDescriptor);
 		return k_cpu_accion_OK;
 	} else {
 		printf("El archivo no puede ser borrado, ya que está abierto por otro proceso\n");

@@ -13,7 +13,7 @@
 #include "conexionesSelect.h"
 #include "lib/CapaFS.h"
 
-char *rutaArchivo = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt";
+char *rutaArchivo;// = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt";
 
 u_int32_t planificacionActivada = 1;
 
@@ -574,8 +574,8 @@ int finalizar_programas_de(int clie_consola){
 }
 
 
-int main(/*int argc, char* argv[]*/) {
-	/*if (argc == 1)
+int main(int argc, char* argv[]) {
+	if (argc == 1)
 	{
 		printf("Falta ingresar el path del archivo de configuracion\n");
 		return -1;
@@ -585,7 +585,7 @@ int main(/*int argc, char* argv[]*/) {
 		printf("Numero incorrecto de argumentos\n");
 		return -1;
 	}
-	rutaArchivo = strdup(argv[1]);*/
+	rutaArchivo = strdup(argv[1]);
 
 	inicializarTablasDeArchivos();
 	inicializar_tablaHeap();
@@ -613,7 +613,7 @@ int main(/*int argc, char* argv[]*/) {
 	exit(0);*/
 
 	leerArchivoConfig();
-	//free(rutaArchivo);
+	free(rutaArchivo);
 
 	int i, procesoConectado;
 

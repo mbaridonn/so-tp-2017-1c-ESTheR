@@ -15,7 +15,7 @@
 //#include <commons/log.h>
 #include "libreriaSockets.h"
 
-char *rutaArchivo = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem";
+char *rutaArchivo;// = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/src/configFyleSystem";
 
 int clienteKernel;
 //t_log *fileSystem_log;
@@ -604,8 +604,8 @@ void atenderKernel() {
 }
 
 
-int main(/*int argc, char* argv[]*/) {
-	/*if (argc == 1)
+int main(int argc, char* argv[]) {
+	if (argc == 1)
 	{
 		printf("Falta ingresar el path del archivo de configuracion\n");
 		return -1;
@@ -615,7 +615,7 @@ int main(/*int argc, char* argv[]*/) {
 		printf("Numero incorrecto de argumentos\n");
 		return -1;
 	}
-	rutaArchivo = strdup(argv[1]);*/
+	rutaArchivo = strdup(argv[1]);
 
 	inicializarLog();
 //	fileSystem_log = log_create("/home/utnso/git/tp-2017-1c-C-digo-Facilito/FileSystem/Debug/FileSystem.log", "CódigoFacilito-FS\n", true, LOG_LEVEL_TRACE);
@@ -623,7 +623,7 @@ int main(/*int argc, char* argv[]*/) {
 
 	leerArchivo();
 
-	//free(rutaArchivo);
+	free(rutaArchivo);
 
 	leerArchivoConfiguracionFS();
 	crearBloques();

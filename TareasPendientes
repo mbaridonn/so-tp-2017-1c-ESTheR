@@ -9,6 +9,7 @@ FILE SYSTEM
 -Si no hay más bloques libres para escribir, tiene que avisar a Kernel.
 
 MEMORIA
+-Solucionar problemas de Heap.
 -Cuando se desconecta una CPU, se debería eliminar el hilo correspondiente.
 -Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
 EXTRA- La cache debería almacenar el contenido de la página, no una referencia al frame. Dump cache debería mostrar el contenido de la
@@ -16,6 +17,8 @@ página, no el número de frame.
 EXTRA- Revisar tamaño de la tabla CantPagsPorPID (en realidad debería ser una lista, no un array).
 
 CPU
+-Chequear scripts que usen etiquetas (goto? serializado?)
+-Que pueda morir, una vez que se le envia una señal y NO este ejecutando.
 -Al ejecutar la última sentencia, el CPU deberá notificar al Kernel que el proceso finalizó para que este se ocupe de solicitar la
 eliminación de las estructuras utilizadas por el sistema.
 -Existe la posibilidad que el Proceso CPU reciba un mensaje de excepción como resultado de una solicitud a la Memoria o al Kernel.
@@ -26,4 +29,4 @@ EXTRA- Poder modificar el quantum sleep en tiempo de ejecución.
 KERNEL
 -Si no se pudiera obtener espacio suficiente en Memoria para algunas de las estructuras necesarias del proceso, entonces se le rechazará
 el acceso al sistema, informándose oportunamente en el Proceso Consola correspondiente el motivo por el cual no pudo aceptarse el
-programa en el sistema.
+programa en el sistema. (cuando se trata de memoria dinamica -heap-).

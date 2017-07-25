@@ -14,7 +14,7 @@
 
 #define RUTA_CARPETA_SCRIPTS "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/scripts/"
 
-char *rutaArchivo = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt";
+char *rutaArchivo;// = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt";
 
 enum notificacionesConsolaKernel {
 	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
@@ -639,8 +639,8 @@ void elegirComando() {
 	} while (seguirAbierto);
 }
 
-int main(/*int argc, char* argv[]*/) {
-	/*if (argc == 1)
+int main(int argc, char* argv[]) {
+	if (argc == 1)
 	{
 		printf("Falta ingresar el path del archivo de configuracion\n");
 		return -1;
@@ -650,14 +650,14 @@ int main(/*int argc, char* argv[]*/) {
 		printf("Numero incorrecto de argumentos\n");
 		return -1;
 	}
-	rutaArchivo = strdup(argv[1]);*/
+	rutaArchivo = strdup(argv[1]);
 
 	lista_hilos_por_PID = list_create();
 	lista_futuras_desconexiones = list_create();
 	inicializarLog();
 
 	leerArchivo();
-	//free(rutaArchivo);
+	free(rutaArchivo);
 	llenarSocket();
 	elegirComando();
 

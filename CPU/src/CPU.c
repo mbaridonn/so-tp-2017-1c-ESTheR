@@ -350,9 +350,10 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	}
 	if(terminoElPrograma()){
 		motivo_liberacion = mot_finalizo;
-	}
-	if(instrucciones_ejecutadas == quantum){
-		motivo_liberacion = mot_quantum;
+	}else{
+		if(instrucciones_ejecutadas == quantum){
+				motivo_liberacion = mot_quantum;
+		}
 	}
 	if(estaBloqueado()){
 		motivo_liberacion = mot_bloqueado;
