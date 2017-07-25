@@ -448,6 +448,9 @@ void habilitarConsolaKernel() {
 			char *opcion = reservarMemoria(100);
 			fgets(opcion, 100, stdin);
 			mostrar_info_de(atoi(opcion));
+			t_list *lista = lista_que_tiene_este_pcb(atoi(opcion));
+			t_pcb *pcb = obtener_PCB_segun_PID_en(lista,atoi(opcion));
+			printf("EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
 			free(opcion);
 			break;
 		}
@@ -613,6 +616,7 @@ int main(void) {
 	lista_bloqueos = list_create();
 	lista_estadisticas_de_procesos = list_create();
 	lista_proceso_por_cliente = list_create();
+	lista_futuras_desconexiones = list_create();
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?

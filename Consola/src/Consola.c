@@ -19,7 +19,12 @@ enum notificacionesConsolaKernel {
 	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
 };
 
+enum motivos_finalizacion{
+	desconexion_consola, consola_de_consola, consola_de_kernel
+};
+
 t_list *lista_hilos_por_PID;
+t_list *lista_futuras_desconexiones;
 
 struct sockaddr_in direccionServidor;
 
@@ -46,12 +51,17 @@ typedef struct {
 	tiempo_proceso *tiempo_fin;
 } hilo_por_programa;
 
+typedef struct{
+	int pid;
+	int motivo;
+}futura_desconexion_consola;
+
 enum procesos {
 	kernel, cpu, consola, file_system, memoria
 };
 
 enum acciones {
-	startProgram, endProgram
+	startProgram, endProgram, futura_desconexion
 };
 
 enum confirmacionMem {
@@ -283,7 +293,49 @@ void mostrarCantidadImpresiones(int cantImpresiones) {
 	log_info(consola_log, "Cantidad de impresiones: %d", cantImpresiones);
 }
 
-void finalizar_programa_segun_PID(int pid) {
+void mostrar_exit_code_segun_motivo(int motivo){
+	switch(motivo){
+		case desconexion_consola:
+		{
+			printf("Exit_Code: -6\n");
+			break;
+		}
+		case consola_de_consola:
+		{
+			printf("Exit_Code: -7\n");
+			break;
+		}
+		case consola_de_kernel:
+		{
+			printf("Exit_Code: -13\n");
+			break;
+		}
+	}
+}
+
+void avisar_a_kernel_motivo_futura_desconexion(int serv_kernel,int motivo){
+	int mot = motivo;
+	if(send(serv_kernel,&mot,sizeof(int),0)<0){
+		printf("Error al enviar motivo de futura desconexion a Kernel\n");
+		exit(-1);
+	}
+}
+
+void esperar_senial_de_kernel(int serv_kernel){
+	char senial[2] = "a";
+	if (recv(serv_kernel, senial, 2, 0) == -1) {
+		printf("Error al recibir senial de Kernel\n");
+	}
+}
+
+futura_desconexion_consola *crear_futura_desconexion_consola(int pid,int motivo){
+	futura_desconexion_consola *fut_desc = reservarMemoria(sizeof(futura_desconexion_consola));
+	fut_desc->pid=pid;
+	fut_desc->motivo=motivo;
+	return fut_desc;
+}
+
+void finalizar_programa_segun_PID(int pid, int motivo) {
 	hilo_por_programa *unHiloPorPrograma = NULL;
 	unHiloPorPrograma = obtener_hilo_por_programa_segun_pid(pid);
 
@@ -293,12 +345,56 @@ void finalizar_programa_segun_PID(int pid) {
 	if(unHiloPorPrograma == NULL){
 		printf("El proceso %d no pertenece a esta consola\n\n", pid);
 	}else{
-	guardarFechaHoraEjecucion(unHiloPorPrograma->tiempo_fin);
-	mostrarTiempoInicioFinDiferencia(unHiloPorPrograma->tiempo_inicio, unHiloPorPrograma->tiempo_fin);
-	mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);
-	matar_hilo(unHiloPorPrograma);
-	printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
+	futura_desconexion_consola *fut_desc = crear_futura_desconexion_consola(pid,motivo);
+	int acc = futura_desconexion;
+	if(motivo == consola_de_consola || motivo == desconexion_consola){
+		printf("*****LLEGUE HASTA ACAAAAAAAA*******\n");
+		list_add(lista_futuras_desconexiones,fut_desc);
+		char senial[2] = "a";
+		send(unHiloPorPrograma->serv_kernel,senial,2,0);
+		printf("*****LLEGUE HASTA ACAAAAAAAA2*******\n");
+	}else{
+		free(fut_desc);
+		solicitarA(&(unHiloPorPrograma->serv_kernel),"Kernel");
+		informarAccion(&(unHiloPorPrograma->serv_kernel),&acc);
+		avisar_a_kernel_motivo_futura_desconexion(unHiloPorPrograma->serv_kernel,motivo);
+		esperar_senial_de_kernel(unHiloPorPrograma->serv_kernel);
+		guardarFechaHoraEjecucion(unHiloPorPrograma->tiempo_fin);
+		mostrarTiempoInicioFinDiferencia(unHiloPorPrograma->tiempo_inicio, unHiloPorPrograma->tiempo_fin);
+		mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);
+		mostrar_exit_code_segun_motivo(motivo);
+		matar_hilo(unHiloPorPrograma);
+		printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
 	}
+	}
+}
+
+int recibir_exit_code(int serv_kernel){
+	int exit_code;
+	if(recv(serv_kernel,&exit_code,sizeof(int),0)<0){
+		printf("Error al recibir el exit_code de parte de kernel\n");
+		exit(-1);
+	}
+	return exit_code;
+}
+
+int obtener_motivo_futura_desconexion_segun_PID(int pid){
+	bool es_esa_fut_desc(futura_desconexion_consola *f){
+		return f->pid == pid;
+	}
+	futura_desconexion_consola *f_desc = list_find(lista_futuras_desconexiones,(void*)es_esa_fut_desc);
+	return f_desc->motivo;
+}
+
+void futura_desconexion_consola_destroyer(futura_desconexion_consola *f){
+	free(f);
+}
+
+void liberar_futura_desconexion_segun_PID(int pid){
+	bool es_esa_fut_desc(futura_desconexion_consola *f){
+			return f->pid == pid;
+	}
+	list_remove_and_destroy_by_condition(lista_futuras_desconexiones,(void*)es_esa_fut_desc,(void*)futura_desconexion_consola_destroyer);
 }
 
 void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
@@ -308,13 +404,16 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 				un_hilo_por_programa->PID);
 		int accion = recibir_accion_de_kernel(
 				un_hilo_por_programa->serv_kernel);
+		printf("La accion fue: %d\n",accion);
 		switch (accion) {
 		case finalizo_proceso:
 			printf("El programa con PID: %d ha finalizado\n",
 					un_hilo_por_programa->PID);
+			int exit_code = recibir_exit_code(un_hilo_por_programa->serv_kernel);
 			guardarFechaHoraEjecucion(un_hilo_por_programa->tiempo_fin);
 			mostrarTiempoInicioFinDiferencia(un_hilo_por_programa->tiempo_inicio, un_hilo_por_programa->tiempo_fin);
 			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
+			printf("Exit_Code: %d\n",exit_code);
 			matar_hilo(un_hilo_por_programa);
 			break;
 		case print: {
@@ -327,12 +426,28 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			break;
 		}
 		case finalizacion_forzosa:
-			finalizar_programa_segun_PID(un_hilo_por_programa->PID);
+			finalizar_programa_segun_PID(un_hilo_por_programa->PID,consola_de_kernel);
 			break;
 		case confirmacion_de_memoria:
 		{
 			enviarSenialAKernel(un_hilo_por_programa->serv_kernel);
 			esperarConfirmacionDeKernel(&(un_hilo_por_programa->serv_kernel));
+			break;
+		}
+		case 97:
+		{
+			printf("Entre al case re loco\n");
+			int acc = futura_desconexion;
+			int motivo = obtener_motivo_futura_desconexion_segun_PID(un_hilo_por_programa->PID);
+			informarAccion(&(un_hilo_por_programa->serv_kernel),&acc);
+			avisar_a_kernel_motivo_futura_desconexion(un_hilo_por_programa->serv_kernel,motivo);
+			esperar_senial_de_kernel(un_hilo_por_programa->serv_kernel);
+			guardarFechaHoraEjecucion(un_hilo_por_programa->tiempo_fin);
+			mostrarTiempoInicioFinDiferencia(un_hilo_por_programa->tiempo_inicio, un_hilo_por_programa->tiempo_fin);
+			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
+			mostrar_exit_code_segun_motivo(motivo);
+			liberar_futura_desconexion_segun_PID(un_hilo_por_programa->PID);
+			matar_hilo(un_hilo_por_programa);
 			break;
 		}
 		default:
@@ -459,13 +574,22 @@ void finalizarPrograma() {
 	fgets(opcion, 100, stdin);
 	id_proceso_a_detener = atoi(opcion);
 
-	finalizar_programa_segun_PID(id_proceso_a_detener);
+	finalizar_programa_segun_PID(id_proceso_a_detener,consola_de_consola);
 	free(opcion);
+}
+
+void matar_todos_los_procesos(){
+	while(!list_is_empty(lista_hilos_por_PID)){
+		hilo_por_programa *un_hilo_por_programa = list_get(lista_hilos_por_PID,0);
+		finalizar_programa_segun_PID(un_hilo_por_programa->PID,desconexion_consola);
+		sleep(3); // HAY QUE MANEJARLO CON MUTEX
+	}
 }
 
 void desconectarConsola() {
 	/*Desconectar Consola: Este comando finalizará la conexión de todos los threads de la consola
 	 con el kernel, dando por muertos todos los programas de manera abortiva.*/
+	matar_todos_los_procesos();
 	log_info(consola_log, "\nConsola desconectada. \n");
 	exit(-1);
 }
@@ -517,6 +641,7 @@ void elegirComando() {
 int main(void) {
 
 	lista_hilos_por_PID = list_create();
+	lista_futuras_desconexiones = list_create();
 	inicializarLog();
 
 	leerArchivo();

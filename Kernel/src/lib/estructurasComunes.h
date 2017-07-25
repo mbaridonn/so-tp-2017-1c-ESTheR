@@ -44,8 +44,12 @@ enum confirmacion {
 	noSePudoLiberarMemoria, sePudoLiberarMemoria
 };
 
+enum motivos_finalizacion{
+	desconexion_consola, consola_de_consola, consola_de_kernel
+};
+
 enum acciones {
-	startProgram, endProgram
+	startProgram, endProgram, futura_desconexion
 };
 
 typedef struct{
@@ -98,6 +102,11 @@ typedef struct {
 	int STACK_SIZE;
 } t_configuracion;
 
+typedef struct{
+	int consola_clie;
+	int motivo_desc;
+}futura_desconexion_consola;
+
 t_configuracion *config;
 
 t_list *listaPCBs_NEW;
@@ -111,6 +120,7 @@ t_list *lista_detenciones_pendientes;
 t_list *lista_bloqueos;
 t_list *lista_estadisticas_de_procesos;
 t_list *lista_proceso_por_cliente;
+t_list *lista_futuras_desconexiones;
 
 
 int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;

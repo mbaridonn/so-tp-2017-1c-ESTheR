@@ -4,9 +4,6 @@ GENERAL
 -Chequear Memory Leaks.
 -Faltan logs en bibliotecas de CPU y Memoria
 
-CONSOLA
-EXTRA- Desconectar Consola: No se cierran las conexiones en el Kernel
-
 FILE SYSTEM
 -El FS no debería permitir la creación de nuevos archivos si no hay bloques libres.
 -Si no hay más bloques libres para escribir, tiene que avisar a Kernel.
@@ -27,8 +24,6 @@ se deberá finalizar el programa AnSISOP que se encuentre en ejecución.
 EXTRA- Poder modificar el quantum sleep en tiempo de ejecución.
 
 KERNEL
--Es posible que mediante la consola del Kernel se solicite la finalización de un programa. En ese caso, se deberán realizar las acciones
-solicitadas con el PCB correspondiente, cargando el código de error en el campo Exit Code, e informando al Proceso Consola correspondiente.
 -Si no se pudiera obtener espacio suficiente en Memoria para algunas de las estructuras necesarias del proceso, entonces se le rechazará
 el acceso al sistema, informándose oportunamente en el Proceso Consola correspondiente el motivo por el cual no pudo aceptarse el
 programa en el sistema.

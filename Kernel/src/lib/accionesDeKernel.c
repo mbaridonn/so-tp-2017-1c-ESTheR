@@ -270,9 +270,65 @@ void avisar_accion_a_consola(int consola_clie,int accion){
 	}
 }
 
+void futura_desconexion_destroyer(futura_desconexion_consola *f){
+	free(f);
+}
+
+void eliminar_futura_desconexion_de(int consola_clie){
+	bool es_esa_fut_desc(futura_desconexion_consola *f){
+		return f->consola_clie == consola_clie;
+	}
+	list_remove_and_destroy_by_condition(lista_futuras_desconexiones,(void*)es_esa_fut_desc,(void*)futura_desconexion_destroyer);
+}
+
+bool se_desconecto(int consola_clie){
+	bool es_esa_fut_desc(futura_desconexion_consola *f){
+		return f->consola_clie == consola_clie;
+	}
+	return list_any_satisfy(lista_futuras_desconexiones,(void*)es_esa_fut_desc);
+}
+
+futura_desconexion_consola *obtener_futura_desconexion_segun_consola(int consola_clie){
+	bool es_esa_fut_desc(futura_desconexion_consola *f){
+			return f->consola_clie == consola_clie;
+	}
+	return list_find(lista_futuras_desconexiones,(void*)es_esa_fut_desc);
+}
+
+void asignar_exit_code_a_pcb_segun_motivo(t_pcb *un_pcb,int motivo){
+	switch(motivo){
+			case desconexion_consola:
+			{
+				un_pcb->exit_code = -6;
+				break;
+			}
+			case consola_de_consola:
+			{
+				un_pcb->exit_code = -7;
+				break;
+			}
+			case consola_de_kernel:
+			{
+				un_pcb->exit_code = -13;
+				break;
+			}
+		}
+}
+
 void avisar_finalizacion_proceso_a_consola(int pid){
 	int consola_clie = obtener_cliente_segun_PID(pid);
-	avisar_accion_a_consola(consola_clie,finalizo_proceso);
+	if(!se_desconecto(consola_clie)){
+		avisar_accion_a_consola(consola_clie,finalizo_proceso);
+		t_list *lista = lista_que_tiene_este_pcb(pid);
+		t_pcb *un_pcb = obtener_PCB_segun_PID_en(lista,pid);
+		enviarIntACPU(&consola_clie,un_pcb->exit_code); // En realidad es a una consola.
+	}else{
+		futura_desconexion_consola *f_desconex = obtener_futura_desconexion_segun_consola(consola_clie);
+		t_list *lista = lista_que_tiene_este_pcb(pid);
+		t_pcb *un_pcb = obtener_PCB_segun_PID_en(lista,pid);
+		asignar_exit_code_a_pcb_segun_motivo(un_pcb,f_desconex->motivo_desc);
+	}
+	eliminar_futura_desconexion_de(consola_clie);
 }
 
 void cerrar_conexion_con(int clie_consola){
@@ -397,6 +453,13 @@ int recibir_int_de(int cliente){
 	return accion;
 }
 
+futura_desconexion_consola *crear_futura_desconexion_consola(int consola, int motivo){
+	futura_desconexion_consola *fut_desc = reservarMemoria(sizeof(futura_desconexion_consola));
+	fut_desc->consola_clie = consola;
+	fut_desc->motivo_desc = motivo;
+	return fut_desc;
+}
+
 void atenderAConsola(int *unaConsola) {
 	int accion = recibirAccionDe(unaConsola);
 	switch (accion) { //ACA VAN TODOS LOS CASES DE LAS DIFERENTES ACCIONES QUE PUEDE SOLICITAR CONSOLA A KERNEL
@@ -418,6 +481,14 @@ void atenderAConsola(int *unaConsola) {
 			finalizarUnProceso(pcb);
 			eliminar_detencion(pcb);
 		}
+		break;
+	}
+	case futura_desconexion:
+	{
+		int motivo = recibir_int_de(*unaConsola);
+		futura_desconexion_consola *fut_desconexion = crear_futura_desconexion_consola(*unaConsola,motivo);
+		list_add(lista_futuras_desconexiones,fut_desconexion);
+		enviarSenialACPU(unaConsola); //En realidad es a una consola.
 		break;
 	}
 	default:
