@@ -64,20 +64,23 @@ char *solicitarLecturaAMemoria(int pid, int nroPagina, int offset, int tamanio) 
 	return bytesLeidos;
 }
 
-u_int32_t tieneEspacioContiguoSuficiente(entradaTablaHeap* entrada,
-		int espacioRequerido) {
+u_int32_t tieneEspacioContiguoSuficiente(entradaTablaHeap* entrada, int espacioRequerido) {
 	u_int32_t ptrInicioBloque = 0;
 	char* pagina = NULL;
 	heapMetadata* metadata;
 	int offset = 0;
 	pagina = solicitarLecturaAMemoria(PID, entrada->nroPag, 0, tamPag);
+	printf("entrada->nroPag: %d\n", entrada->nroPag);
 	while (!ptrInicioBloque && offset < tamPag) {
 		metadata = (heapMetadata*) &pagina[offset]; //Hay que usar el offset así para que no se aplique aritmética de punteros
+		printf("metadata->estaLibre: %d\n", metadata->estaLibre);
+		printf("metadata->tamanio: %d\n", metadata->tamanio);
 		if (metadata->estaLibre && metadata->tamanio >= (espacioRequerido + sizeof(heapMetadata))) {
-			ptrInicioBloque = entrada->nroPag * tamPag + offset; //Devuelve puntero al metadata (No a los datos!!)
+			ptrInicioBloque = offset; //Devuelve puntero al metadata (No a los datos!!)
 		}
 		offset += sizeof(heapMetadata) + metadata->tamanio;
 	}
+	printf("offset: %d\n", offset);
 	free(pagina);
 	return ptrInicioBloque;
 }
@@ -97,6 +100,7 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 	}
 	t_list* entradasConEspacio = list_filter(tablaHeap, (void*) tieneEspacioDisponible);
 	if (!list_is_empty(entradasConEspacio)) {
+		printf("Entre aca 1\n");
 		//Hay que iterar hasta que una página tenga espacio CONTIGUO suficiente
 		int cantEntradasConEspacio = list_size(entradasConEspacio);
 		int iteradorEntrada = 0;
@@ -109,6 +113,7 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 			iteradorEntrada++;
 		}
 		if (posMetadataInicial) { //Si se encontró, inserto Metadata en Memoria
+			printf("posMetadataInicial: %d\n", posMetadataInicial);
 			heapMetadata metadataInicio, metadataFin;
 			char *bytesLeidos = solicitarLecturaAMemoria(entrada->PID, entrada->nroPag, posMetadataInicial, sizeof(heapMetadata));
 			memcpy(&metadataInicio, bytesLeidos, sizeof(heapMetadata));
@@ -123,6 +128,8 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 
 			//Actualizar entrada de la tabla de heap
 			entrada->tamanioDisponible -= espacioRequerido + sizeof(heapMetadata);
+
+			enviarIntACPU(&clieCPU, sePudoReservarMemoriaEnMismaPag);
 		}
 	}
 	list_destroy(entradasConEspacio);//No hay que destruir los elementos!! Son los mismos que los de la tabla original
@@ -151,9 +158,10 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 		solicitarEscrituraAMemoria(PID, contador_paginas-1, 0, sizeof(heapMetadata), &metadataInicio);
 		solicitarEscrituraAMemoria(PID, contador_paginas-1, sizeof(heapMetadata)+espacioRequerido, sizeof(heapMetadata), &metadataFin);
 		ptrInicioBloque = (contador_paginas-1) * tamPag + sizeof(metadataInicio);
+
+		enviarIntACPU(&clieCPU, sePudoReservarMemoriaEnNuevaPag);
 	}
 
-	enviarIntACPU(&clieCPU, sePudoReservarMemoria);
 	return ptrInicioBloque;	//Hay que devolver un t_puntero a la memoria reservada (a los datos, no al metadata!!)
 }
 

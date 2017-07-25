@@ -20,8 +20,8 @@ enum accionesCPUMemoria{
 };
 
 enum confirmacion {
-	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina, noSePudoReservarMemoria, sePudoReservarMemoria,
-	noSePudoLiberarMemoria, sePudoLiberarMemoria
+	noHayPaginas, hayPaginas, falloLiberacionPagina, exitoLiberacionPagina, noSePudoReservarMemoria, sePudoReservarMemoriaEnMismaPag,
+	sePudoReservarMemoriaEnNuevaPag, noSePudoLiberarMemoria, sePudoLiberarMemoria
 };
 
 void solicitarA(int *cliente, char *nombreCli);

@@ -418,11 +418,13 @@ t_puntero reservar(t_valor_variable espacio){
 	} else if (confirmacion==noHayPaginas){
 		printf("No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria (Exit Code -9)\n");
 		codigoError = -9;
-	} else {
+	} else if (confirmacion==sePudoReservarMemoriaEnMismaPag){
 		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
-		pcbAEjecutar->contadorPags++;
+	} else /*if (confirmacion==sePudoReservarMemoriaEnNuevaPag)*/{
+		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
+		pcbAEjecutar->contadorPags++;//NO SIEMPRE!!
 	}
-	return direccion;//OJO! DEVUELVE 0 SI NO SE PUDO RESERVAR
+	return direccion;//DEVUELVE 0 SI NO SE PUDO RESERVAR
 }
 
 void liberar(t_puntero puntero){
