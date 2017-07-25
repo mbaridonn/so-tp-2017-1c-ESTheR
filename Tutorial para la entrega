@@ -1,0 +1,9 @@
+Tutorial para la entrega:
+-Chequear en configuración de la VM: Dispositivos->Red->Preferencias de Red que este conectado a Adaptador puente
+-Abrir Ubuntu Server
+-git clone https://github.com/sisoputnfrba/tp-2017-1c-C-digo-Facilito.git
+-Obtener IP: ifconfig. Ver Direc. inet de eth0
+-Para modificar los archivos de config: sudo nano archivoConfig.txt
+-Ingresar la IP en el campo Host Name (or IP address) de Putty y luego presionar el botón Open
+
+COMO COMPILO EL PROYECTO??

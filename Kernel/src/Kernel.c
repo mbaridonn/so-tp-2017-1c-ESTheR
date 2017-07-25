@@ -13,7 +13,7 @@
 #include "conexionesSelect.h"
 #include "lib/CapaFS.h"
 
-#define RUTA_ARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt"
+char *rutaArchivo = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/ConfigKernel.txt";
 
 u_int32_t planificacionActivada = 1;
 
@@ -64,11 +64,11 @@ void settearVariables(t_config *archivo_Modelo) {
 }
 
 void leerArchivoConfig() {
-	if (access(RUTA_ARCHIVO, F_OK) == -1) {
+	if (access(rutaArchivo, F_OK) == -1) {
 		printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
-	t_config *archivo_config = config_create(RUTA_ARCHIVO);
+	t_config *archivo_config = config_create(rutaArchivo);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	printf("Leí el archivo y extraje el puerto: %d\n", config->PUERTO_PROG);
@@ -574,7 +574,18 @@ int finalizar_programas_de(int clie_consola){
 }
 
 
-int main(void) {
+int main(/*int argc, char* argv[]*/) {
+	/*if (argc == 1)
+	{
+		printf("Falta ingresar el path del archivo de configuracion\n");
+		return -1;
+	}
+	if (argc != 2)
+	{
+		printf("Numero incorrecto de argumentos\n");
+		return -1;
+	}
+	rutaArchivo = strdup(argv[1]);*/
 
 	inicializarTablasDeArchivos();
 	inicializar_tablaHeap();
@@ -602,6 +613,7 @@ int main(void) {
 	exit(0);*/
 
 	leerArchivoConfig();
+	//free(rutaArchivo);
 
 	int i, procesoConectado;
 

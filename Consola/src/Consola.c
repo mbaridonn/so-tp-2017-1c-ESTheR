@@ -12,8 +12,9 @@
 #include <commons/collections/list.h>
 #include "libreriaSockets.h"
 
-#define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt "
 #define RUTA_CARPETA_SCRIPTS "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/scripts/"
+
+char *rutaArchivo = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt";
 
 enum notificacionesConsolaKernel {
 	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
@@ -128,7 +129,7 @@ void settearVariables(t_config *archivo_Modelo) {
 void mostrarArchivoConfig() {
 	FILE *f;
 
-	f = fopen(RUTAARCHIVO, "r");
+	f = fopen(rutaArchivo, "r");
 	int c;
 	printf("------------------------------------------\n");
 	while ((c = fgetc(f)) != EOF)
@@ -139,12 +140,12 @@ void mostrarArchivoConfig() {
 }
 
 void leerArchivo() {
-	if (access(RUTAARCHIVO, F_OK) == -1) {
+	if (access(rutaArchivo, F_OK) == -1) {
 		log_error(consola_log, "No se encontró el Archivo");
 		//printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
-	t_config *archivo_config = config_create(RUTAARCHIVO);
+	t_config *archivo_config = config_create(rutaArchivo);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	log_info(consola_log, "Leí el archivo y extraje el puerto: %d ",
@@ -638,13 +639,25 @@ void elegirComando() {
 	} while (seguirAbierto);
 }
 
-int main(void) {
+int main(/*int argc, char* argv[]*/) {
+	/*if (argc == 1)
+	{
+		printf("Falta ingresar el path del archivo de configuracion\n");
+		return -1;
+	}
+	if (argc != 2)
+	{
+		printf("Numero incorrecto de argumentos\n");
+		return -1;
+	}
+	rutaArchivo = strdup(argv[1]);*/
 
 	lista_hilos_por_PID = list_create();
 	lista_futuras_desconexiones = list_create();
 	inicializarLog();
 
 	leerArchivo();
+	//free(rutaArchivo);
 	llenarSocket();
 	elegirComando();
 
