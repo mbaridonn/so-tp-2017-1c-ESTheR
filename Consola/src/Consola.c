@@ -172,10 +172,17 @@ void liberar_hilo_por_programa(hilo_por_programa *un_hilo_por_programa){
 	free(un_hilo_por_programa);
 }
 
+void quitar_hilo_por_programa(hilo_por_programa *un_hilo_por_programa){
+	bool es_el_hilo_por_pid(hilo_por_programa *h){
+		return h->PID == un_hilo_por_programa->PID;
+	}
+	list_remove_and_destroy_by_condition(lista_hilos_por_PID,(void*)es_el_hilo_por_pid,(void*)liberar_hilo_por_programa);
+}
+
 void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
 	close(un_hilo_por_programa->serv_kernel);
 	pthread_t thread = un_hilo_por_programa->hilo;
-	liberar_hilo_por_programa(un_hilo_por_programa);
+	quitar_hilo_por_programa(un_hilo_por_programa);
 	pthread_cancel(thread);
 }
 
