@@ -10,7 +10,7 @@
 #include "libreriaSockets.h"
 #include "lib/funcionesMemoria.h"
 
-#define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt"
+char *rutaArchivo;// /home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt
 
 typedef struct {
 	int puerto;
@@ -44,7 +44,7 @@ void settearVariables(t_config *archivo_Modelo) {
 void mostrarArchivoConfig() {
 	FILE *f;
 
-	f = fopen(RUTAARCHIVO, "r");
+	f = fopen(rutaArchivo, "r");
 	int c;
 	printf("------------------------------------------\n");
 	while ((c = fgetc(f)) != EOF)
@@ -55,11 +55,11 @@ void mostrarArchivoConfig() {
 }
 
 void leerArchivo() {
-	if (access(RUTAARCHIVO, F_OK) == -1) {
+	if (access(rutaArchivo, F_OK) == -1) {
 		printf("No se encontró el Archivo\n");
 		exit(-1);
 	}
-	t_config *archivo_config = config_create(RUTAARCHIVO);
+	t_config *archivo_config = config_create(rutaArchivo);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	mostrarArchivoConfig();
@@ -67,19 +67,29 @@ void leerArchivo() {
 }
 
 void msjConexionCon(char *s) {
-	printf(
-			"\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",
-			s);
+	printf("\n-------------------------------------------\nEstoy conectado con %s\n-------------------------------------------\n",s);
 }
 
 void modificarRetardoMemoria(int nuevoRetardo) {
 	config->retardoMemoria = nuevoRetardo;
 }
 
-
-int main(void) {
+int main(int argc, char* argv[]) {
+	if (argc == 1)
+	{
+		printf("Falta ingresar el path del archivo de configuracion\n");
+		return -1;
+	}
+	if (argc != 2)
+	{
+		printf("Numero incorrecto de argumentos\n");
+		return -1;
+	}
+	rutaArchivo = strdup(argv[1]);
 
 	leerArchivo();
+
+	free(rutaArchivo);
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
@@ -112,62 +122,24 @@ int main(void) {
 			msjConexionCon("el Kernel");
 			clienteKernel = cliente;
 			printf("Creado hilo para Kernel\n");
-			//Lo primero que tiene que hacer la memoria cuando se conecta con el kernel es pasarle el tamaño de página.
-			//Esto se hace una sola vez, cuando se conectan al principio. Lo demás se hace cada vez que el kernel crea un nuevo proceso
-			if ((send(cliente, &(config->tamFrame), sizeof(int), 0)) == -1) {//Convendria que sea u_int32_t
+
+			if ((send(cliente, &(config->tamFrame), sizeof(int), 0)) == -1) {
 				printf("Error enviando tamaño de Frame\n");
 				exit(-1);
 			}
 
 			if (pthread_create(&hilo_kernel, NULL, atenderKernel, NULL)) { //Está bien pasarle NULL si no recibe parámetros?
-			 printf("Error al crear el thread de Kernel.\n");
-			 exit(-1);
-			 }
-
-			/*El Proceso Kernel deberá solicitarle al Proceso Memoria que le asigne lás páginas necesarias para almacenar
-			 el código del programa y el stack. También le enviará el código completo del Programa.
-			 Si no se pudiera obtener espacio suficiente para algunas de las estructuras necesarias del proceso,
-			 entonces se le debe informar*/
-
-			/*
-			 Existe la posibilidad de que los procesos le soliciten al Kernel bloques de memoria dinámica.
-			 El Kernel será el encargado de administrar el ciclo de vida de estos bloques de memoria,
-			 denominados Heap, de forma tal que permita al proceso reservar y liberar bloques de forma aleatoria.
-			 VER FUNCIONAMIENTO DE MEMORIA DINÁMICA EN LA PARTE DE KERNEL
-			 */
-
-			/*
-			 Cada página dedicada a la gestión de memoria dinámica podrá almacenar uno o más bloques de
-			 datos. Para poder determinar la consistencia de los bloques de datos almacenados en una página se
-			 guardará metadata específica dentro de la misma, la que nos permitirá determinar cuáles son las
-			 secciones de memoria sobre las cuales el proceso puede trabajar. Para ello, utilizaremos la siguiente
-			 estructura:
-			 typedef struct HeapMetadata {
-			 uint32_t size,
-			 Bool isFree
-			 }
-			 */
+				printf("Error al crear el thread de Kernel.\n");
+				exit(-1);
+			}
 			break;
-
 		case cpu:
 			printf("Me conecte con CPU!\n");
-			//Por cada conexión, la Memoria creará un hilo dedicado a atenderlo, que quedará a la espera de solicitudes de operaciones.
-			//Hay que atacar los problemas de concurrencia que surjan.
-
 			if (pthread_create(&hilo_cpu, NULL, atenderCPU, cliente)) {
 				printf("Error al crear el thread de CPU.\n");
 				exit(-1);
 			}
-
-			/*Ante cualquier solicitud de acceso a la memoria principal, deberá esperar una cantidad de tiempo configurable
-			 (en milisegundos), simulando el tiempo de acceso a memoria. En caso de que la solicitud sea resuelta por la Memoria Caché,
-			 no se deberá esperar.*/
-
-			/*En caso de que un CPU solicite memoria y no se le pueda asignar por falta de espacio, se
-			 deberá informar  que no hay más espacio disponible.*/
-
 			break;
-
 		default:
 			printf("No me puedo conectar con vos.\n");
 			break;
@@ -176,8 +148,7 @@ int main(void) {
 	}
 
 	/*pthread_join(hilo_comandos, NULL);
-	 //pthread_join(hilo_kernel, NULL);
-	 pthread_join(hilo_cpu, NULL);*/
+	 pthread_join(hilo_kernel, NULL);*/
 
 	liberarMemoriaPrincipal();
 

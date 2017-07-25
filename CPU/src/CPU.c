@@ -12,7 +12,7 @@
 #include "libreriaSockets.h"
 #include "lib/primitivasAnSISOP.h"
 
-#define RUTAARCHIVO "/home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU"
+char *rutaArchivo;// /home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCPU
 
 int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas,
 		stackSize, tamPag, motivo_liberacion, quantum_sleep;
@@ -174,7 +174,7 @@ void settearVariables(t_config *archivo_Modelo) {
 
 void mostrarArchivoConfig() {
 	FILE *f;
-	f = fopen(RUTAARCHIVO, "r");
+	f = fopen(rutaArchivo, "r");
 	int c;
 	printf("------------------------------------------\n");
 	while ((c = fgetc(f)) != EOF)
@@ -184,12 +184,12 @@ void mostrarArchivoConfig() {
 }
 
 void leerArchivo() {
-	if (access(RUTAARCHIVO, F_OK) == -1) {
+	if (access(rutaArchivo, F_OK) == -1) {
 		log_error(cpu_log, "No se encontró el Archivo");
 		//printf("No se encontró el Archivo\n");
 		exit(-1);
 	}
-	t_config *archivo_config = config_create(RUTAARCHIVO);
+	t_config *archivo_config = config_create(rutaArchivo);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
 	mostrarArchivoConfig();
@@ -435,16 +435,29 @@ void desconectarCPU(int senial){
 	}
 }
 
-int main(void) {
+int main(int argc, char* argv[]) {
 
 	signal(SIGUSR1, desconectarCPU);
 	signal(SIGINT, desconectarCPU);
-
 	descCPU = false;
 	matarProceso = false;
 
+	if (argc == 1)
+	{
+		printf("Falta ingresar el path del archivo de configuracion\n");
+		return -1;
+	}
+	if (argc != 2)
+	{
+		printf("Numero incorrecto de argumentos\n");
+		return -1;
+	}
+	rutaArchivo = strdup(argv[1]);
+
 	inicializarLog();
 	leerArchivo();
+
+	free(rutaArchivo);
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;
