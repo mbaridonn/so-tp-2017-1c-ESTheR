@@ -260,8 +260,9 @@ void eliminar_pedido(pedido_script *pedido){
 
 void avisar_a_consola_si_hubo_exito(int confirmacion, t_pcb *pcb){
 	pedido_script *pedido = obtener_pedido_segun_PID(pcb->id_proceso);
+	avisar_accion_a_consola(pedido->clie_consola,confirmacion_de_memoria);
+	esperarSenialDeCPU(&(pedido->clie_consola));
 	avisarAConsolaSegunConfirmacion(confirmacion, &(pedido->clie_consola));
-	enviarPIDaConsola(pcb->id_proceso,&(pedido->clie_consola));
 	proceso_por_cliente *proc_del_cliente = crear_proceso_por_cliente(pcb->id_proceso, pedido->clie_consola);
 	list_add(lista_proceso_por_cliente, proc_del_cliente);
 	eliminar_pedido(pedido);
@@ -555,15 +556,18 @@ void inicializar_contadores_procesos(){
 	list_remove_and_destroy_by_condition(lista_proceso_por_cliente,(void *)es_el_proceso_de, (void*)proceso_por_cliente_destroy);
 }*/
 
-void finalizar_programas_de(int clie_consola){
+int finalizar_programas_de(int clie_consola){
+	int finalizo_algun_proceso = 0;
 	int i;
 	proceso_por_cliente *proc_por_clie;
 	for(i=0; i<list_size(lista_proceso_por_cliente); i++){
 		proc_por_clie = list_get(lista_proceso_por_cliente, i);
 		if(proc_por_clie->clie_consola == clie_consola){
 			finalizar_ejecucion_de_proceso(&(proc_por_clie->pid));
+			finalizo_algun_proceso = 1;
 		}
 	}
+	return finalizo_algun_proceso;
 }
 
 
@@ -684,8 +688,7 @@ int main(void) {
 		if (clienteActualSeDesconecto()) {
 			int loFinalice = 0;
 			if(procesos_por_socket[i] == consola){
-				finalizar_programas_de(client_socket[i]);
-				loFinalice = 1;
+				loFinalice = finalizar_programas_de(client_socket[i]);
 			}
 			liberarSiEraCPU(procesos_por_socket[i]);
 			liberarPosicion(client_socket, i);

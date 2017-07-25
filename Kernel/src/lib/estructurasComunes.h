@@ -14,7 +14,7 @@ enum accionesFS{
 };
 
 enum notificacionesConsolaKernel{
-	finalizo_proceso, print, finalizacion_forzosa
+	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
 };
 
 enum notificacionesKernelCPU{

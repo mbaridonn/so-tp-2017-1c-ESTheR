@@ -10,7 +10,7 @@
 #include "libreriaSockets.h"
 #include "lib/funcionesMemoria.h"
 
-char *rutaArchivo;// /home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt
+char *rutaArchivo = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Memoria/src/configMemoria.txt";
 
 typedef struct {
 	int puerto;
@@ -74,8 +74,8 @@ void modificarRetardoMemoria(int nuevoRetardo) {
 	config->retardoMemoria = nuevoRetardo;
 }
 
-int main(int argc, char* argv[]) {
-	if (argc == 1)
+int main(/*int argc, char* argv[]*/) {
+	/*if (argc == 1)
 	{
 		printf("Falta ingresar el path del archivo de configuracion\n");
 		return -1;
@@ -85,11 +85,11 @@ int main(int argc, char* argv[]) {
 		printf("Numero incorrecto de argumentos\n");
 		return -1;
 	}
-	rutaArchivo = strdup(argv[1]);
+	rutaArchivo = strdup(argv[1]);*/
 
 	leerArchivo();
 
-	free(rutaArchivo);
+	//free(rutaArchivo);
 
 	struct sockaddr_in direccionServidor;
 	direccionServidor.sin_family = AF_INET;

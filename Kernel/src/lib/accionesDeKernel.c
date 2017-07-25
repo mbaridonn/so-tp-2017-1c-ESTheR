@@ -292,7 +292,7 @@ void finalizarUnProceso(t_pcb *pcb) {
 	}
 	poner_proceso_en_EXIT(pcb);
 	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
-	//cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
+	cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
 	eliminar_proc_por_cliente_segun_PID(pcb->id_proceso);
 	//FALTA: MEMORY LEAKS
     //Al finalizar un proceso, el Kernel deberá informar si un proceso liberó todas las estructuras en las páginas de Heap.
@@ -368,6 +368,8 @@ void proced_script(int *unCliente) {
 	u_int32_t cant_pags_script = divisionRoundUp(fsize, tamanioPagMemoria);
 	t_pcb *pcb = crearPCB(bufferArchivo,cant_pags_script,tamanioPagMemoria,config->STACK_SIZE);
 	pedido_script *pedido = crear_pedido_script((*unCliente),pcb->id_proceso,bufferArchivo,fsize);
+	enviarPIDaConsola(pcb->id_proceso,unCliente);
+	esperarSenialDeCPU(unCliente);//En realidad es consola
 	list_add(lista_pedidos_script,pedido);
 	list_add(listaPCBs_NEW, pcb);
 

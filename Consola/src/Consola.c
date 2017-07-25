@@ -16,7 +16,7 @@
 #define RUTA_CARPETA_SCRIPTS "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/scripts/"
 
 enum notificacionesConsolaKernel {
-	finalizo_proceso, print, finalizacion_forzosa
+	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
 };
 
 t_list *lista_hilos_por_PID;
@@ -295,6 +295,7 @@ void finalizar_programa_segun_PID(int pid) {
 }
 
 void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
+	enviarSenialAKernel(un_hilo_por_programa->serv_kernel);
 	while (1) {
 		printf("Esperando accion de KernelSITO desde PID: %d\n",
 				un_hilo_por_programa->PID);
@@ -321,6 +322,12 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 		case finalizacion_forzosa:
 			finalizar_programa_segun_PID(un_hilo_por_programa->PID);
 			break;
+		case confirmacion_de_memoria:
+		{
+			enviarSenialAKernel(un_hilo_por_programa->serv_kernel);
+			esperarConfirmacionDeKernel(&(un_hilo_por_programa->serv_kernel));
+			break;
+		}
 		default:
 			printf("Accion recibida por Kernel invalida.\n");
 		}
@@ -370,7 +377,6 @@ void hacer_muchas_cosas(hilo_por_programa *un_hilo_por_programa) {
 
 	log_info(consola_log, "El archivo se envió correctamente\n");
 
-	esperarConfirmacionDeKernel(&(un_hilo_por_programa->serv_kernel));
 	u_int32_t pid = recibirPID(&(un_hilo_por_programa->serv_kernel));
 
 	un_hilo_por_programa->PID = pid;
