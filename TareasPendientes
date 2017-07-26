@@ -1,5 +1,10 @@
 Tareas pendientes:
 
+TESTS SCRIPTS:
+-Se ejecuta productor.ansisop, luego consumidor.ansisop. Se finaliza productor y rompe (debería figurar consumidor en BLOCK).
+-Al ejecutar llenarmemoria.ansisop en Consola1 y Consola2 simultaneamente, el kernel dice que no se puede asignar mas paginas a un proceso (está bien). Lo que falta es que kernel setee un exitcode apropiado y que la consola que pidio "memoria demas" lo muestre.
+-Se ejecuta creaGigante.ansisop y se queda ciclando (deberia finalizar cuando se ocupan todos los bloques del FS).
+
 GENERAL
 -Chequear Memory Leaks.
 -Faltan logs en bibliotecas de CPU y Memoria
