@@ -278,16 +278,18 @@ void asignar(t_puntero direccion_variable, t_valor_variable valor){
 	//DEBERÍA RECIBIR UNA CONFIRMACIÓN??
 }
 
-void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
+void irAlLabel(t_nombre_etiqueta nombre_etiqueta){//BORRAR PRINTFS INNECESARIOS !!!
 	printf("ANSISOP_irALabel %s\n", nombre_etiqueta);
-	t_puntero_instruccion numeroInstr = metadata_buscar_etiqueta(nombre_etiqueta, pcbAEjecutar->indice_etiquetas, pcbAEjecutar->etiquetas_size);
-	//busquedaEtiqueta(nombre_etiqueta); NECESARIO??
+	char** string_cortado = string_split(nombre_etiqueta, "\n");//NO SE ESTA LIBERANDO LA MEMORIA
+	printf("nombreEtiqueta: %s\n", nombre_etiqueta);
+	printf("etiquetasSize %d, indiceEtiquetas %s\n", pcbAEjecutar->etiquetas_size, pcbAEjecutar->indice_etiquetas);// SIZE MAYOR AL DEBIDO ??
+	t_puntero_instruccion numeroInstr = metadata_buscar_etiqueta(string_cortado[0], pcbAEjecutar->indice_etiquetas, pcbAEjecutar->etiquetas_size);
 	printf("Numero de instruccion: %d", numeroInstr);
 	if(numeroInstr == -1){
-		printf("No se encontro la etiqueta\n");
+		printf("No se encontro la etiqueta\n");//FALTA ERROR   (PENDIENTE!!)
 		return;
 	}
-	pcbAEjecutar->program_counter = numeroInstr - 1; //ES NECESARIO EL -1 ??
+	pcbAEjecutar->program_counter = numeroInstr - 1;
 }
 
 void llamarSinRetorno(t_nombre_etiqueta etiqueta){
