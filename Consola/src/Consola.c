@@ -16,6 +16,8 @@
 
 char *rutaArchivo;// = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/ConfigConsola.txt";
 
+pthread_mutex_t mutexDesconexionMasiva = PTHREAD_MUTEX_INITIALIZER;
+
 enum notificacionesConsolaKernel {
 	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
 };
@@ -190,10 +192,11 @@ void quitar_hilo_por_programa(hilo_por_programa *un_hilo_por_programa){
 	list_remove_and_destroy_by_condition(lista_hilos_por_PID,(void*)es_el_hilo_por_pid,(void*)liberar_hilo_por_programa);
 }
 
-void matar_hilo(hilo_por_programa *un_hilo_por_programa) {
+void matar_hilo(hilo_por_programa *un_hilo_por_programa, int motivo) {
 	close(un_hilo_por_programa->serv_kernel);
 	pthread_t thread = un_hilo_por_programa->hilo;
 	quitar_hilo_por_programa(un_hilo_por_programa);
+	if(motivo == desconexion_consola) pthread_mutex_unlock(&mutexDesconexionMasiva);
 	pthread_cancel(thread);
 }
 
@@ -364,7 +367,7 @@ void finalizar_programa_segun_PID(int pid, int motivo) {
 		mostrarTiempoInicioFinDiferencia(unHiloPorPrograma->tiempo_inicio, unHiloPorPrograma->tiempo_fin);
 		mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);
 		mostrar_exit_code_segun_motivo(motivo);
-		matar_hilo(unHiloPorPrograma);
+		matar_hilo(unHiloPorPrograma,motivo);
 		printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
 	}
 	}
@@ -415,7 +418,7 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			mostrarTiempoInicioFinDiferencia(un_hilo_por_programa->tiempo_inicio, un_hilo_por_programa->tiempo_fin);
 			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
 			printf("Exit_Code: %d\n",exit_code);
-			matar_hilo(un_hilo_por_programa);
+			matar_hilo(un_hilo_por_programa,-1);
 			break;
 		case print: {
 			char *mensaje = obtener_un_mensaje(
@@ -448,7 +451,7 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
 			mostrar_exit_code_segun_motivo(motivo);
 			liberar_futura_desconexion_segun_PID(un_hilo_por_programa->PID);
-			matar_hilo(un_hilo_por_programa);
+			matar_hilo(un_hilo_por_programa,motivo);
 			break;
 		}
 		default:
@@ -583,7 +586,7 @@ void matar_todos_los_procesos(){
 	while(!list_is_empty(lista_hilos_por_PID)){
 		hilo_por_programa *un_hilo_por_programa = list_get(lista_hilos_por_PID,0);
 		finalizar_programa_segun_PID(un_hilo_por_programa->PID,desconexion_consola);
-		sleep(3); // HAY QUE MANEJARLO CON MUTEX
+		pthread_mutex_lock(&mutexDesconexionMasiva);
 	}
 }
 
@@ -658,6 +661,7 @@ int main(int argc, char* argv[]) {
 
 	leerArchivo();
 	free(rutaArchivo);
+	pthread_mutex_lock(&mutexDesconexionMasiva);
 	llenarSocket();
 	elegirComando();
 
