@@ -7,28 +7,23 @@ TESTS SCRIPTS:
 
 GENERAL
 -Chequear Memory Leaks.
--Faltan logs en bibliotecas de CPU y Memoria
+-Faltan logs en bibliotecas de CPU y Memoria.
 
-FILE SYSTEM
--El FS no debería permitir la creación de nuevos archivos si no hay bloques libres.
--Si no hay más bloques libres para escribir, tiene que avisar a Kernel.
 
 MEMORIA
 -Solucionar problemas de Heap.
--Cuando se desconecta una CPU, se debería eliminar el hilo correspondiente.
 -Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
+
+
 EXTRA- La cache debería almacenar el contenido de la página, no una referencia al frame. Dump cache debería mostrar el contenido de la
 página, no el número de frame.
 EXTRA- Revisar tamaño de la tabla CantPagsPorPID (en realidad debería ser una lista, no un array).
 
 CPU
--Chequear scripts que usen etiquetas (goto? serializado?)
--Que pueda morir, una vez que se le envia una señal y NO este ejecutando.
--Al ejecutar la última sentencia, el CPU deberá notificar al Kernel que el proceso finalizó para que este se ocupe de solicitar la
-eliminación de las estructuras utilizadas por el sistema.
 -Existe la posibilidad que el Proceso CPU reciba un mensaje de excepción como resultado de una solicitud a la Memoria o al Kernel.
 En este caso la CPU deberá mostrar por pantalla un mensaje aclarando cuál fue el inconveniente que sucedió y como consecuencia del error
 se deberá finalizar el programa AnSISOP que se encuentre en ejecución.
+
 EXTRA- Poder modificar el quantum sleep en tiempo de ejecución.
 
 KERNEL

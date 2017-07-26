@@ -22,7 +22,7 @@ enum accionesMemoriaKernel{
 };
 
 enum accionesCPUMemoria{
-	cpu_mem_leer, cpu_mem_escribir
+	cpu_mem_leer, cpu_mem_escribir, cpu_mem_finalizar_cpu
 };
 
 enum confirmacion {
@@ -623,6 +623,9 @@ void atenderCPU(int fdCPU) {
 			break;
 		case cpu_mem_escribir:
 			cpu_m_escribir_pagina(fdCPU);
+			break;
+		case cpu_mem_finalizar_cpu:
+			pthread_cancel(pthread_self());
 			break;
 		default:
 			break;

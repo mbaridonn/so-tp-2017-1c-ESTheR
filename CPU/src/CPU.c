@@ -17,7 +17,7 @@ char *rutaArchivo;// /home/utnso/git/tp-2017-1c-C-digo-Facilito/CPU/src/configCP
 int serv_kernel, serv_memoria, planificacion, quantum, instrucciones_ejecutadas,
 		stackSize, tamPag, motivo_liberacion, quantum_sleep;
 
-bool descCPU, matarProceso;
+bool descCPU, matarProceso, esta_ejecutando = false;
 
 enum algoritmos_planificacion {
 	FIFO, RR
@@ -334,6 +334,7 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 	instrucciones_ejecutadas = 0;// Solo sirve para tenerlo inicializado en algo.
 	inicializarPrimitivasANSISOP(un_pcb, stackSize, tamPag, serv_kernel,serv_memoria);
 	while (!terminoElPrograma() && !(codigoError = hayError()) && hay_que_seguir_ejecutando() && !estaBloqueado()) {
+		esta_ejecutando = true;
 		instruccion = conseguirDatosDeLaMemoria(un_pcb->id_proceso, 0,/*Las páginas de código son las primeras en memoria*/
 				un_pcb->indice_codigo[un_pcb->program_counter].start, un_pcb->indice_codigo[un_pcb->program_counter].offset);
 		printf("Instruccion recibida: %s\n", instruccion);
@@ -343,21 +344,23 @@ void ejecutar_instrucciones(t_pcb *un_pcb) {
 		free(instruccion);
 		mili_sleep(quantum_sleep);
 	}
-	if (matarProceso) codigoError = -12;//Defino nuevo Exit Code -12: CPU desconectada con SIGKILL (!!)
+	if (matarProceso) codigoError = -12;//Defino nuevo Exit Code -12: CPU desconectada con SIGINT (!!)
 	if (codigoError != 0) {
 		un_pcb->exit_code = codigoError;
 		motivo_liberacion = mot_error;
-	}
-	if(terminoElPrograma()){
-		motivo_liberacion = mot_finalizo;
 	}else{
-		if(instrucciones_ejecutadas == quantum){
-				motivo_liberacion = mot_quantum;
+		if(terminoElPrograma()){
+				motivo_liberacion = mot_finalizo;
+		}else{
+			if(instrucciones_ejecutadas == quantum){
+					motivo_liberacion = mot_quantum;
+			}
+		}
+		if(estaBloqueado()){
+			motivo_liberacion = mot_bloqueado;
 		}
 	}
-	if(estaBloqueado()){
-		motivo_liberacion = mot_bloqueado;
-	}
+	esta_ejecutando = false;
 }
 
 void mostrar_datos_pcb(t_pcb *un_pcb) {
@@ -429,10 +432,28 @@ void devolver_pcb_y_liberarse(t_pcb *pcb) {
 }
 
 void desconectarCPU(int senial){
-	if (senial == SIGUSR1) descCPU = true;
+	if (senial == SIGUSR1){
+		if(esta_ejecutando){
+			descCPU = true;
+		}else{
+			enviarIntAMemoria(cpu_mem_finalizar_cpu);
+			esperarSenialDeMemoria();
+
+			log_destroy(cpu_log);
+			exit(0);
+		}
+	}
 	if (senial == SIGINT){
-		descCPU = true;
-		matarProceso = true;
+		if(esta_ejecutando){
+			descCPU = true;
+			matarProceso = true;
+		}else{
+			enviarIntAMemoria(cpu_mem_finalizar_cpu);
+			esperarSenialDeMemoria();
+
+			log_destroy(cpu_log);
+			exit(0);
+		}
 	}
 }
 
@@ -481,9 +502,8 @@ int main(int argc, char* argv[]) {
 		free(pcb);
 	}
 
-	if(descCPU){
-		//ENVIAR MENSAJE A MEMORIA PARA QUE NO ROMPA AL DESCONECTAR CPU (PENDIENTE!!!)
-	}
+	enviarIntAMemoria(cpu_mem_finalizar_cpu);
+	esperarSenialDeMemoria();
 
 	log_destroy(cpu_log);
 
