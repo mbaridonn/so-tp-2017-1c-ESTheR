@@ -1,3 +1,5 @@
 -10 = stackOverflow
 -11 = error al liberar memoria, no estaba asignada al proceso
 -12 = CPU desconectada con SIGKILL
+-13 = proceso finalizado desde consola de Kernel 
+-14 = no se pudo crear archivo por falta de bloques

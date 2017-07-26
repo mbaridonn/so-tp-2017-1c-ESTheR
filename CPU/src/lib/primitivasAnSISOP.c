@@ -455,14 +455,19 @@ t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
 	enviarPathAKernel(direccion);
 	enviarBanderasAKernel(flags);
 	t_descriptor_archivo fd = recibirUIntDeKernel();
-	if(fd != 0){
+	if(fd != 0 && fd != 1){
 		printf("FD del archivo: %u\n", fd);
 		return fd;
-	} else { //En realidad 0 es un FD válido, pero como está reservado y no lo usamos lo uso para indicar el error
+	} else if (fd == 1){
+		//En realidad 1 es un FD válido, pero como está reservado lo usamos para indicar el error
+		printf("No se pudo crear archivo por falta de bloques (Exit Code -14)\n");
+		codigoError = -14;//Defino nuevo Exit Code -14 (!!)
+	} else /*if (fd == 0)*/{
+		//En realidad 0 es un FD válido, pero como está reservado lo usamos para indicar el error
 		printf("El programa intentó acceder a un archivo que no existe (Exit Code -2)\n");
 		codigoError = -2;
-		return 0; //NO!! SOLO LO PUSE PARA QUE NO ROMPA, NO SÉ QUÉ TIENE QUE DEVOLVER !!
 	}
+	return 0;
 }
 
 void borrar(t_descriptor_archivo descriptor_archivo){
@@ -513,7 +518,7 @@ void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valo
 	if (confirmacion == k_cpu_accion_OK){
 		printf("Escritura realizada correctamente\n");
 	} else {
-		printf("El programa intentó escribir un archivo sin permisos (Exit Code -4)\n");
+		printf("El programa intentó escribir un archivo sin permisos, o no queda mas espacio en FS (Exit Code -4)\n");
 		codigoError = -4;
 	}
 }
