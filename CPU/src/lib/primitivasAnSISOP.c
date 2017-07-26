@@ -166,10 +166,11 @@ u_int32_t recibirUIntDeKernel() {
 //PRIMITIVAS
 
 t_puntero definirVariable(t_nombre_variable var_nombre){
-	if((pcbAEjecutar->stackPointer+4) > (stackSize * tamPag)){
+	printf("StackPointer: %d, stackSize: %d, tamPAg: %d\n", pcbAEjecutar->stackPointer, stackSize, tamPag);
+	if((pcbAEjecutar->stackPointer+4) > ((stackSize + pcbAEjecutar->cant_paginas_de_codigo) * tamPag)){
 		printf("StackOverflow. Se finaliza el proceso\n");
 		codigoError = -10;//Defino nuevo Exit Code -10: stackOverflow (!!)
-		return -1;//DEBERÍA PRODUCIR UN ERROR?
+		return -1;
 	}
 
 	int pagina = pcbAEjecutar->stackPointer / tamPag;
@@ -269,7 +270,7 @@ t_valor_variable dereferenciar(t_puntero direccion_variable){
 void asignar(t_puntero direccion_variable, t_valor_variable valor){
 	printf("ANSISOP_asignar (valor: %d, direccion_variable: %d)\n", valor, direccion_variable);
 	int pagina, offset, tamanio;
-	pagina = (direccion_variable / tamPag) /*+ pcbAEjecutar->cant_paginas_de_codigo*/;
+	pagina = (direccion_variable / tamPag);
 	offset = direccion_variable % tamPag;
 	tamanio = TAM_VARIABLE;
 

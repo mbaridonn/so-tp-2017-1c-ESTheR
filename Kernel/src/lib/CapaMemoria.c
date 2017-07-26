@@ -231,6 +231,9 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 		int confirmacion = solicitarLiberarPaginaDeProceso(entradaAModificar->PID, entradaAModificar->nroPag);
 		enviarIntACPU(&clieCPU,confirmacion);
 		//Si confirmacion==falloLiberacionPagina no se hace nada, si confirmacion==exitoLiberacionPagina se decrementa contador_paginas
+
+		//Elimino la entrada de la tabla de Heap
+		list_remove_and_destroy_by_condition(tablaHeap, (void*) esEntradaDeProcesoYPagina, (void*) entradaTablaHeap_destroy);
 	} else {//No se libera la pagina
 		enviarIntACPU(&clieCPU, sePudoLiberarMemoria);
 	}
