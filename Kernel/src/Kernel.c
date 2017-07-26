@@ -275,21 +275,23 @@ void planificar() {
 		wait();
 		printf("Voy a planificar!!!!!!!!!!!!\n");
 		if(planificacionActivada){
-			if(proceso_new_puede_pasar_a_READY()){
-				pcb = list_get(listaPCBs_NEW,0);
-				int confirmacion = enviar_programa_a_memoria(pcb);
-				tomarAccionSegunConfirmacion(confirmacion, pcb);
-				avisar_a_consola_si_hubo_exito(confirmacion,pcb);
-				cant_historica_procesos_memoria++;
-				estadisticas_proceso *estadisticas = crear_estadisticas_para(pcb->id_proceso);
-				list_add(lista_estadisticas_de_procesos,estadisticas);
-			}
-			if(proceso_ready_puede_pasar_a_EXEC()){
-				cpuDesocupada = obtenerCPUDesocupada();
-				cpuDesocupada->libre = 0;
-				pcb = list_get(listaPCBs_READY, 0);
-				transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
-				enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
+			while(proceso_new_puede_pasar_a_READY() || proceso_ready_puede_pasar_a_EXEC()){
+				if(proceso_new_puede_pasar_a_READY()){
+					pcb = list_get(listaPCBs_NEW,0);
+					int confirmacion = enviar_programa_a_memoria(pcb);
+					tomarAccionSegunConfirmacion(confirmacion, pcb);
+					avisar_a_consola_si_hubo_exito(confirmacion,pcb);
+					cant_historica_procesos_memoria++;
+					estadisticas_proceso *estadisticas = crear_estadisticas_para(pcb->id_proceso);
+					list_add(lista_estadisticas_de_procesos,estadisticas);
+				}
+				if(proceso_ready_puede_pasar_a_EXEC()){
+					cpuDesocupada = obtenerCPUDesocupada();
+					cpuDesocupada->libre = 0;
+					pcb = list_get(listaPCBs_READY, 0);
+					transicion_colas_proceso(listaPCBs_READY,listaPCBs_EXEC,pcb);
+					enviar_un_PCB_a_CPU(pcb, &cpuDesocupada->clie_CPU);
+				}
 			}
 		}
 	}
@@ -470,12 +472,14 @@ void habilitarConsolaKernel() {
 			fgets(opcion, 100, stdin);
 			int viejo_grado_multiprog = config->GRADO_MULTIPROG;
 			config->GRADO_MULTIPROG = atoi(opcion);
-			if(config->GRADO_MULTIPROG > viejo_grado_multiprog){
+			/*if(config->GRADO_MULTIPROG > viejo_grado_multiprog){
 				int i;
 				for(i=0;i<(config->GRADO_MULTIPROG - viejo_grado_multiprog);i++){
+					printf("Es verdad es mayor\n");
 					signal();
 				}
-			}
+			}*/ //Esta era la idea principal, se ve que el signal no se "acumula"
+			if(config->GRADO_MULTIPROG > viejo_grado_multiprog)signal();
 			printf("El nuevo grado de multiprogramación es: %s\n", opcion);
 			free(opcion);
 			break;
