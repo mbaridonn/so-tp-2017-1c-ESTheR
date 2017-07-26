@@ -241,11 +241,9 @@ void crearDirectorio(char* path) {
 	}
 }
 
-void crearArchivo(char* pathRelativo) {
+int crearArchivo(char* pathRelativo) {
 	if(primerBloqueVacio() == -1){
-		//DEBERÍA ENVIAR UN MENSAJE DE ERROR A KERNEL SI NO HAY MÁS BLOQUES (PENDIENTE!!)
-		//TAMBIÉN HABRÍA QUE AGREGAR UN MENSAJE DE OK, EN ESE CASO
-		return;
+		return 0;//No hay más bloques
 	}
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
 	strcpy(path, config->puntoMontaje);
@@ -278,6 +276,7 @@ void crearArchivo(char* pathRelativo) {
 		config_save(fileMetadata);
 		config_destroy(fileMetadata);
 	}
+	return 1;
 }
 
 void borrarArchivo(char *pathRelativo) {
@@ -385,11 +384,10 @@ int cantidadDeBloquesLibres() {
 	return cantBloquesLibres;
 }
 
-void agregarBloques(t_config *archivo, int cantBloquesAAgregar) {
+int agregarBloques(t_config *archivo, int cantBloquesAAgregar) {
 	if (cantBloquesAAgregar > cantidadDeBloquesLibres()) {
 		log_error(fileSystem_log, "No hay suficientes bloques para asignar al archivo");
-		//printf("No hay suficientes bloques para asignar al archivo\n");
-		exit(-1);		//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE              (PENDIENTE!!)
+		return -1;
 	}
 	int tamArchivo = config_get_int_value(archivo, "TAMANIO");
 	int cantBloques;
@@ -423,9 +421,10 @@ void agregarBloques(t_config *archivo, int cantBloquesAAgregar) {
 	config_save(archivo);
 	free(strBloquesArchivoPlano);
 	free(bloquesArchivo);
+	return 0;
 }
 
-void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
+int guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 	char path[200]; //Tamaño arbitrario (podría llegar a ser una limitación)
 	strcpy(path, config->puntoMontaje);
 	char pathArchivos[10] = "Archivos/";
@@ -442,10 +441,13 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 
 	//Asigno bloques extra (de ser necesario)
 	int cantBloquesNecesaria = divisionRoundUp((offset + size), configFS->tamBloque);
+	int huboError = 0;
 	if (cantBloquesNecesaria > cantBloques) {
-		agregarBloques(archivo, cantBloquesNecesaria - cantBloques);
-		//SI agregarBloques ME MANDA UN ERROR, LO TENDRÍA QUE TRATAR (POR AHORA HAY UN EXIT)      (PENDIENTE!!)
+		huboError = agregarBloques(archivo, cantBloquesNecesaria - cantBloques);
 		config_destroy(archivo);
+		if(huboError == -1){
+			return -1;
+		}
 		archivo = config_create(path); //Necesito cargarlo de nuevo para poder ver los cambios
 	}
 
@@ -462,8 +464,10 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 
 	if (offsetEnBloque + size > configFS->tamBloque) { //Si se pasa del bloque
 		int sizeRestante = size - (configFS->tamBloque - offsetEnBloque);
-		guardarDatos(pathRelativo, offset + (size - sizeRestante), sizeRestante, &buffer[size - sizeRestante]);
 		//Le paso la posición del buffer desde la que tiene que seguir escribiendo
+		if(guardarDatos(pathRelativo, offset + (size - sizeRestante), sizeRestante, &buffer[size - sizeRestante]) == -1){
+			return -1;
+		}
 	}
 
 	//Escribo el bloque
@@ -481,6 +485,8 @@ void guardarDatos(char* pathRelativo, int offset, int size, char* buffer) {
 
 	config_destroy(archivo);
 	free(bloquesArchivo);
+
+	return 0;
 }
 
 void enviarSenialAKernel() {
@@ -519,6 +525,13 @@ char *recibirPath(){
 	return path;
 }
 
+void enviarIntAKernel(int valor){
+	if (send(clienteKernel, &valor, sizeof(int), 0) == -1) {
+		printf("Error enviando int a CPU\n");
+		exit(-1);
+	}
+}
+
 
 void atenderKernel() {
 	while (1) {
@@ -548,8 +561,8 @@ void atenderKernel() {
 			path = recibirPath();
 			log_info(fileSystem_log, "Creo archivo en el path %s\n", path);
 			//printf("Creo archivo en el path %s\n", path);
-			crearArchivo(path);
-			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+			int confirmacion = crearArchivo(path);
+			enviarIntAKernel(confirmacion);
 			break;
 		case k_fs_borrar_archivo:
 			path = recibirPath();
@@ -593,8 +606,8 @@ void atenderKernel() {
 			}
 			log_info(fileSystem_log, "escribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);
 			//printf("escribirArchivo(%s,%d,%d,%.*s)\n", path, offset, size, size, buffer);//FORMA DE IMPRIMIR STRING CON LONGITUD!!
-			guardarDatos(path,offset,size,buffer);
-			//NO ENVÍA CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+			int huboError = guardarDatos(path,offset,size,buffer);
+			enviarIntAKernel(huboError);//0=OK, -1=ERROR
 			break;
 		}
 		default:

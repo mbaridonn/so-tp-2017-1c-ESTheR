@@ -46,6 +46,15 @@ void enviarPathAFS(char *path){
 	}
 }
 
+int recibirIntDeFS(){
+	int valor;
+	if (recv(servFS, &valor, sizeof(int), 0) == -1) {
+		printf("Error recibiendo el archivo\n");
+		exit(-1);
+	}
+	return valor;
+}
+
 u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags){
 	char* strFlags = string_new();
 	if(flags.creacion) string_append(&strFlags, "c");
@@ -65,6 +74,10 @@ u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_bander
 			//Enviar mensaje a FS: crearArchivo(direccion);
 			avisarAccionAFS(k_fs_crear_archivo);
 			enviarPathAFS(direccion);
+			int confirmacion = recibirIntDeFS();
+			if (confirmacion == 0){//No se pudo crear el archivo (ya no hay bloques)
+				return 1;
+			}
 			//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		} else {
 			//Enviar mensaje a CPU: El programa intentó acceder a un archivo que no existe (Exit Code -2)
@@ -263,7 +276,7 @@ int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t
 			printf("Error enviando bytesAEscribir a consola\n");
 			exit(-1);
 		}
-		printf("Le envie los bytes a consola JEJEJEJ\n");
+		printf("Le envie los bytes a consola\n");
 		esperarSenialDeCPU(&consola);
 		return k_cpu_accion_OK;
 	}
@@ -295,7 +308,8 @@ int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t
 			printf("Error enviando los bytes a escribir.\n");
 			exit(-1);
 		}
-		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
+		int confirmacion = recibirIntDeFS();
+		if (confirmacion == -1) return k_cpu_error;
 		return k_cpu_accion_OK;
 	} else {
 		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)
