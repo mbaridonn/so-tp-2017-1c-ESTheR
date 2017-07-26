@@ -1,0 +1,3064 @@
+[INFO] 18:56:56:781 CódigoFacilito-Consola
+/(3473:3473): Leí el archivo y extraje el puerto: 8080 
+[ERROR] 18:56:59:468 CódigoFacilito-Consola
+/(3473:3473): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:56:59:468 CódigoFacilito-Consola
+/(3473:3473): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 18:57:05:479 CódigoFacilito-Consola
+/(3473:3473): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:57:10:245 CódigoFacilito-Consola
+/(3473:3474): Esperando atencion de Kernel..
+
+[INFO] 18:57:10:246 CódigoFacilito-Consola
+/(3473:3474): El archivo se envió correctamente
+
+[INFO] 18:57:10:286 CódigoFacilito-Consola
+/(3473:3474): PID: 1 asignado a ese programa
+
+[INFO] 18:57:10:366 CódigoFacilito-Consola
+/(3473:3474): Esperando la confirmacion de Kernel..
+[ERROR] 18:57:10:366 CódigoFacilito-Consola
+/(3473:3474): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 18:59:00:822 CódigoFacilito-Consola
+/(3473:3473): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:00:37:440 CódigoFacilito-Consola
+/(3733:3733): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:01:32:678 CódigoFacilito-Consola
+/(3733:3733): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:01:43:402 CódigoFacilito-Consola
+/(3733:3742): Esperando atencion de Kernel..
+
+[INFO] 19:01:43:402 CódigoFacilito-Consola
+/(3733:3742): El archivo se envió correctamente
+
+[INFO] 19:01:43:442 CódigoFacilito-Consola
+/(3733:3742): PID: 1 asignado a ese programa
+
+[INFO] 19:01:43:522 CódigoFacilito-Consola
+/(3733:3742): Esperando la confirmacion de Kernel..
+[INFO] 19:01:43:526 CódigoFacilito-Consola
+/(3733:3742): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:01:44:46 CódigoFacilito-Consola
+/(3733:3742): Fecha Inicio:Tue Jul 25 19:01:43 2017
+
+[INFO] 19:01:44:46 CódigoFacilito-Consola
+/(3733:3742): Fecha Fin:Tue Jul 25 19:01:44 2017
+
+[INFO] 19:01:44:46 CódigoFacilito-Consola
+/(3733:3742): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:01:44:46 CódigoFacilito-Consola
+/(3733:3742): Cantidad de impresiones: 0
+[INFO] 19:01:50:400 CódigoFacilito-Consola
+/(3733:3733): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:01:54:90 CódigoFacilito-Consola
+/(3733:3751): Esperando atencion de Kernel..
+
+[INFO] 19:01:54:90 CódigoFacilito-Consola
+/(3733:3751): El archivo se envió correctamente
+
+[INFO] 19:01:54:130 CódigoFacilito-Consola
+/(3733:3751): PID: 2 asignado a ese programa
+
+[INFO] 19:01:54:250 CódigoFacilito-Consola
+/(3733:3751): Esperando la confirmacion de Kernel..
+[INFO] 19:01:54:254 CódigoFacilito-Consola
+/(3733:3751): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:01:54:815 CódigoFacilito-Consola
+/(3733:3751): Fecha Inicio:Tue Jul 25 19:01:54 2017
+
+[INFO] 19:01:54:815 CódigoFacilito-Consola
+/(3733:3751): Fecha Fin:Tue Jul 25 19:01:54 2017
+
+[INFO] 19:01:54:815 CódigoFacilito-Consola
+/(3733:3751): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 19:01:54:815 CódigoFacilito-Consola
+/(3733:3751): Cantidad de impresiones: 0
+[INFO] 19:02:05:661 CódigoFacilito-Consola
+/(3733:3733): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:02:09:786 CódigoFacilito-Consola
+/(3733:3757): Esperando atencion de Kernel..
+
+[INFO] 19:02:09:787 CódigoFacilito-Consola
+/(3733:3757): El archivo se envió correctamente
+
+[INFO] 19:02:09:826 CódigoFacilito-Consola
+/(3733:3757): PID: 3 asignado a ese programa
+
+[INFO] 19:02:09:946 CódigoFacilito-Consola
+/(3733:3757): Esperando la confirmacion de Kernel..
+[INFO] 19:02:09:950 CódigoFacilito-Consola
+/(3733:3757): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:02:10:471 CódigoFacilito-Consola
+/(3733:3757): Fecha Inicio:Tue Jul 25 19:02:09 2017
+
+[INFO] 19:02:10:471 CódigoFacilito-Consola
+/(3733:3757): Fecha Fin:Tue Jul 25 19:02:10 2017
+
+[INFO] 19:02:10:471 CódigoFacilito-Consola
+/(3733:3757): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:02:10:471 CódigoFacilito-Consola
+/(3733:3757): Cantidad de impresiones: 0
+[INFO] 19:02:31:825 CódigoFacilito-Consola
+/(3733:3733): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:02:34:958 CódigoFacilito-Consola
+/(3733:3767): Esperando atencion de Kernel..
+
+[INFO] 19:02:34:959 CódigoFacilito-Consola
+/(3733:3767): El archivo se envió correctamente
+
+[INFO] 19:02:34:998 CódigoFacilito-Consola
+/(3733:3767): PID: 4 asignado a ese programa
+
+[INFO] 19:02:35:118 CódigoFacilito-Consola
+/(3733:3767): Esperando la confirmacion de Kernel..
+[INFO] 19:02:35:122 CódigoFacilito-Consola
+/(3733:3767): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 19:02:35:644 CódigoFacilito-Consola
+/(3733:3767): No hay más espacio
+[INFO] 19:03:01:479 CódigoFacilito-Consola
+/(3785:3785): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:03:05:57 CódigoFacilito-Consola
+/(3785:3785): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:03:08:306 CódigoFacilito-Consola
+/(3785:3792): Esperando atencion de Kernel..
+
+[INFO] 19:03:08:306 CódigoFacilito-Consola
+/(3785:3792): El archivo se envió correctamente
+
+[INFO] 19:03:08:346 CódigoFacilito-Consola
+/(3785:3792): PID: 1 asignado a ese programa
+
+[INFO] 19:03:08:426 CódigoFacilito-Consola
+/(3785:3792): Esperando la confirmacion de Kernel..
+[INFO] 19:03:08:430 CódigoFacilito-Consola
+/(3785:3792): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:03:08:990 CódigoFacilito-Consola
+/(3785:3792): Fecha Inicio:Tue Jul 25 19:03:08 2017
+
+[INFO] 19:03:08:990 CódigoFacilito-Consola
+/(3785:3792): Fecha Fin:Tue Jul 25 19:03:08 2017
+
+[INFO] 19:03:08:990 CódigoFacilito-Consola
+/(3785:3792): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 19:03:08:990 CódigoFacilito-Consola
+/(3785:3792): Cantidad de impresiones: 0
+[INFO] 19:06:12:612 CódigoFacilito-Consola
+/(3785:3785): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:06:17:78 CódigoFacilito-Consola
+/(3785:3988): Esperando atencion de Kernel..
+
+[INFO] 19:06:17:79 CódigoFacilito-Consola
+/(3785:3988): El archivo se envió correctamente
+
+[INFO] 19:06:17:120 CódigoFacilito-Consola
+/(3785:3988): PID: 2 asignado a ese programa
+
+[INFO] 19:06:17:238 CódigoFacilito-Consola
+/(3785:3988): Esperando la confirmacion de Kernel..
+[INFO] 19:06:17:242 CódigoFacilito-Consola
+/(3785:3988): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 19:06:18:4 CódigoFacilito-Consola
+/(3785:3988): No hay más espacio
+[INFO] 19:08:29:660 CódigoFacilito-Consola
+/(4069:4069): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:08:30:603 CódigoFacilito-Consola
+/(4069:4069): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:08:36:277 CódigoFacilito-Consola
+/(4069:4073): Esperando atencion de Kernel..
+
+[INFO] 19:08:36:278 CódigoFacilito-Consola
+/(4069:4073): El archivo se envió correctamente
+
+[INFO] 19:08:36:319 CódigoFacilito-Consola
+/(4069:4073): PID: 1 asignado a ese programa
+
+[INFO] 19:08:36:398 CódigoFacilito-Consola
+/(4069:4073): Esperando la confirmacion de Kernel..
+[ERROR] 19:08:36:398 CódigoFacilito-Consola
+/(4069:4073): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:09:35:209 CódigoFacilito-Consola
+/(4284:4284): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:09:36:372 CódigoFacilito-Consola
+/(4284:4284): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:09:40:108 CódigoFacilito-Consola
+/(4284:4289): Esperando atencion de Kernel..
+
+[INFO] 19:09:40:108 CódigoFacilito-Consola
+/(4284:4289): El archivo se envió correctamente
+
+[INFO] 19:09:40:146 CódigoFacilito-Consola
+/(4284:4289): PID: 1 asignado a ese programa
+
+[INFO] 19:09:40:226 CódigoFacilito-Consola
+/(4284:4289): Esperando la confirmacion de Kernel..
+[INFO] 19:09:40:230 CódigoFacilito-Consola
+/(4284:4289): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:09:40:791 CódigoFacilito-Consola
+/(4284:4289): Fecha Inicio:Tue Jul 25 19:09:40 2017
+
+[INFO] 19:09:40:791 CódigoFacilito-Consola
+/(4284:4289): Fecha Fin:Tue Jul 25 19:09:40 2017
+
+[INFO] 19:09:40:791 CódigoFacilito-Consola
+/(4284:4289): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 19:09:40:791 CódigoFacilito-Consola
+/(4284:4289): Cantidad de impresiones: 0
+[INFO] 19:09:45:938 CódigoFacilito-Consola
+/(4284:4284): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:09:50:620 CódigoFacilito-Consola
+/(4284:4296): Esperando atencion de Kernel..
+
+[INFO] 19:09:50:620 CódigoFacilito-Consola
+/(4284:4296): El archivo se envió correctamente
+
+[INFO] 19:09:50:660 CódigoFacilito-Consola
+/(4284:4296): PID: 2 asignado a ese programa
+
+[INFO] 19:09:50:778 CódigoFacilito-Consola
+/(4284:4296): Esperando la confirmacion de Kernel..
+[INFO] 19:09:50:782 CódigoFacilito-Consola
+/(4284:4296): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 19:09:51:544 CódigoFacilito-Consola
+/(4284:4296): No hay más espacio
+[INFO] 19:18:16:40 CódigoFacilito-Consola
+/(4480:4480): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:18:16:972 CódigoFacilito-Consola
+/(4480:4480): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:18:20:225 CódigoFacilito-Consola
+/(4480:4485): Esperando atencion de Kernel..
+
+[INFO] 19:18:20:225 CódigoFacilito-Consola
+/(4480:4485): El archivo se envió correctamente
+
+[INFO] 19:18:20:262 CódigoFacilito-Consola
+/(4480:4485): PID: 1 asignado a ese programa
+
+[INFO] 19:18:20:342 CódigoFacilito-Consola
+/(4480:4485): Esperando la confirmacion de Kernel..
+[ERROR] 19:18:20:342 CódigoFacilito-Consola
+/(4480:4485): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:18:52:182 CódigoFacilito-Consola
+/(4693:4693): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:18:53:274 CódigoFacilito-Consola
+/(4693:4693): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:18:56:501 CódigoFacilito-Consola
+/(4693:4696): Esperando atencion de Kernel..
+
+[INFO] 19:18:56:501 CódigoFacilito-Consola
+/(4693:4696): El archivo se envió correctamente
+
+[INFO] 19:18:56:538 CódigoFacilito-Consola
+/(4693:4696): PID: 1 asignado a ese programa
+
+[INFO] 19:18:56:618 CódigoFacilito-Consola
+/(4693:4696): Esperando la confirmacion de Kernel..
+[ERROR] 19:18:56:618 CódigoFacilito-Consola
+/(4693:4696): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:21:40:84 CódigoFacilito-Consola
+/(4925:4925): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:21:41:61 CódigoFacilito-Consola
+/(4925:4925): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:21:44:327 CódigoFacilito-Consola
+/(4925:4928): Esperando atencion de Kernel..
+
+[INFO] 19:21:44:327 CódigoFacilito-Consola
+/(4925:4928): El archivo se envió correctamente
+
+[INFO] 19:21:44:366 CódigoFacilito-Consola
+/(4925:4928): PID: 1 asignado a ese programa
+
+[INFO] 19:21:44:446 CódigoFacilito-Consola
+/(4925:4928): Esperando la confirmacion de Kernel..
+[INFO] 19:21:44:450 CódigoFacilito-Consola
+/(4925:4928): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:21:45:10 CódigoFacilito-Consola
+/(4925:4928): Fecha Inicio:Tue Jul 25 19:21:44 2017
+
+[INFO] 19:21:45:10 CódigoFacilito-Consola
+/(4925:4928): Fecha Fin:Tue Jul 25 19:21:45 2017
+
+[INFO] 19:21:45:10 CódigoFacilito-Consola
+/(4925:4928): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:21:45:10 CódigoFacilito-Consola
+/(4925:4928): Cantidad de impresiones: 0
+[INFO] 19:21:53:404 CódigoFacilito-Consola
+/(4925:4925): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:21:58:757 CódigoFacilito-Consola
+/(4925:4935): Esperando atencion de Kernel..
+
+[INFO] 19:21:58:757 CódigoFacilito-Consola
+/(4925:4935): El archivo se envió correctamente
+
+[INFO] 19:21:58:794 CódigoFacilito-Consola
+/(4925:4935): PID: 2 asignado a ese programa
+
+[INFO] 19:21:58:914 CódigoFacilito-Consola
+/(4925:4935): Esperando la confirmacion de Kernel..
+[INFO] 19:21:58:918 CódigoFacilito-Consola
+/(4925:4935): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 19:21:59:679 CódigoFacilito-Consola
+/(4925:4935): No hay más espacio
+[INFO] 19:26:43:143 CódigoFacilito-Consola
+/(5013:5013): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:26:43:679 CódigoFacilito-Consola
+/(5013:5013): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:26:47:38 CódigoFacilito-Consola
+/(5013:5017): Esperando atencion de Kernel..
+
+[INFO] 19:26:47:38 CódigoFacilito-Consola
+/(5013:5017): El archivo se envió correctamente
+
+[INFO] 19:26:47:78 CódigoFacilito-Consola
+/(5013:5017): PID: 1 asignado a ese programa
+
+[INFO] 19:26:47:158 CódigoFacilito-Consola
+/(5013:5017): Esperando la confirmacion de Kernel..
+[ERROR] 19:26:47:158 CódigoFacilito-Consola
+/(5013:5017): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:27:16:279 CódigoFacilito-Consola
+/(5038:5038): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:27:17:144 CódigoFacilito-Consola
+/(5038:5038): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:27:20:353 CódigoFacilito-Consola
+/(5038:5043): Esperando atencion de Kernel..
+
+[INFO] 19:27:20:353 CódigoFacilito-Consola
+/(5038:5043): El archivo se envió correctamente
+
+[INFO] 19:27:20:390 CódigoFacilito-Consola
+/(5038:5043): PID: 1 asignado a ese programa
+
+[INFO] 19:27:20:470 CódigoFacilito-Consola
+/(5038:5043): Esperando la confirmacion de Kernel..
+[INFO] 19:27:20:474 CódigoFacilito-Consola
+/(5038:5043): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:27:21:35 CódigoFacilito-Consola
+/(5038:5043): Fecha Inicio:Tue Jul 25 19:27:20 2017
+
+[INFO] 19:27:21:35 CódigoFacilito-Consola
+/(5038:5043): Fecha Fin:Tue Jul 25 19:27:21 2017
+
+[INFO] 19:27:21:35 CódigoFacilito-Consola
+/(5038:5043): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:27:21:35 CódigoFacilito-Consola
+/(5038:5043): Cantidad de impresiones: 0
+[INFO] 19:27:31:822 CódigoFacilito-Consola
+/(5038:5038): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:27:36:886 CódigoFacilito-Consola
+/(5038:5051): Esperando atencion de Kernel..
+
+[INFO] 19:27:36:886 CódigoFacilito-Consola
+/(5038:5051): El archivo se envió correctamente
+
+[INFO] 19:27:36:926 CódigoFacilito-Consola
+/(5038:5051): PID: 2 asignado a ese programa
+
+[INFO] 19:27:37:46 CódigoFacilito-Consola
+/(5038:5051): Esperando la confirmacion de Kernel..
+[INFO] 19:27:37:50 CódigoFacilito-Consola
+/(5038:5051): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 19:27:38:931 CódigoFacilito-Consola
+/(5038:5051): No hay más espacio
+[INFO] 19:46:35:110 CódigoFacilito-Consola
+/(5426:5426): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:46:35:802 CódigoFacilito-Consola
+/(5426:5426): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:46:38:715 CódigoFacilito-Consola
+/(5426:5429): Esperando atencion de Kernel..
+
+[INFO] 19:46:38:716 CódigoFacilito-Consola
+/(5426:5429): El archivo se envió correctamente
+
+[INFO] 19:46:38:754 CódigoFacilito-Consola
+/(5426:5429): PID: 1 asignado a ese programa
+
+[INFO] 19:46:38:835 CódigoFacilito-Consola
+/(5426:5429): Esperando la confirmacion de Kernel..
+[ERROR] 19:46:38:835 CódigoFacilito-Consola
+/(5426:5429): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:47:10:349 CódigoFacilito-Consola
+/(5448:5448): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:47:11:71 CódigoFacilito-Consola
+/(5448:5448): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:47:15:85 CódigoFacilito-Consola
+/(5448:5453): Esperando atencion de Kernel..
+
+[INFO] 19:47:15:85 CódigoFacilito-Consola
+/(5448:5453): El archivo se envió correctamente
+
+[INFO] 19:47:15:122 CódigoFacilito-Consola
+/(5448:5453): PID: 1 asignado a ese programa
+
+[INFO] 19:47:15:202 CódigoFacilito-Consola
+/(5448:5453): Esperando la confirmacion de Kernel..
+[INFO] 19:47:15:203 CódigoFacilito-Consola
+/(5448:5453): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:47:15:762 CódigoFacilito-Consola
+/(5448:5453): Fecha Inicio:Tue Jul 25 19:47:15 2017
+
+[INFO] 19:47:15:762 CódigoFacilito-Consola
+/(5448:5453): Fecha Fin:Tue Jul 25 19:47:15 2017
+
+[INFO] 19:47:15:762 CódigoFacilito-Consola
+/(5448:5453): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 19:47:15:763 CódigoFacilito-Consola
+/(5448:5453): Cantidad de impresiones: 0
+[INFO] 19:47:17:408 CódigoFacilito-Consola
+/(5448:5448): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:47:21:667 CódigoFacilito-Consola
+/(5448:5460): Esperando atencion de Kernel..
+
+[INFO] 19:47:21:667 CódigoFacilito-Consola
+/(5448:5460): El archivo se envió correctamente
+
+[INFO] 19:47:21:706 CódigoFacilito-Consola
+/(5448:5460): PID: 2 asignado a ese programa
+
+[INFO] 19:47:21:826 CódigoFacilito-Consola
+/(5448:5460): Esperando la confirmacion de Kernel..
+[INFO] 19:47:21:830 CódigoFacilito-Consola
+/(5448:5460): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:47:23:991 CódigoFacilito-Consola
+/(5448:5460): Fecha Inicio:Tue Jul 25 19:47:21 2017
+
+[INFO] 19:47:23:991 CódigoFacilito-Consola
+/(5448:5460): Fecha Fin:Tue Jul 25 19:47:23 2017
+
+[INFO] 19:47:23:991 CódigoFacilito-Consola
+/(5448:5460): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 19:47:23:991 CódigoFacilito-Consola
+/(5448:5460): Cantidad de impresiones: 0
+[INFO] 19:48:47:142 CódigoFacilito-Consola
+/(5448:5448): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:48:51:723 CódigoFacilito-Consola
+/(5448:5473): Esperando atencion de Kernel..
+
+[INFO] 19:48:51:724 CódigoFacilito-Consola
+/(5448:5473): El archivo se envió correctamente
+
+[INFO] 19:48:51:762 CódigoFacilito-Consola
+/(5448:5473): PID: 3 asignado a ese programa
+
+[INFO] 19:48:51:882 CódigoFacilito-Consola
+/(5448:5473): Esperando la confirmacion de Kernel..
+[ERROR] 19:48:51:882 CódigoFacilito-Consola
+/(5448:5473): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:49:52:532 CódigoFacilito-Consola
+/(5535:5535): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:49:53:41 CódigoFacilito-Consola
+/(5535:5535): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:49:55:935 CódigoFacilito-Consola
+/(5535:5538): Esperando atencion de Kernel..
+
+[INFO] 19:49:55:935 CódigoFacilito-Consola
+/(5535:5538): El archivo se envió correctamente
+
+[INFO] 19:49:55:974 CódigoFacilito-Consola
+/(5535:5538): PID: 1 asignado a ese programa
+
+[INFO] 19:49:56:54 CódigoFacilito-Consola
+/(5535:5538): Esperando la confirmacion de Kernel..
+[ERROR] 19:49:56:54 CódigoFacilito-Consola
+/(5535:5538): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[INFO] 19:57:35:290 CódigoFacilito-Consola
+/(2637:2637): Leí el archivo y extraje el puerto: 8080 
+[ERROR] 19:57:35:966 CódigoFacilito-Consola
+/(2637:2637): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:57:35:966 CódigoFacilito-Consola
+/(2637:2637): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 19:57:40:23 CódigoFacilito-Consola
+/(2637:2637): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:57:45:801 CódigoFacilito-Consola
+/(2637:2641): Esperando atencion de Kernel..
+
+[INFO] 19:57:45:802 CódigoFacilito-Consola
+/(2637:2641): El archivo se envió correctamente
+
+[INFO] 19:57:45:840 CódigoFacilito-Consola
+/(2637:2641): PID: 1 asignado a ese programa
+
+[INFO] 19:57:45:920 CódigoFacilito-Consola
+/(2637:2641): Esperando la confirmacion de Kernel..
+[ERROR] 19:57:45:920 CódigoFacilito-Consola
+/(2637:2641): Paginas insuficientes - El proceso no pudo almacenarse en MP
+[ERROR] 19:57:48:887 CódigoFacilito-Consola
+/(2637:2637): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:57:48:887 CódigoFacilito-Consola
+/(2637:2637): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 19:58:16:842 CódigoFacilito-Consola
+/(2745:2745): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:58:33:129 CódigoFacilito-Consola
+/(2745:2745): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:58:36:529 CódigoFacilito-Consola
+/(2745:2755): Esperando atencion de Kernel..
+
+[INFO] 19:58:36:530 CódigoFacilito-Consola
+/(2745:2755): El archivo se envió correctamente
+
+[INFO] 19:58:36:568 CódigoFacilito-Consola
+/(2745:2755): PID: 1 asignado a ese programa
+
+[INFO] 19:58:36:648 CódigoFacilito-Consola
+/(2745:2755): Esperando la confirmacion de Kernel..
+[INFO] 19:58:36:652 CódigoFacilito-Consola
+/(2745:2755): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:58:37:212 CódigoFacilito-Consola
+/(2745:2755): Fecha Inicio:Tue Jul 25 19:58:36 2017
+
+[INFO] 19:58:37:212 CódigoFacilito-Consola
+/(2745:2755): Fecha Fin:Tue Jul 25 19:58:37 2017
+
+[INFO] 19:58:37:212 CódigoFacilito-Consola
+/(2745:2755): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:58:37:212 CódigoFacilito-Consola
+/(2745:2755): Cantidad de impresiones: 0
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:58:50:36 CódigoFacilito-Consola
+/(2745:2745): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 19:58:52:347 CódigoFacilito-Consola
+/(2745:2745): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:58:56:729 CódigoFacilito-Consola
+/(2745:2771): Esperando atencion de Kernel..
+
+[INFO] 19:58:56:729 CódigoFacilito-Consola
+/(2745:2771): El archivo se envió correctamente
+
+[INFO] 19:58:56:769 CódigoFacilito-Consola
+/(2745:2771): PID: 2 asignado a ese programa
+
+[INFO] 19:58:56:888 CódigoFacilito-Consola
+/(2745:2771): Esperando la confirmacion de Kernel..
+[INFO] 19:58:56:892 CódigoFacilito-Consola
+/(2745:2771): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:58:59:53 CódigoFacilito-Consola
+/(2745:2771): Fecha Inicio:Tue Jul 25 19:58:56 2017
+
+[INFO] 19:58:59:53 CódigoFacilito-Consola
+/(2745:2771): Fecha Fin:Tue Jul 25 19:58:59 2017
+
+[INFO] 19:58:59:53 CódigoFacilito-Consola
+/(2745:2771): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 19:58:59:53 CódigoFacilito-Consola
+/(2745:2771): Cantidad de impresiones: 0
+[INFO] 12:55:39:544 CódigoFacilito-Consola
+/(3096:3096): Leí el archivo y extraje el puerto: 8080 
+[INFO] 12:55:46:85 CódigoFacilito-Consola
+/(3096:3096): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:55:49:130 CódigoFacilito-Consola
+/(3096:3103): Esperando atencion de Kernel..
+
+[INFO] 12:55:49:130 CódigoFacilito-Consola
+/(3096:3103): El archivo se envió correctamente
+
+[INFO] 12:55:49:170 CódigoFacilito-Consola
+/(3096:3103): PID: 1 asignado a ese programa
+
+[INFO] 12:55:49:249 CódigoFacilito-Consola
+/(3096:3103): Esperando la confirmacion de Kernel..
+[INFO] 12:55:49:290 CódigoFacilito-Consola
+/(3096:3103): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:55:49:810 CódigoFacilito-Consola
+/(3096:3103): Fecha Inicio:Wed Jul 26 12:55:49 2017
+
+[INFO] 12:55:49:810 CódigoFacilito-Consola
+/(3096:3103): Fecha Fin:Wed Jul 26 12:55:49 2017
+
+[INFO] 12:55:49:810 CódigoFacilito-Consola
+/(3096:3103): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 12:55:49:810 CódigoFacilito-Consola
+/(3096:3103): Cantidad de impresiones: 0
+[INFO] 12:55:53:99 CódigoFacilito-Consola
+/(3096:3096): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:55:57:817 CódigoFacilito-Consola
+/(3096:3110): Esperando atencion de Kernel..
+
+[INFO] 12:55:57:817 CódigoFacilito-Consola
+/(3096:3110): El archivo se envió correctamente
+
+[INFO] 12:55:57:853 CódigoFacilito-Consola
+/(3096:3110): PID: 2 asignado a ese programa
+
+[INFO] 12:55:57:974 CódigoFacilito-Consola
+/(3096:3110): Esperando la confirmacion de Kernel..
+[INFO] 12:55:58:13 CódigoFacilito-Consola
+/(3096:3110): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:56:00:137 CódigoFacilito-Consola
+/(3096:3110): Fecha Inicio:Wed Jul 26 12:55:57 2017
+
+[INFO] 12:56:00:137 CódigoFacilito-Consola
+/(3096:3110): Fecha Fin:Wed Jul 26 12:56:00 2017
+
+[INFO] 12:56:00:137 CódigoFacilito-Consola
+/(3096:3110): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 12:56:00:137 CódigoFacilito-Consola
+/(3096:3110): Cantidad de impresiones: 0
+[INFO] 12:56:25:54 CódigoFacilito-Consola
+/(3096:3096): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:56:27:651 CódigoFacilito-Consola
+/(3096:3118): Esperando atencion de Kernel..
+
+[INFO] 12:56:27:651 CódigoFacilito-Consola
+/(3096:3118): El archivo se envió correctamente
+
+[INFO] 12:56:27:689 CódigoFacilito-Consola
+/(3096:3118): PID: 3 asignado a ese programa
+
+[INFO] 12:56:27:809 CódigoFacilito-Consola
+/(3096:3118): Esperando la confirmacion de Kernel..
+[INFO] 12:56:27:849 CódigoFacilito-Consola
+/(3096:3118): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 12:56:28:251 CódigoFacilito-Consola
+/(3096:3118): No hay más espacio
+[INFO] 12:56:46:984 CódigoFacilito-Consola
+/(3140:3140): Leí el archivo y extraje el puerto: 8080 
+[INFO] 12:56:47:921 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:56:50:673 CódigoFacilito-Consola
+/(3140:3143): Esperando atencion de Kernel..
+
+[INFO] 12:56:50:673 CódigoFacilito-Consola
+/(3140:3143): El archivo se envió correctamente
+
+[INFO] 12:56:50:710 CódigoFacilito-Consola
+/(3140:3143): PID: 1 asignado a ese programa
+
+[INFO] 12:56:50:790 CódigoFacilito-Consola
+/(3140:3143): Esperando la confirmacion de Kernel..
+[INFO] 12:56:50:829 CódigoFacilito-Consola
+/(3140:3143): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:56:51:349 CódigoFacilito-Consola
+/(3140:3143): Fecha Inicio:Wed Jul 26 12:56:50 2017
+
+[INFO] 12:56:51:349 CódigoFacilito-Consola
+/(3140:3143): Fecha Fin:Wed Jul 26 12:56:51 2017
+
+[INFO] 12:56:51:349 CódigoFacilito-Consola
+/(3140:3143): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 12:56:51:349 CódigoFacilito-Consola
+/(3140:3143): Cantidad de impresiones: 0
+[INFO] 12:56:52:583 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:56:55:151 CódigoFacilito-Consola
+/(3140:3148): Esperando atencion de Kernel..
+
+[INFO] 12:56:55:152 CódigoFacilito-Consola
+/(3140:3148): El archivo se envió correctamente
+
+[INFO] 12:56:55:189 CódigoFacilito-Consola
+/(3140:3148): PID: 2 asignado a ese programa
+
+[INFO] 12:56:55:309 CódigoFacilito-Consola
+/(3140:3148): Esperando la confirmacion de Kernel..
+[INFO] 12:56:55:349 CódigoFacilito-Consola
+/(3140:3148): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:56:55:909 CódigoFacilito-Consola
+/(3140:3148): Fecha Inicio:Wed Jul 26 12:56:55 2017
+
+[INFO] 12:56:55:910 CódigoFacilito-Consola
+/(3140:3148): Fecha Fin:Wed Jul 26 12:56:55 2017
+
+[INFO] 12:56:55:910 CódigoFacilito-Consola
+/(3140:3148): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 12:56:55:910 CódigoFacilito-Consola
+/(3140:3148): Cantidad de impresiones: 0
+[INFO] 12:56:57:11 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:56:59:757 CódigoFacilito-Consola
+/(3140:3154): Esperando atencion de Kernel..
+
+[INFO] 12:56:59:757 CódigoFacilito-Consola
+/(3140:3154): El archivo se envió correctamente
+
+[INFO] 12:56:59:793 CódigoFacilito-Consola
+/(3140:3154): PID: 3 asignado a ese programa
+
+[INFO] 12:56:59:914 CódigoFacilito-Consola
+/(3140:3154): Esperando la confirmacion de Kernel..
+[INFO] 12:56:59:954 CódigoFacilito-Consola
+/(3140:3154): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:57:00:514 CódigoFacilito-Consola
+/(3140:3154): Fecha Inicio:Wed Jul 26 12:56:59 2017
+
+[INFO] 12:57:00:514 CódigoFacilito-Consola
+/(3140:3154): Fecha Fin:Wed Jul 26 12:57:00 2017
+
+[INFO] 12:57:00:514 CódigoFacilito-Consola
+/(3140:3154): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 12:57:00:514 CódigoFacilito-Consola
+/(3140:3154): Cantidad de impresiones: 0
+[INFO] 12:57:02:53 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:57:04:746 CódigoFacilito-Consola
+/(3140:3161): Esperando atencion de Kernel..
+
+[INFO] 12:57:04:746 CódigoFacilito-Consola
+/(3140:3161): El archivo se envió correctamente
+
+[INFO] 12:57:04:785 CódigoFacilito-Consola
+/(3140:3161): PID: 4 asignado a ese programa
+
+[INFO] 12:57:04:905 CódigoFacilito-Consola
+/(3140:3161): Esperando la confirmacion de Kernel..
+[INFO] 12:57:04:945 CódigoFacilito-Consola
+/(3140:3161): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:57:05:505 CódigoFacilito-Consola
+/(3140:3161): Fecha Inicio:Wed Jul 26 12:57:04 2017
+
+[INFO] 12:57:05:505 CódigoFacilito-Consola
+/(3140:3161): Fecha Fin:Wed Jul 26 12:57:05 2017
+
+[INFO] 12:57:05:505 CódigoFacilito-Consola
+/(3140:3161): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 12:57:05:505 CódigoFacilito-Consola
+/(3140:3161): Cantidad de impresiones: 0
+[INFO] 12:57:08:175 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:57:10:777 CódigoFacilito-Consola
+/(3140:3168): Esperando atencion de Kernel..
+
+[INFO] 12:57:10:777 CódigoFacilito-Consola
+/(3140:3168): El archivo se envió correctamente
+
+[INFO] 12:57:10:813 CódigoFacilito-Consola
+/(3140:3168): PID: 5 asignado a ese programa
+
+[INFO] 12:57:10:934 CódigoFacilito-Consola
+/(3140:3168): Esperando la confirmacion de Kernel..
+[INFO] 12:57:10:973 CódigoFacilito-Consola
+/(3140:3168): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:57:11:533 CódigoFacilito-Consola
+/(3140:3168): Fecha Inicio:Wed Jul 26 12:57:10 2017
+
+[INFO] 12:57:11:533 CódigoFacilito-Consola
+/(3140:3168): Fecha Fin:Wed Jul 26 12:57:11 2017
+
+[INFO] 12:57:11:533 CódigoFacilito-Consola
+/(3140:3168): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 12:57:11:533 CódigoFacilito-Consola
+/(3140:3168): Cantidad de impresiones: 0
+[INFO] 12:57:13:339 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:57:20:55 CódigoFacilito-Consola
+/(3140:3176): Esperando atencion de Kernel..
+
+[INFO] 12:57:20:55 CódigoFacilito-Consola
+/(3140:3176): El archivo se envió correctamente
+
+[INFO] 12:57:20:94 CódigoFacilito-Consola
+/(3140:3176): PID: 6 asignado a ese programa
+
+[INFO] 12:57:20:213 CódigoFacilito-Consola
+/(3140:3176): Esperando la confirmacion de Kernel..
+[INFO] 12:57:20:253 CódigoFacilito-Consola
+/(3140:3176): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:57:22:453 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 12:57:27:345 CódigoFacilito-Consola
+/(3140:3181): Esperando atencion de Kernel..
+
+[INFO] 12:57:27:345 CódigoFacilito-Consola
+/(3140:3181): El archivo se envió correctamente
+
+[INFO] 12:57:27:381 CódigoFacilito-Consola
+/(3140:3181): PID: 7 asignado a ese programa
+
+[INFO] 12:57:27:462 CódigoFacilito-Consola
+/(3140:3181): Esperando la confirmacion de Kernel..
+[INFO] 12:57:27:501 CódigoFacilito-Consola
+/(3140:3181): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 12:57:28:654 CódigoFacilito-Consola
+/(3140:3181): Fecha Inicio:Wed Jul 26 12:57:27 2017
+
+[INFO] 12:57:28:654 CódigoFacilito-Consola
+/(3140:3181): Fecha Fin:Wed Jul 26 12:57:28 2017
+
+[INFO] 12:57:28:654 CódigoFacilito-Consola
+/(3140:3181): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 12:57:28:654 CódigoFacilito-Consola
+/(3140:3181): Cantidad de impresiones: 0
+[INFO] 12:57:43:693 CódigoFacilito-Consola
+/(3140:3176): Fecha Inicio:Wed Jul 26 12:57:20 2017
+
+[INFO] 12:57:43:693 CódigoFacilito-Consola
+/(3140:3176): Fecha Fin:Wed Jul 26 12:57:43 2017
+
+[INFO] 12:57:43:693 CódigoFacilito-Consola
+/(3140:3176): Diferencia: Horas:0 Minutos:0 Segundos:23
+[INFO] 12:57:43:693 CódigoFacilito-Consola
+/(3140:3176): Cantidad de impresiones: 63
+[INFO] 13:01:02:132 CódigoFacilito-Consola
+/(3140:3140): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:01:04:493 CódigoFacilito-Consola
+/(3140:3344): Esperando atencion de Kernel..
+
+[INFO] 13:01:04:493 CódigoFacilito-Consola
+/(3140:3344): El archivo se envió correctamente
+
+[INFO] 13:01:04:529 CódigoFacilito-Consola
+/(3140:3344): PID: 8 asignado a ese programa
+
+[INFO] 13:01:04:649 CódigoFacilito-Consola
+/(3140:3344): Esperando la confirmacion de Kernel..
+[INFO] 13:01:04:690 CódigoFacilito-Consola
+/(3140:3344): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 13:01:05:92 CódigoFacilito-Consola
+/(3140:3344): No hay más espacio
+[INFO] 13:01:23:183 CódigoFacilito-Consola
+/(3362:3362): Leí el archivo y extraje el puerto: 8080 
+[INFO] 13:01:23:849 CódigoFacilito-Consola
+/(3362:3362): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:01:28:815 CódigoFacilito-Consola
+/(3362:3367): Esperando atencion de Kernel..
+
+[INFO] 13:01:28:815 CódigoFacilito-Consola
+/(3362:3367): El archivo se envió correctamente
+
+[INFO] 13:01:28:854 CódigoFacilito-Consola
+/(3362:3367): PID: 1 asignado a ese programa
+
+[INFO] 13:01:28:933 CódigoFacilito-Consola
+/(3362:3367): Esperando la confirmacion de Kernel..
+[INFO] 13:01:28:973 CódigoFacilito-Consola
+/(3362:3367): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:01:30:614 CódigoFacilito-Consola
+/(3362:3367): Fecha Inicio:Wed Jul 26 13:01:28 2017
+
+[INFO] 13:01:30:614 CódigoFacilito-Consola
+/(3362:3367): Fecha Fin:Wed Jul 26 13:01:30 2017
+
+[INFO] 13:01:30:614 CódigoFacilito-Consola
+/(3362:3367): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 13:01:30:614 CódigoFacilito-Consola
+/(3362:3367): Cantidad de impresiones: 0
+[INFO] 13:06:34:395 CódigoFacilito-Consola
+/(3362:3362): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:06:36:852 CódigoFacilito-Consola
+/(3362:3531): Esperando atencion de Kernel..
+
+[INFO] 13:06:36:852 CódigoFacilito-Consola
+/(3362:3531): El archivo se envió correctamente
+
+[INFO] 13:06:36:890 CódigoFacilito-Consola
+/(3362:3531): PID: 2 asignado a ese programa
+
+[INFO] 13:06:37:9 CódigoFacilito-Consola
+/(3362:3531): Esperando la confirmacion de Kernel..
+[INFO] 13:06:37:49 CódigoFacilito-Consola
+/(3362:3531): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:06:47:581 CódigoFacilito-Consola
+/(3548:3548): Leí el archivo y extraje el puerto: 8080 
+[INFO] 13:06:48:909 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:06:51:797 CódigoFacilito-Consola
+/(3548:3551): Esperando atencion de Kernel..
+
+[INFO] 13:06:51:797 CódigoFacilito-Consola
+/(3548:3551): El archivo se envió correctamente
+
+[INFO] 13:06:51:833 CódigoFacilito-Consola
+/(3548:3551): PID: 1 asignado a ese programa
+
+[INFO] 13:06:51:914 CódigoFacilito-Consola
+/(3548:3551): Esperando la confirmacion de Kernel..
+[INFO] 13:06:51:953 CódigoFacilito-Consola
+/(3548:3551): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:06:52:473 CódigoFacilito-Consola
+/(3548:3551): Fecha Inicio:Wed Jul 26 13:06:51 2017
+
+[INFO] 13:06:52:473 CódigoFacilito-Consola
+/(3548:3551): Fecha Fin:Wed Jul 26 13:06:52 2017
+
+[INFO] 13:06:52:473 CódigoFacilito-Consola
+/(3548:3551): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:06:52:473 CódigoFacilito-Consola
+/(3548:3551): Cantidad de impresiones: 0
+[INFO] 13:06:53:747 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:07:01:57 CódigoFacilito-Consola
+/(3548:3557): Esperando atencion de Kernel..
+
+[INFO] 13:07:01:57 CódigoFacilito-Consola
+/(3548:3557): El archivo se envió correctamente
+
+[INFO] 13:07:01:93 CódigoFacilito-Consola
+/(3548:3557): PID: 2 asignado a ese programa
+
+[INFO] 13:07:01:213 CódigoFacilito-Consola
+/(3548:3557): Esperando la confirmacion de Kernel..
+[INFO] 13:07:01:253 CódigoFacilito-Consola
+/(3548:3557): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:07:02:934 CódigoFacilito-Consola
+/(3548:3557): Fecha Inicio:Wed Jul 26 13:07:01 2017
+
+[INFO] 13:07:02:934 CódigoFacilito-Consola
+/(3548:3557): Fecha Fin:Wed Jul 26 13:07:02 2017
+
+[INFO] 13:07:02:934 CódigoFacilito-Consola
+/(3548:3557): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:07:02:934 CódigoFacilito-Consola
+/(3548:3557): Cantidad de impresiones: 0
+[INFO] 13:08:15:530 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:08:19:546 CódigoFacilito-Consola
+/(3548:3623): Esperando atencion de Kernel..
+
+[INFO] 13:08:19:546 CódigoFacilito-Consola
+/(3548:3623): El archivo se envió correctamente
+
+[INFO] 13:08:19:585 CódigoFacilito-Consola
+/(3548:3623): PID: 3 asignado a ese programa
+
+[INFO] 13:08:19:705 CódigoFacilito-Consola
+/(3548:3623): Esperando la confirmacion de Kernel..
+[INFO] 13:08:19:745 CódigoFacilito-Consola
+/(3548:3623): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:08:21:345 CódigoFacilito-Consola
+/(3548:3623): Fecha Inicio:Wed Jul 26 13:08:19 2017
+
+[INFO] 13:08:21:345 CódigoFacilito-Consola
+/(3548:3623): Fecha Fin:Wed Jul 26 13:08:21 2017
+
+[INFO] 13:08:21:345 CódigoFacilito-Consola
+/(3548:3623): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 13:08:21:345 CódigoFacilito-Consola
+/(3548:3623): Cantidad de impresiones: 1
+[INFO] 13:09:16:403 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:09:21:276 CódigoFacilito-Consola
+/(3548:3705): Esperando atencion de Kernel..
+
+[INFO] 13:09:21:276 CódigoFacilito-Consola
+/(3548:3705): El archivo se envió correctamente
+
+[INFO] 13:09:21:313 CódigoFacilito-Consola
+/(3548:3705): PID: 4 asignado a ese programa
+
+[INFO] 13:09:21:433 CódigoFacilito-Consola
+/(3548:3705): Esperando la confirmacion de Kernel..
+[INFO] 13:09:21:473 CódigoFacilito-Consola
+/(3548:3705): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:09:21:554 CódigoFacilito-Consola
+/(3548:3705): Fecha Inicio:Wed Jul 26 13:09:21 2017
+
+[INFO] 13:09:21:554 CódigoFacilito-Consola
+/(3548:3705): Fecha Fin:Wed Jul 26 13:09:21 2017
+
+[INFO] 13:09:21:554 CódigoFacilito-Consola
+/(3548:3705): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 13:09:21:554 CódigoFacilito-Consola
+/(3548:3705): Cantidad de impresiones: 0
+[INFO] 13:09:46:649 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:48:03:748 CódigoFacilito-Consola
+/(3548:3870): Esperando atencion de Kernel..
+
+[INFO] 13:48:03:749 CódigoFacilito-Consola
+/(3548:3870): El archivo se envió correctamente
+
+[INFO] 13:48:03:785 CódigoFacilito-Consola
+/(3548:3870): PID: 5 asignado a ese programa
+
+[INFO] 13:48:03:906 CódigoFacilito-Consola
+/(3548:3870): Esperando la confirmacion de Kernel..
+[INFO] 13:48:03:946 CódigoFacilito-Consola
+/(3548:3870): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:48:04:26 CódigoFacilito-Consola
+/(3548:3870): Fecha Inicio:Wed Jul 26 13:48:03 2017
+
+[INFO] 13:48:04:26 CódigoFacilito-Consola
+/(3548:3870): Fecha Fin:Wed Jul 26 13:48:04 2017
+
+[INFO] 13:48:04:26 CódigoFacilito-Consola
+/(3548:3870): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:48:04:26 CódigoFacilito-Consola
+/(3548:3870): Cantidad de impresiones: 0
+[INFO] 13:48:46:681 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:48:49:589 CódigoFacilito-Consola
+/(3548:3878): Esperando atencion de Kernel..
+
+[INFO] 13:48:49:589 CódigoFacilito-Consola
+/(3548:3878): El archivo se envió correctamente
+
+[INFO] 13:48:49:629 CódigoFacilito-Consola
+/(3548:3878): PID: 6 asignado a ese programa
+
+[INFO] 13:48:49:749 CódigoFacilito-Consola
+/(3548:3878): Esperando la confirmacion de Kernel..
+[INFO] 13:48:49:789 CódigoFacilito-Consola
+/(3548:3878): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:48:50:350 CódigoFacilito-Consola
+/(3548:3878): Fecha Inicio:Wed Jul 26 13:48:49 2017
+
+[INFO] 13:48:50:350 CódigoFacilito-Consola
+/(3548:3878): Fecha Fin:Wed Jul 26 13:48:50 2017
+
+[INFO] 13:48:50:350 CódigoFacilito-Consola
+/(3548:3878): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:48:50:350 CódigoFacilito-Consola
+/(3548:3878): Cantidad de impresiones: 0
+[INFO] 13:49:50:346 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:49:54:888 CódigoFacilito-Consola
+/(3548:3889): Esperando atencion de Kernel..
+
+[INFO] 13:49:54:888 CódigoFacilito-Consola
+/(3548:3889): El archivo se envió correctamente
+
+[INFO] 13:49:54:925 CódigoFacilito-Consola
+/(3548:3889): PID: 7 asignado a ese programa
+
+[INFO] 13:49:55:45 CódigoFacilito-Consola
+/(3548:3889): Esperando la confirmacion de Kernel..
+[INFO] 13:49:55:85 CódigoFacilito-Consola
+/(3548:3889): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:49:55:165 CódigoFacilito-Consola
+/(3548:3889): Fecha Inicio:Wed Jul 26 13:49:54 2017
+
+[INFO] 13:49:55:165 CódigoFacilito-Consola
+/(3548:3889): Fecha Fin:Wed Jul 26 13:49:55 2017
+
+[INFO] 13:49:55:165 CódigoFacilito-Consola
+/(3548:3889): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:49:55:165 CódigoFacilito-Consola
+/(3548:3889): Cantidad de impresiones: 0
+[INFO] 13:50:42:770 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:50:45:543 CódigoFacilito-Consola
+/(3548:3905): Esperando atencion de Kernel..
+
+[INFO] 13:50:45:543 CódigoFacilito-Consola
+/(3548:3905): El archivo se envió correctamente
+
+[INFO] 13:50:45:581 CódigoFacilito-Consola
+/(3548:3905): PID: 8 asignado a ese programa
+
+[INFO] 13:50:45:701 CódigoFacilito-Consola
+/(3548:3905): Esperando la confirmacion de Kernel..
+[INFO] 13:50:45:742 CódigoFacilito-Consola
+/(3548:3905): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:50:46:302 CódigoFacilito-Consola
+/(3548:3905): Fecha Inicio:Wed Jul 26 13:50:45 2017
+
+[INFO] 13:50:46:302 CódigoFacilito-Consola
+/(3548:3905): Fecha Fin:Wed Jul 26 13:50:46 2017
+
+[INFO] 13:50:46:302 CódigoFacilito-Consola
+/(3548:3905): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:50:46:302 CódigoFacilito-Consola
+/(3548:3905): Cantidad de impresiones: 0
+[INFO] 13:51:01:520 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 13:51:07:807 CódigoFacilito-Consola
+/(3548:3921): Esperando atencion de Kernel..
+
+[INFO] 13:51:07:807 CódigoFacilito-Consola
+/(3548:3921): El archivo se envió correctamente
+
+[INFO] 13:51:07:845 CódigoFacilito-Consola
+/(3548:3921): PID: 9 asignado a ese programa
+
+[INFO] 13:51:07:966 CódigoFacilito-Consola
+/(3548:3921): Esperando la confirmacion de Kernel..
+[INFO] 13:51:08:5 CódigoFacilito-Consola
+/(3548:3921): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 13:51:08:85 CódigoFacilito-Consola
+/(3548:3921): Fecha Inicio:Wed Jul 26 13:51:07 2017
+
+[INFO] 13:51:08:85 CódigoFacilito-Consola
+/(3548:3921): Fecha Fin:Wed Jul 26 13:51:08 2017
+
+[INFO] 13:51:08:85 CódigoFacilito-Consola
+/(3548:3921): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 13:51:08:86 CódigoFacilito-Consola
+/(3548:3921): Cantidad de impresiones: 0
+[INFO] 14:04:18:756 CódigoFacilito-Consola
+/(3548:3548): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:04:21:754 CódigoFacilito-Consola
+/(3548:4152): Esperando atencion de Kernel..
+
+[INFO] 14:04:21:754 CódigoFacilito-Consola
+/(3548:4152): El archivo se envió correctamente
+
+[INFO] 14:04:21:794 CódigoFacilito-Consola
+/(3548:4152): PID: 10 asignado a ese programa
+
+[INFO] 14:04:21:913 CódigoFacilito-Consola
+/(3548:4152): Esperando la confirmacion de Kernel..
+[INFO] 14:04:21:953 CódigoFacilito-Consola
+/(3548:4152): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 14:04:22:357 CódigoFacilito-Consola
+/(3548:4152): No hay más espacio
+[INFO] 14:04:29:145 CódigoFacilito-Consola
+/(4169:4169): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:04:30:72 CódigoFacilito-Consola
+/(4169:4169): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:04:33:531 CódigoFacilito-Consola
+/(4169:4172): Esperando atencion de Kernel..
+
+[INFO] 14:04:33:531 CódigoFacilito-Consola
+/(4169:4172): El archivo se envió correctamente
+
+[INFO] 14:04:33:569 CódigoFacilito-Consola
+/(4169:4172): PID: 1 asignado a ese programa
+
+[INFO] 14:04:33:649 CódigoFacilito-Consola
+/(4169:4172): Esperando la confirmacion de Kernel..
+[INFO] 14:04:33:689 CódigoFacilito-Consola
+/(4169:4172): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:04:34:210 CódigoFacilito-Consola
+/(4169:4172): Fecha Inicio:Wed Jul 26 14:04:33 2017
+
+[INFO] 14:04:34:210 CódigoFacilito-Consola
+/(4169:4172): Fecha Fin:Wed Jul 26 14:04:34 2017
+
+[INFO] 14:04:34:210 CódigoFacilito-Consola
+/(4169:4172): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 14:04:34:210 CódigoFacilito-Consola
+/(4169:4172): Cantidad de impresiones: 0
+[INFO] 14:05:01:1 CódigoFacilito-Consola
+/(4169:4169): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:05:05:711 CódigoFacilito-Consola
+/(4169:4218): Esperando atencion de Kernel..
+
+[INFO] 14:05:05:711 CódigoFacilito-Consola
+/(4169:4218): El archivo se envió correctamente
+
+[INFO] 14:05:05:749 CódigoFacilito-Consola
+/(4169:4218): PID: 2 asignado a ese programa
+
+[INFO] 14:05:05:869 CódigoFacilito-Consola
+/(4169:4218): Esperando la confirmacion de Kernel..
+[INFO] 14:05:05:909 CódigoFacilito-Consola
+/(4169:4218): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:05:12:490 CódigoFacilito-Consola
+/(4234:4234): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:05:13:156 CódigoFacilito-Consola
+/(4234:4234): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:05:16:194 CódigoFacilito-Consola
+/(4234:4237): Esperando atencion de Kernel..
+
+[INFO] 14:05:16:209 CódigoFacilito-Consola
+/(4234:4237): El archivo se envió correctamente
+
+[INFO] 14:05:16:249 CódigoFacilito-Consola
+/(4234:4237): PID: 1 asignado a ese programa
+
+[INFO] 14:05:16:329 CódigoFacilito-Consola
+/(4234:4237): Esperando la confirmacion de Kernel..
+[INFO] 14:05:16:369 CódigoFacilito-Consola
+/(4234:4237): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:05:16:890 CódigoFacilito-Consola
+/(4234:4237): Fecha Inicio:Wed Jul 26 14:05:16 2017
+
+[INFO] 14:05:16:890 CódigoFacilito-Consola
+/(4234:4237): Fecha Fin:Wed Jul 26 14:05:16 2017
+
+[INFO] 14:05:16:890 CódigoFacilito-Consola
+/(4234:4237): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 14:05:16:890 CódigoFacilito-Consola
+/(4234:4237): Cantidad de impresiones: 0
+[INFO] 14:05:35:626 CódigoFacilito-Consola
+/(4234:4234): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:05:47:16 CódigoFacilito-Consola
+/(4234:4245): Esperando atencion de Kernel..
+
+[INFO] 14:05:47:17 CódigoFacilito-Consola
+/(4234:4245): El archivo se envió correctamente
+
+[INFO] 14:05:47:53 CódigoFacilito-Consola
+/(4234:4245): PID: 2 asignado a ese programa
+
+[INFO] 14:05:47:173 CódigoFacilito-Consola
+/(4234:4245): Esperando la confirmacion de Kernel..
+[INFO] 14:05:47:213 CódigoFacilito-Consola
+/(4234:4245): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:05:47:293 CódigoFacilito-Consola
+/(4234:4245): Fecha Inicio:Wed Jul 26 14:05:47 2017
+
+[INFO] 14:05:47:293 CódigoFacilito-Consola
+/(4234:4245): Fecha Fin:Wed Jul 26 14:05:47 2017
+
+[INFO] 14:05:47:293 CódigoFacilito-Consola
+/(4234:4245): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 14:05:47:293 CódigoFacilito-Consola
+/(4234:4245): Cantidad de impresiones: 0
+[INFO] 14:14:27:294 CódigoFacilito-Consola
+/(4493:4493): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:14:28:702 CódigoFacilito-Consola
+/(4493:4493): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:14:31:705 CódigoFacilito-Consola
+/(4493:4496): Esperando atencion de Kernel..
+
+[INFO] 14:14:31:705 CódigoFacilito-Consola
+/(4493:4496): El archivo se envió correctamente
+
+[INFO] 14:14:31:741 CódigoFacilito-Consola
+/(4493:4496): PID: 1 asignado a ese programa
+
+[INFO] 14:14:31:821 CódigoFacilito-Consola
+/(4493:4496): Esperando la confirmacion de Kernel..
+[INFO] 14:14:31:862 CódigoFacilito-Consola
+/(4493:4496): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:14:32:382 CódigoFacilito-Consola
+/(4493:4496): Fecha Inicio:Wed Jul 26 14:14:31 2017
+
+[INFO] 14:14:32:382 CódigoFacilito-Consola
+/(4493:4496): Fecha Fin:Wed Jul 26 14:14:32 2017
+
+[INFO] 14:14:32:382 CódigoFacilito-Consola
+/(4493:4496): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 14:14:32:382 CódigoFacilito-Consola
+/(4493:4496): Cantidad de impresiones: 0
+[INFO] 14:14:34:623 CódigoFacilito-Consola
+/(4493:4493): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:14:42:750 CódigoFacilito-Consola
+/(4493:4504): Esperando atencion de Kernel..
+
+[INFO] 14:14:42:750 CódigoFacilito-Consola
+/(4493:4504): El archivo se envió correctamente
+
+[INFO] 14:14:42:789 CódigoFacilito-Consola
+/(4493:4504): PID: 2 asignado a ese programa
+
+[INFO] 14:14:42:910 CódigoFacilito-Consola
+/(4493:4504): Esperando la confirmacion de Kernel..
+[INFO] 14:14:42:949 CódigoFacilito-Consola
+/(4493:4504): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:15:28:838 CódigoFacilito-Consola
+/(4493:4504): Fecha Inicio:Wed Jul 26 14:14:42 2017
+
+[INFO] 14:15:28:838 CódigoFacilito-Consola
+/(4493:4504): Fecha Fin:Wed Jul 26 14:15:28 2017
+
+[INFO] 14:15:28:838 CódigoFacilito-Consola
+/(4493:4504): Diferencia: Horas:0 Minutos:0 Segundos:46
+[INFO] 14:15:28:838 CódigoFacilito-Consola
+/(4493:4504): Cantidad de impresiones: 127
+[INFO] 14:15:36:337 CódigoFacilito-Consola
+/(4493:4493): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:15:41:135 CódigoFacilito-Consola
+/(4493:4514): Esperando atencion de Kernel..
+
+[INFO] 14:15:41:135 CódigoFacilito-Consola
+/(4493:4514): El archivo se envió correctamente
+
+[INFO] 14:15:41:173 CódigoFacilito-Consola
+/(4493:4514): PID: 3 asignado a ese programa
+
+[INFO] 14:15:41:293 CódigoFacilito-Consola
+/(4493:4514): Esperando la confirmacion de Kernel..
+[INFO] 14:15:41:333 CódigoFacilito-Consola
+/(4493:4514): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 14:15:54:521 CódigoFacilito-Consola
+/(4493:4514): No hay más espacio
+[INFO] 14:24:28:833 CódigoFacilito-Consola
+/(4740:4740): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:24:29:399 CódigoFacilito-Consola
+/(4740:4740): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:24:32:522 CódigoFacilito-Consola
+/(4740:4744): Esperando atencion de Kernel..
+
+[INFO] 14:24:32:522 CódigoFacilito-Consola
+/(4740:4744): El archivo se envió correctamente
+
+[INFO] 14:24:32:561 CódigoFacilito-Consola
+/(4740:4744): PID: 1 asignado a ese programa
+
+[INFO] 14:24:32:641 CódigoFacilito-Consola
+/(4740:4744): Esperando la confirmacion de Kernel..
+[INFO] 14:24:32:681 CódigoFacilito-Consola
+/(4740:4744): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:24:33:202 CódigoFacilito-Consola
+/(4740:4744): Fecha Inicio:Wed Jul 26 14:24:32 2017
+
+[INFO] 14:24:33:202 CódigoFacilito-Consola
+/(4740:4744): Fecha Fin:Wed Jul 26 14:24:33 2017
+
+[INFO] 14:24:33:202 CódigoFacilito-Consola
+/(4740:4744): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 14:24:33:202 CódigoFacilito-Consola
+/(4740:4744): Cantidad de impresiones: 0
+[INFO] 14:24:34:783 CódigoFacilito-Consola
+/(4740:4740): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:24:38:443 CódigoFacilito-Consola
+/(4740:4751): Esperando atencion de Kernel..
+
+[INFO] 14:24:38:444 CódigoFacilito-Consola
+/(4740:4751): El archivo se envió correctamente
+
+[INFO] 14:24:38:481 CódigoFacilito-Consola
+/(4740:4751): PID: 2 asignado a ese programa
+
+[INFO] 14:24:38:602 CódigoFacilito-Consola
+/(4740:4751): Esperando la confirmacion de Kernel..
+[INFO] 14:24:38:641 CódigoFacilito-Consola
+/(4740:4751): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:27:34:21 CódigoFacilito-Consola
+/(4852:4852): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:27:35:320 CódigoFacilito-Consola
+/(4852:4852): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:27:42:824 CódigoFacilito-Consola
+/(4852:4857): Esperando atencion de Kernel..
+
+[INFO] 14:27:42:824 CódigoFacilito-Consola
+/(4852:4857): El archivo se envió correctamente
+
+[INFO] 14:27:42:861 CódigoFacilito-Consola
+/(4852:4857): PID: 1 asignado a ese programa
+
+[INFO] 14:27:42:941 CódigoFacilito-Consola
+/(4852:4857): Esperando la confirmacion de Kernel..
+[INFO] 14:27:42:981 CódigoFacilito-Consola
+/(4852:4857): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:31:06:139 CódigoFacilito-Consola
+/(4941:4941): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:31:06:985 CódigoFacilito-Consola
+/(4941:4941): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:31:17:679 CódigoFacilito-Consola
+/(4941:4944): Esperando atencion de Kernel..
+
+[INFO] 14:31:17:679 CódigoFacilito-Consola
+/(4941:4944): El archivo se envió correctamente
+
+[INFO] 14:31:17:718 CódigoFacilito-Consola
+/(4941:4944): PID: 1 asignado a ese programa
+
+[INFO] 14:31:17:797 CódigoFacilito-Consola
+/(4941:4944): Esperando la confirmacion de Kernel..
+[INFO] 14:31:17:837 CódigoFacilito-Consola
+/(4941:4944): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:42:38:970 CódigoFacilito-Consola
+/(5006:5006): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:42:39:848 CódigoFacilito-Consola
+/(5006:5006): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:42:50:993 CódigoFacilito-Consola
+/(5006:5009): Esperando atencion de Kernel..
+
+[INFO] 14:42:50:993 CódigoFacilito-Consola
+/(5006:5009): El archivo se envió correctamente
+
+[INFO] 14:42:51:29 CódigoFacilito-Consola
+/(5006:5009): PID: 1 asignado a ese programa
+
+[INFO] 14:42:51:109 CódigoFacilito-Consola
+/(5006:5009): Esperando la confirmacion de Kernel..
+[INFO] 14:42:51:149 CódigoFacilito-Consola
+/(5006:5009): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 14:44:49:655 CódigoFacilito-Consola
+/(5006:5009): No hay más espacio
+[INFO] 14:45:32:109 CódigoFacilito-Consola
+/(5135:5135): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:45:33:286 CódigoFacilito-Consola
+/(5135:5135): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:45:41:383 CódigoFacilito-Consola
+/(5135:5137): Esperando atencion de Kernel..
+
+[INFO] 14:45:41:383 CódigoFacilito-Consola
+/(5135:5137): El archivo se envió correctamente
+
+[INFO] 14:45:41:421 CódigoFacilito-Consola
+/(5135:5137): PID: 1 asignado a ese programa
+
+[INFO] 14:45:41:501 CódigoFacilito-Consola
+/(5135:5137): Esperando la confirmacion de Kernel..
+[INFO] 14:45:41:541 CódigoFacilito-Consola
+/(5135:5137): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 14:46:07:905 CódigoFacilito-Consola
+/(5135:5137): No hay más espacio
+[INFO] 14:46:12:702 CódigoFacilito-Consola
+/(5166:5166): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:46:13:574 CódigoFacilito-Consola
+/(5166:5166): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:46:17:83 CódigoFacilito-Consola
+/(5166:5168): Esperando atencion de Kernel..
+
+[INFO] 14:46:17:83 CódigoFacilito-Consola
+/(5166:5168): El archivo se envió correctamente
+
+[INFO] 14:46:17:122 CódigoFacilito-Consola
+/(5166:5168): PID: 1 asignado a ese programa
+
+[INFO] 14:46:17:201 CódigoFacilito-Consola
+/(5166:5168): Esperando la confirmacion de Kernel..
+[INFO] 14:46:17:241 CódigoFacilito-Consola
+/(5166:5168): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:46:50:46 CódigoFacilito-Consola
+/(5166:5168): Fecha Inicio:Wed Jul 26 14:46:17 2017
+
+[INFO] 14:46:50:46 CódigoFacilito-Consola
+/(5166:5168): Fecha Fin:Wed Jul 26 14:46:50 2017
+
+[INFO] 14:46:50:46 CódigoFacilito-Consola
+/(5166:5168): Diferencia: Horas:0 Minutos:0 Segundos:33
+[INFO] 14:46:50:46 CódigoFacilito-Consola
+/(5166:5168): Cantidad de impresiones: 0
+[INFO] 14:47:02:328 CódigoFacilito-Consola
+/(5236:5236): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:47:02:904 CódigoFacilito-Consola
+/(5236:5236): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:47:05:878 CódigoFacilito-Consola
+/(5236:5240): Esperando atencion de Kernel..
+
+[INFO] 14:47:05:878 CódigoFacilito-Consola
+/(5236:5240): El archivo se envió correctamente
+
+[INFO] 14:47:05:917 CódigoFacilito-Consola
+/(5236:5240): PID: 1 asignado a ese programa
+
+[INFO] 14:47:05:997 CódigoFacilito-Consola
+/(5236:5240): Esperando la confirmacion de Kernel..
+[INFO] 14:47:06:37 CódigoFacilito-Consola
+/(5236:5240): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 14:47:35:281 CódigoFacilito-Consola
+/(5236:5240): No hay más espacio
+[INFO] 14:48:06:37 CódigoFacilito-Consola
+/(5337:5337): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:48:06:719 CódigoFacilito-Consola
+/(5337:5337): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:48:11:677 CódigoFacilito-Consola
+/(5337:5340): Esperando atencion de Kernel..
+
+[INFO] 14:48:11:677 CódigoFacilito-Consola
+/(5337:5340): El archivo se envió correctamente
+
+[INFO] 14:48:11:714 CódigoFacilito-Consola
+/(5337:5340): PID: 1 asignado a ese programa
+
+[INFO] 14:48:11:794 CódigoFacilito-Consola
+/(5337:5340): Esperando la confirmacion de Kernel..
+[INFO] 14:48:11:833 CódigoFacilito-Consola
+/(5337:5340): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:49:00:441 CódigoFacilito-Consola
+/(5337:5337): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:49:11:290 CódigoFacilito-Consola
+/(5337:5355): Esperando atencion de Kernel..
+
+[INFO] 14:49:11:290 CódigoFacilito-Consola
+/(5337:5355): El archivo se envió correctamente
+
+[INFO] 14:49:11:330 CódigoFacilito-Consola
+/(5337:5355): PID: 2 asignado a ese programa
+
+[INFO] 14:49:11:409 CódigoFacilito-Consola
+/(5337:5355): Esperando la confirmacion de Kernel..
+[INFO] 14:49:11:449 CódigoFacilito-Consola
+/(5337:5355): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:59:45:70 CódigoFacilito-Consola
+/(5445:5445): Leí el archivo y extraje el puerto: 8080 
+[INFO] 14:59:46:333 CódigoFacilito-Consola
+/(5445:5445): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 14:59:51:718 CódigoFacilito-Consola
+/(5445:5448): Esperando atencion de Kernel..
+
+[INFO] 14:59:51:718 CódigoFacilito-Consola
+/(5445:5448): El archivo se envió correctamente
+
+[INFO] 14:59:51:757 CódigoFacilito-Consola
+/(5445:5448): PID: 1 asignado a ese programa
+
+[INFO] 14:59:51:837 CódigoFacilito-Consola
+/(5445:5448): Esperando la confirmacion de Kernel..
+[INFO] 14:59:51:877 CódigoFacilito-Consola
+/(5445:5448): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 14:59:52:398 CódigoFacilito-Consola
+/(5445:5448): Fecha Inicio:Wed Jul 26 14:59:51 2017
+
+[INFO] 14:59:52:398 CódigoFacilito-Consola
+/(5445:5448): Fecha Fin:Wed Jul 26 14:59:52 2017
+
+[INFO] 14:59:52:398 CódigoFacilito-Consola
+/(5445:5448): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 14:59:52:398 CódigoFacilito-Consola
+/(5445:5448): Cantidad de impresiones: 0
+[INFO] 14:59:54:335 CódigoFacilito-Consola
+/(5445:5445): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 15:00:01:964 CódigoFacilito-Consola
+/(5445:5454): Esperando atencion de Kernel..
+
+[INFO] 15:00:01:964 CódigoFacilito-Consola
+/(5445:5454): El archivo se envió correctamente
+
+[INFO] 15:00:01:2 CódigoFacilito-Consola
+/(5445:5454): PID: 2 asignado a ese programa
+
+[INFO] 15:00:02:122 CódigoFacilito-Consola
+/(5445:5454): Esperando la confirmacion de Kernel..
+[INFO] 15:00:02:162 CódigoFacilito-Consola
+/(5445:5454): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 15:02:20:598 CódigoFacilito-Consola
+/(5445:5445): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 15:02:25:697 CódigoFacilito-Consola
+/(5445:5467): Esperando atencion de Kernel..
+
+[INFO] 15:02:25:697 CódigoFacilito-Consola
+/(5445:5467): El archivo se envió correctamente
+
+[INFO] 15:02:25:733 CódigoFacilito-Consola
+/(5445:5467): PID: 3 asignado a ese programa
+
+[ERROR] 15:02:25:734 CódigoFacilito-Consola
+/(5445:5454): No hay más espacio
+[INFO] 15:02:37:739 CódigoFacilito-Consola
+/(5478:5478): Leí el archivo y extraje el puerto: 8080 
+[INFO] 15:02:38:380 CódigoFacilito-Consola
+/(5478:5478): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 15:02:42:797 CódigoFacilito-Consola
+/(5478:5481): Esperando atencion de Kernel..
+
+[INFO] 15:02:42:797 CódigoFacilito-Consola
+/(5478:5481): El archivo se envió correctamente
+
+[INFO] 15:02:42:834 CódigoFacilito-Consola
+/(5478:5481): PID: 1 asignado a ese programa
+
+[INFO] 15:02:42:913 CódigoFacilito-Consola
+/(5478:5481): Esperando la confirmacion de Kernel..
+[INFO] 15:02:42:953 CódigoFacilito-Consola
+/(5478:5481): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 15:02:43:474 CódigoFacilito-Consola
+/(5478:5481): Fecha Inicio:Wed Jul 26 15:02:42 2017
+
+[INFO] 15:02:43:474 CódigoFacilito-Consola
+/(5478:5481): Fecha Fin:Wed Jul 26 15:02:43 2017
+
+[INFO] 15:02:43:474 CódigoFacilito-Consola
+/(5478:5481): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 15:02:43:474 CódigoFacilito-Consola
+/(5478:5481): Cantidad de impresiones: 0
+[INFO] 15:02:44:787 CódigoFacilito-Consola
+/(5478:5478): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 15:02:48:542 CódigoFacilito-Consola
+/(5478:5484): Esperando atencion de Kernel..
+
+[INFO] 15:02:48:542 CódigoFacilito-Consola
+/(5478:5484): El archivo se envió correctamente
+
+[INFO] 15:02:48:581 CódigoFacilito-Consola
+/(5478:5484): PID: 2 asignado a ese programa
+
+[INFO] 15:02:48:702 CódigoFacilito-Consola
+/(5478:5484): Esperando la confirmacion de Kernel..
+[INFO] 15:02:48:742 CódigoFacilito-Consola
+/(5478:5484): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 15:04:13:518 CódigoFacilito-Consola
+/(5478:5484): Fecha Inicio:Wed Jul 26 15:02:48 2017
+
+[INFO] 15:04:13:518 CódigoFacilito-Consola
+/(5478:5484): Fecha Fin:Wed Jul 26 15:04:13 2017
+
+[INFO] 15:04:13:518 CódigoFacilito-Consola
+/(5478:5484): Diferencia: Horas:0 Minutos:1 Segundos:25
+[INFO] 15:04:13:518 CódigoFacilito-Consola
+/(5478:5484): Cantidad de impresiones: 0
+[INFO] 16:03:44:753 CódigoFacilito-Consola
+/(6944:6944): Leí el archivo y extraje el puerto: 8080 
+[INFO] 16:03:57:866 CódigoFacilito-Consola
+/(6944:6944): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 16:04:02:39 CódigoFacilito-Consola
+/(6944:6949): Esperando atencion de Kernel..
+
+[INFO] 16:04:02:39 CódigoFacilito-Consola
+/(6944:6949): El archivo se envió correctamente
+
+[INFO] 16:04:02:78 CódigoFacilito-Consola
+/(6944:6949): PID: 1 asignado a ese programa
+
+[INFO] 16:04:02:157 CódigoFacilito-Consola
+/(6944:6949): Esperando la confirmacion de Kernel..
+[INFO] 16:04:02:197 CódigoFacilito-Consola
+/(6944:6949): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 16:04:03:837 CódigoFacilito-Consola
+/(6944:6949): Fecha Inicio:Wed Jul 26 16:04:02 2017
+
+[INFO] 16:04:03:837 CódigoFacilito-Consola
+/(6944:6949): Fecha Fin:Wed Jul 26 16:04:03 2017
+
+[INFO] 16:04:03:837 CódigoFacilito-Consola
+/(6944:6949): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 16:04:03:837 CódigoFacilito-Consola
+/(6944:6949): Cantidad de impresiones: 0
+[INFO] 16:04:37:873 CódigoFacilito-Consola
+/(6944:6944): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 16:04:48:537 CódigoFacilito-Consola
+/(6944:7029): Esperando atencion de Kernel..
+
+[INFO] 16:04:48:537 CódigoFacilito-Consola
+/(6944:7029): El archivo se envió correctamente
+
+[INFO] 16:04:48:573 CódigoFacilito-Consola
+/(6944:7029): PID: 2 asignado a ese programa
+
+[INFO] 16:04:48:693 CódigoFacilito-Consola
+/(6944:7029): Esperando la confirmacion de Kernel..
+[INFO] 16:04:48:733 CódigoFacilito-Consola
+/(6944:7029): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 16:04:50:334 CódigoFacilito-Consola
+/(6944:7029): Fecha Inicio:Wed Jul 26 16:04:48 2017
+
+[INFO] 16:04:50:334 CódigoFacilito-Consola
+/(6944:7029): Fecha Fin:Wed Jul 26 16:04:50 2017
+
+[INFO] 16:04:50:334 CódigoFacilito-Consola
+/(6944:7029): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 16:04:50:334 CódigoFacilito-Consola
+/(6944:7029): Cantidad de impresiones: 1
+[INFO] 16:09:11:371 CódigoFacilito-Consola
+/(6944:6944): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 16:09:18:856 CódigoFacilito-Consola
+/(6944:7092): Esperando atencion de Kernel..
+
+[INFO] 16:09:18:856 CódigoFacilito-Consola
+/(6944:7092): El archivo se envió correctamente
+
+[INFO] 16:09:18:893 CódigoFacilito-Consola
+/(6944:7092): PID: 3 asignado a ese programa
+
+[INFO] 16:09:19:14 CódigoFacilito-Consola
+/(6944:7092): Esperando la confirmacion de Kernel..
+[INFO] 16:09:19:53 CódigoFacilito-Consola
+/(6944:7092): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 16:10:43:825 CódigoFacilito-Consola
+/(6944:7092): Fecha Inicio:Wed Jul 26 16:09:18 2017
+
+[INFO] 16:10:43:825 CódigoFacilito-Consola
+/(6944:7092): Fecha Fin:Wed Jul 26 16:10:43 2017
+
+[INFO] 16:10:43:825 CódigoFacilito-Consola
+/(6944:7092): Diferencia: Horas:0 Minutos:1 Segundos:25
+[INFO] 16:10:43:825 CódigoFacilito-Consola
+/(6944:7092): Cantidad de impresiones: 0
+[INFO] 16:12:27:863 CódigoFacilito-Consola
+/(6944:6944): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 16:12:33:653 CódigoFacilito-Consola
+/(6944:7169): Esperando atencion de Kernel..
+
+[INFO] 16:12:33:653 CódigoFacilito-Consola
+/(6944:7169): El archivo se envió correctamente
+
+[INFO] 16:12:33:690 CódigoFacilito-Consola
+/(6944:7169): PID: 4 asignado a ese programa
+
+[INFO] 16:12:33:810 CódigoFacilito-Consola
+/(6944:7169): Esperando la confirmacion de Kernel..
+[INFO] 16:12:33:850 CódigoFacilito-Consola
+/(6944:7169): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 16:12:34:329 CódigoFacilito-Consola
+/(6944:7169): Fecha Inicio:Wed Jul 26 16:12:33 2017
+
+[INFO] 16:12:34:329 CódigoFacilito-Consola
+/(6944:7169): Fecha Fin:Wed Jul 26 16:12:34 2017
+
+[INFO] 16:12:34:329 CódigoFacilito-Consola
+/(6944:7169): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 16:12:34:329 CódigoFacilito-Consola
+/(6944:7169): Cantidad de impresiones: 0
+[ERROR] 16:15:39:333 CódigoFacilito-Consola
+/(6944:6944): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 16:15:39:333 CódigoFacilito-Consola
+/(6944:6944): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 16:15:39:333 CódigoFacilito-Consola
+/(6944:6944): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 16:15:39:333 CódigoFacilito-Consola
+/(6944:6944): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 16:15:39:333 CódigoFacilito-Consola
+/(6944:6944): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 16:15:43:98 CódigoFacilito-Consola
+/(6944:6944): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 16:15:47:435 CódigoFacilito-Consola
+/(6944:7336): Esperando atencion de Kernel..
+
+[INFO] 16:15:47:435 CódigoFacilito-Consola
+/(6944:7336): El archivo se envió correctamente
+
+[INFO] 16:15:47:473 CódigoFacilito-Consola
+/(6944:7336): PID: 5 asignado a ese programa
+
+[INFO] 16:15:47:593 CódigoFacilito-Consola
+/(6944:7336): Esperando la confirmacion de Kernel..
+[INFO] 16:15:47:633 CódigoFacilito-Consola
+/(6944:7336): Paginas suficientes - El proceso se almaceno exitosamente
+[ERROR] 16:15:48:37 CódigoFacilito-Consola
+/(6944:7336): No hay más espacio
+[INFO] 18:04:35:482 CódigoFacilito-Consola
+/(2856:2856): Leí el archivo y extraje el puerto: 8080 
+[ERROR] 18:04:39:563 CódigoFacilito-Consola
+/(2856:2856): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:04:39:563 CódigoFacilito-Consola
+/(2856:2856): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 18:04:41:809 CódigoFacilito-Consola
+/(2856:2856): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:04:48:902 CódigoFacilito-Consola
+/(2856:2863): Esperando atencion de Kernel..
+
+[INFO] 18:04:48:902 CódigoFacilito-Consola
+/(2856:2863): El archivo se envió correctamente
+
+[INFO] 18:04:48:938 CódigoFacilito-Consola
+/(2856:2863): PID: 1 asignado a ese programa
+
+[INFO] 18:04:49:18 CódigoFacilito-Consola
+/(2856:2863): Esperando la confirmacion de Kernel..
+[INFO] 18:04:49:58 CódigoFacilito-Consola
+/(2856:2863): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:04:49:579 CódigoFacilito-Consola
+/(2856:2863): Fecha Inicio:Wed Jul 26 18:04:48 2017
+
+[INFO] 18:04:49:579 CódigoFacilito-Consola
+/(2856:2863): Fecha Fin:Wed Jul 26 18:04:49 2017
+
+[INFO] 18:04:49:579 CódigoFacilito-Consola
+/(2856:2863): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 18:04:49:579 CódigoFacilito-Consola
+/(2856:2863): Cantidad de impresiones: 0
+[INFO] 18:04:53:34 CódigoFacilito-Consola
+/(2856:2856): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:04:57:793 CódigoFacilito-Consola
+/(2856:2870): Esperando atencion de Kernel..
+
+[INFO] 18:04:57:793 CódigoFacilito-Consola
+/(2856:2870): El archivo se envió correctamente
+
+[INFO] 18:04:57:830 CódigoFacilito-Consola
+/(2856:2870): PID: 2 asignado a ese programa
+
+[INFO] 18:04:57:951 CódigoFacilito-Consola
+/(2856:2870): Esperando la confirmacion de Kernel..
+[INFO] 18:04:57:991 CódigoFacilito-Consola
+/(2856:2870): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:04:58:191 CódigoFacilito-Consola
+/(2856:2870): Fecha Inicio:Wed Jul 26 18:04:57 2017
+
+[INFO] 18:04:58:191 CódigoFacilito-Consola
+/(2856:2870): Fecha Fin:Wed Jul 26 18:04:58 2017
+
+[INFO] 18:04:58:191 CódigoFacilito-Consola
+/(2856:2870): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 18:04:58:191 CódigoFacilito-Consola
+/(2856:2870): Cantidad de impresiones: 0
+[INFO] 18:06:01:460 CódigoFacilito-Consola
+/(2856:2856): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:06:16:925 CódigoFacilito-Consola
+/(2856:2882): Esperando atencion de Kernel..
+
+[INFO] 18:06:16:925 CódigoFacilito-Consola
+/(2856:2882): El archivo se envió correctamente
+
+[INFO] 18:06:16:964 CódigoFacilito-Consola
+/(2856:2882): PID: 3 asignado a ese programa
+
+[INFO] 18:06:17:84 CódigoFacilito-Consola
+/(2856:2882): Esperando la confirmacion de Kernel..
+[INFO] 18:06:17:124 CódigoFacilito-Consola
+/(2856:2882): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:06:19:4 CódigoFacilito-Consola
+/(2856:2882): Fecha Inicio:Wed Jul 26 18:06:16 2017
+
+[INFO] 18:06:19:4 CódigoFacilito-Consola
+/(2856:2882): Fecha Fin:Wed Jul 26 18:06:19 2017
+
+[INFO] 18:06:19:4 CódigoFacilito-Consola
+/(2856:2882): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 18:06:19:4 CódigoFacilito-Consola
+/(2856:2882): Cantidad de impresiones: 0
+[INFO] 18:17:27:125 CódigoFacilito-Consola
+/(3443:3443): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:17:28:48 CódigoFacilito-Consola
+/(3443:3443): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:17:31:869 CódigoFacilito-Consola
+/(3443:3446): Esperando atencion de Kernel..
+
+[INFO] 18:17:31:870 CódigoFacilito-Consola
+/(3443:3446): El archivo se envió correctamente
+
+[INFO] 18:17:31:908 CódigoFacilito-Consola
+/(3443:3446): PID: 1 asignado a ese programa
+
+[INFO] 18:17:31:989 CódigoFacilito-Consola
+/(3443:3446): Esperando la confirmacion de Kernel..
+[INFO] 18:17:32:28 CódigoFacilito-Consola
+/(3443:3446): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:17:32:556 CódigoFacilito-Consola
+/(3443:3446): Fecha Inicio:Wed Jul 26 18:17:31 2017
+
+[INFO] 18:17:32:556 CódigoFacilito-Consola
+/(3443:3446): Fecha Fin:Wed Jul 26 18:17:32 2017
+
+[INFO] 18:17:32:556 CódigoFacilito-Consola
+/(3443:3446): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 18:17:32:556 CódigoFacilito-Consola
+/(3443:3446): Cantidad de impresiones: 0
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 18:17:40:482 CódigoFacilito-Consola
+/(3443:3443): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 18:17:42:532 CódigoFacilito-Consola
+/(3443:3443): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:17:47:797 CódigoFacilito-Consola
+/(3443:3454): Esperando atencion de Kernel..
+
+[INFO] 18:17:47:797 CódigoFacilito-Consola
+/(3443:3454): El archivo se envió correctamente
+
+[INFO] 18:17:47:836 CódigoFacilito-Consola
+/(3443:3454): PID: 2 asignado a ese programa
+
+[INFO] 18:17:47:957 CódigoFacilito-Consola
+/(3443:3454): Esperando la confirmacion de Kernel..
+[INFO] 18:17:47:996 CódigoFacilito-Consola
+/(3443:3454): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:17:49:876 CódigoFacilito-Consola
+/(3443:3454): Fecha Inicio:Wed Jul 26 18:17:47 2017
+
+[INFO] 18:17:49:876 CódigoFacilito-Consola
+/(3443:3454): Fecha Fin:Wed Jul 26 18:17:49 2017
+
+[INFO] 18:17:49:876 CódigoFacilito-Consola
+/(3443:3454): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 18:17:49:876 CódigoFacilito-Consola
+/(3443:3454): Cantidad de impresiones: 0
+[INFO] 18:22:42:887 CódigoFacilito-Consola
+/(3596:3596): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:22:43:503 CódigoFacilito-Consola
+/(3596:3596): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:22:46:561 CódigoFacilito-Consola
+/(3596:3601): Esperando atencion de Kernel..
+
+[INFO] 18:22:46:561 CódigoFacilito-Consola
+/(3596:3601): El archivo se envió correctamente
+
+[INFO] 18:22:46:600 CódigoFacilito-Consola
+/(3596:3601): PID: 1 asignado a ese programa
+
+[INFO] 18:22:46:680 CódigoFacilito-Consola
+/(3596:3601): Esperando la confirmacion de Kernel..
+[INFO] 18:22:46:721 CódigoFacilito-Consola
+/(3596:3601): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:22:47:240 CódigoFacilito-Consola
+/(3596:3601): Fecha Inicio:Wed Jul 26 18:22:46 2017
+
+[INFO] 18:22:47:240 CódigoFacilito-Consola
+/(3596:3601): Fecha Fin:Wed Jul 26 18:22:47 2017
+
+[INFO] 18:22:47:240 CódigoFacilito-Consola
+/(3596:3601): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 18:22:47:240 CódigoFacilito-Consola
+/(3596:3601): Cantidad de impresiones: 0
+[INFO] 18:22:48:767 CódigoFacilito-Consola
+/(3596:3596): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:22:55:334 CódigoFacilito-Consola
+/(3596:3608): Esperando atencion de Kernel..
+
+[INFO] 18:22:55:334 CódigoFacilito-Consola
+/(3596:3608): El archivo se envió correctamente
+
+[INFO] 18:22:55:372 CódigoFacilito-Consola
+/(3596:3608): PID: 2 asignado a ese programa
+
+[INFO] 18:22:55:493 CódigoFacilito-Consola
+/(3596:3608): Esperando la confirmacion de Kernel..
+[INFO] 18:22:55:532 CódigoFacilito-Consola
+/(3596:3608): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:22:57:973 CódigoFacilito-Consola
+/(3596:3608): Fecha Inicio:Wed Jul 26 18:22:55 2017
+
+[INFO] 18:22:57:973 CódigoFacilito-Consola
+/(3596:3608): Fecha Fin:Wed Jul 26 18:22:57 2017
+
+[INFO] 18:22:57:973 CódigoFacilito-Consola
+/(3596:3608): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 18:22:57:973 CódigoFacilito-Consola
+/(3596:3608): Cantidad de impresiones: 0
+[INFO] 18:32:22:407 CódigoFacilito-Consola
+/(3743:3743): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:32:23:124 CódigoFacilito-Consola
+/(3743:3743): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:32:31:652 CódigoFacilito-Consola
+/(3743:3748): Esperando atencion de Kernel..
+
+[INFO] 18:32:31:652 CódigoFacilito-Consola
+/(3743:3748): El archivo se envió correctamente
+
+[INFO] 18:32:31:692 CódigoFacilito-Consola
+/(3743:3748): PID: 1 asignado a ese programa
+
+[INFO] 18:32:31:772 CódigoFacilito-Consola
+/(3743:3748): Esperando la confirmacion de Kernel..
+[INFO] 18:32:31:812 CódigoFacilito-Consola
+/(3743:3748): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:32:34:212 CódigoFacilito-Consola
+/(3743:3748): Fecha Inicio:Wed Jul 26 18:32:31 2017
+
+[INFO] 18:32:34:212 CódigoFacilito-Consola
+/(3743:3748): Fecha Fin:Wed Jul 26 18:32:34 2017
+
+[INFO] 18:32:34:212 CódigoFacilito-Consola
+/(3743:3748): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 18:32:34:212 CódigoFacilito-Consola
+/(3743:3748): Cantidad de impresiones: 0
+[INFO] 18:37:20:209 CódigoFacilito-Consola
+/(3825:3825): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:37:20:860 CódigoFacilito-Consola
+/(3825:3825): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:37:29:724 CódigoFacilito-Consola
+/(3825:3830): Esperando atencion de Kernel..
+
+[INFO] 18:37:29:724 CódigoFacilito-Consola
+/(3825:3830): El archivo se envió correctamente
+
+[INFO] 18:37:29:760 CódigoFacilito-Consola
+/(3825:3830): PID: 1 asignado a ese programa
+
+[INFO] 18:37:29:840 CódigoFacilito-Consola
+/(3825:3830): Esperando la confirmacion de Kernel..
+[INFO] 18:37:29:880 CódigoFacilito-Consola
+/(3825:3830): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:37:32:280 CódigoFacilito-Consola
+/(3825:3830): Fecha Inicio:Wed Jul 26 18:37:29 2017
+
+[INFO] 18:37:32:280 CódigoFacilito-Consola
+/(3825:3830): Fecha Fin:Wed Jul 26 18:37:32 2017
+
+[INFO] 18:37:32:280 CódigoFacilito-Consola
+/(3825:3830): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 18:37:32:280 CódigoFacilito-Consola
+/(3825:3830): Cantidad de impresiones: 0
+[INFO] 18:39:58:140 CódigoFacilito-Consola
+/(3910:3910): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:39:58:580 CódigoFacilito-Consola
+/(3910:3910): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:40:04:336 CódigoFacilito-Consola
+/(3910:3915): Esperando atencion de Kernel..
+
+[INFO] 18:40:04:336 CódigoFacilito-Consola
+/(3910:3915): El archivo se envió correctamente
+
+[INFO] 18:40:04:372 CódigoFacilito-Consola
+/(3910:3915): PID: 1 asignado a ese programa
+
+[INFO] 18:40:04:452 CódigoFacilito-Consola
+/(3910:3915): Esperando la confirmacion de Kernel..
+[INFO] 18:40:04:492 CódigoFacilito-Consola
+/(3910:3915): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:40:06:893 CódigoFacilito-Consola
+/(3910:3915): Fecha Inicio:Wed Jul 26 18:40:04 2017
+
+[INFO] 18:40:06:893 CódigoFacilito-Consola
+/(3910:3915): Fecha Fin:Wed Jul 26 18:40:06 2017
+
+[INFO] 18:40:06:893 CódigoFacilito-Consola
+/(3910:3915): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 18:40:06:893 CódigoFacilito-Consola
+/(3910:3915): Cantidad de impresiones: 0
+[INFO] 18:42:10:595 CódigoFacilito-Consola
+/(4019:4019): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:42:10:990 CódigoFacilito-Consola
+/(4019:4019): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:42:15:688 CódigoFacilito-Consola
+/(4019:4024): Esperando atencion de Kernel..
+
+[INFO] 18:42:15:688 CódigoFacilito-Consola
+/(4019:4024): El archivo se envió correctamente
+
+[INFO] 18:42:15:728 CódigoFacilito-Consola
+/(4019:4024): PID: 1 asignado a ese programa
+
+[INFO] 18:42:15:808 CódigoFacilito-Consola
+/(4019:4024): Esperando la confirmacion de Kernel..
+[INFO] 18:42:15:848 CódigoFacilito-Consola
+/(4019:4024): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:42:18:248 CódigoFacilito-Consola
+/(4019:4024): Fecha Inicio:Wed Jul 26 18:42:15 2017
+
+[INFO] 18:42:18:248 CódigoFacilito-Consola
+/(4019:4024): Fecha Fin:Wed Jul 26 18:42:18 2017
+
+[INFO] 18:42:18:248 CódigoFacilito-Consola
+/(4019:4024): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 18:42:18:248 CódigoFacilito-Consola
+/(4019:4024): Cantidad de impresiones: 0
+[INFO] 18:47:58:406 CódigoFacilito-Consola
+/(4106:4106): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:47:58:816 CódigoFacilito-Consola
+/(4106:4106): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:48:03:449 CódigoFacilito-Consola
+/(4106:4111): Esperando atencion de Kernel..
+
+[INFO] 18:48:03:449 CódigoFacilito-Consola
+/(4106:4111): El archivo se envió correctamente
+
+[INFO] 18:48:03:488 CódigoFacilito-Consola
+/(4106:4111): PID: 1 asignado a ese programa
+
+[INFO] 18:48:03:568 CódigoFacilito-Consola
+/(4106:4111): Esperando la confirmacion de Kernel..
+[INFO] 18:48:03:608 CódigoFacilito-Consola
+/(4106:4111): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:48:06:8 CódigoFacilito-Consola
+/(4106:4111): Fecha Inicio:Wed Jul 26 18:48:03 2017
+
+[INFO] 18:48:06:8 CódigoFacilito-Consola
+/(4106:4111): Fecha Fin:Wed Jul 26 18:48:06 2017
+
+[INFO] 18:48:06:8 CódigoFacilito-Consola
+/(4106:4111): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 18:48:06:8 CódigoFacilito-Consola
+/(4106:4111): Cantidad de impresiones: 0
+[INFO] 18:54:27:254 CódigoFacilito-Consola
+/(4217:4217): Leí el archivo y extraje el puerto: 8080 
+[INFO] 18:54:27:825 CódigoFacilito-Consola
+/(4217:4217): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 18:54:32:297 CódigoFacilito-Consola
+/(4217:4222): Esperando atencion de Kernel..
+
+[INFO] 18:54:32:297 CódigoFacilito-Consola
+/(4217:4222): El archivo se envió correctamente
+
+[INFO] 18:54:32:336 CódigoFacilito-Consola
+/(4217:4222): PID: 1 asignado a ese programa
+
+[INFO] 18:54:32:416 CódigoFacilito-Consola
+/(4217:4222): Esperando la confirmacion de Kernel..
+[INFO] 18:54:32:456 CódigoFacilito-Consola
+/(4217:4222): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 18:54:35:16 CódigoFacilito-Consola
+/(4217:4222): Fecha Inicio:Wed Jul 26 18:54:32 2017
+
+[INFO] 18:54:35:16 CódigoFacilito-Consola
+/(4217:4222): Fecha Fin:Wed Jul 26 18:54:35 2017
+
+[INFO] 18:54:35:16 CódigoFacilito-Consola
+/(4217:4222): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 18:54:35:16 CódigoFacilito-Consola
+/(4217:4222): Cantidad de impresiones: 0
+[INFO] 19:01:10:143 CódigoFacilito-Consola
+/(4217:4217): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:01:15:899 CódigoFacilito-Consola
+/(4217:4416): Esperando atencion de Kernel..
+
+[INFO] 19:01:15:899 CódigoFacilito-Consola
+/(4217:4416): El archivo se envió correctamente
+
+[INFO] 19:01:15:936 CódigoFacilito-Consola
+/(4217:4416): PID: 2 asignado a ese programa
+
+[INFO] 19:01:16:56 CódigoFacilito-Consola
+/(4217:4416): Esperando la confirmacion de Kernel..
+[INFO] 19:01:16:96 CódigoFacilito-Consola
+/(4217:4416): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:01:19:216 CódigoFacilito-Consola
+/(4217:4416): Fecha Inicio:Wed Jul 26 19:01:15 2017
+
+[INFO] 19:01:19:216 CódigoFacilito-Consola
+/(4217:4416): Fecha Fin:Wed Jul 26 19:01:19 2017
+
+[INFO] 19:01:19:216 CódigoFacilito-Consola
+/(4217:4416): Diferencia: Horas:0 Minutos:0 Segundos:4
+[INFO] 19:01:19:216 CódigoFacilito-Consola
+/(4217:4416): Cantidad de impresiones: 0
+[INFO] 19:02:54:367 CódigoFacilito-Consola
+/(4450:4450): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:02:54:999 CódigoFacilito-Consola
+/(4450:4450): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:03:00:162 CódigoFacilito-Consola
+/(4450:4455): Esperando atencion de Kernel..
+
+[INFO] 19:03:00:162 CódigoFacilito-Consola
+/(4450:4455): El archivo se envió correctamente
+
+[INFO] 19:03:00:200 CódigoFacilito-Consola
+/(4450:4455): PID: 1 asignado a ese programa
+
+[INFO] 19:03:00:280 CódigoFacilito-Consola
+/(4450:4455): Esperando la confirmacion de Kernel..
+[INFO] 19:03:00:320 CódigoFacilito-Consola
+/(4450:4455): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:03:02:800 CódigoFacilito-Consola
+/(4450:4455): Fecha Inicio:Wed Jul 26 19:03:00 2017
+
+[INFO] 19:03:02:800 CódigoFacilito-Consola
+/(4450:4455): Fecha Fin:Wed Jul 26 19:03:02 2017
+
+[INFO] 19:03:02:800 CódigoFacilito-Consola
+/(4450:4455): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 19:03:02:800 CódigoFacilito-Consola
+/(4450:4455): Cantidad de impresiones: 0
+[INFO] 19:04:09:162 CódigoFacilito-Consola
+/(4502:4502): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:04:09:668 CódigoFacilito-Consola
+/(4502:4502): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:04:14:591 CódigoFacilito-Consola
+/(4502:4507): Esperando atencion de Kernel..
+
+[INFO] 19:04:14:591 CódigoFacilito-Consola
+/(4502:4507): El archivo se envió correctamente
+
+[INFO] 19:04:14:628 CódigoFacilito-Consola
+/(4502:4507): PID: 1 asignado a ese programa
+
+[INFO] 19:04:14:708 CódigoFacilito-Consola
+/(4502:4507): Esperando la confirmacion de Kernel..
+[INFO] 19:04:14:748 CódigoFacilito-Consola
+/(4502:4507): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:04:17:228 CódigoFacilito-Consola
+/(4502:4507): Fecha Inicio:Wed Jul 26 19:04:14 2017
+
+[INFO] 19:04:17:228 CódigoFacilito-Consola
+/(4502:4507): Fecha Fin:Wed Jul 26 19:04:17 2017
+
+[INFO] 19:04:17:228 CódigoFacilito-Consola
+/(4502:4507): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 19:04:17:228 CódigoFacilito-Consola
+/(4502:4507): Cantidad de impresiones: 0
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:04:43:248 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 19:04:44:516 CódigoFacilito-Consola
+/(4502:4502): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:04:53:269 CódigoFacilito-Consola
+/(4502:4519): Esperando atencion de Kernel..
+
+[INFO] 19:04:53:269 CódigoFacilito-Consola
+/(4502:4519): El archivo se envió correctamente
+
+[INFO] 19:04:53:308 CódigoFacilito-Consola
+/(4502:4519): PID: 2 asignado a ese programa
+
+[INFO] 19:04:53:428 CódigoFacilito-Consola
+/(4502:4519): Esperando la confirmacion de Kernel..
+[INFO] 19:04:53:468 CódigoFacilito-Consola
+/(4502:4519): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:04:56:68 CódigoFacilito-Consola
+/(4502:4519): Fecha Inicio:Wed Jul 26 19:04:53 2017
+
+[INFO] 19:04:56:68 CódigoFacilito-Consola
+/(4502:4519): Fecha Fin:Wed Jul 26 19:04:56 2017
+
+[INFO] 19:04:56:68 CódigoFacilito-Consola
+/(4502:4519): Diferencia: Horas:0 Minutos:0 Segundos:3
+[INFO] 19:04:56:68 CódigoFacilito-Consola
+/(4502:4519): Cantidad de impresiones: 0
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[ERROR] 19:08:37:828 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 19:08:39:258 CódigoFacilito-Consola
+/(4502:4502): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:08:44:992 CódigoFacilito-Consola
+/(4502:4537): Esperando atencion de Kernel..
+
+[INFO] 19:08:44:992 CódigoFacilito-Consola
+/(4502:4537): El archivo se envió correctamente
+
+[INFO] 19:08:45:28 CódigoFacilito-Consola
+/(4502:4537): PID: 3 asignado a ese programa
+
+[INFO] 19:08:45:148 CódigoFacilito-Consola
+/(4502:4537): Esperando la confirmacion de Kernel..
+[INFO] 19:08:45:188 CódigoFacilito-Consola
+/(4502:4537): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:09:20:756 CódigoFacilito-Consola
+/(4502:4537): Fecha Inicio:Wed Jul 26 19:08:44 2017
+
+[INFO] 19:09:20:756 CódigoFacilito-Consola
+/(4502:4537): Fecha Fin:Wed Jul 26 19:09:20 2017
+
+[INFO] 19:09:20:756 CódigoFacilito-Consola
+/(4502:4537): Diferencia: Horas:0 Minutos:0 Segundos:36
+[INFO] 19:09:20:756 CódigoFacilito-Consola
+/(4502:4537): Cantidad de impresiones: 0
+[INFO] 19:11:09:769 CódigoFacilito-Consola
+/(4502:4502): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:11:14:807 CódigoFacilito-Consola
+/(4502:4567): Esperando atencion de Kernel..
+
+[INFO] 19:11:14:807 CódigoFacilito-Consola
+/(4502:4567): El archivo se envió correctamente
+
+[INFO] 19:11:14:844 CódigoFacilito-Consola
+/(4502:4567): PID: 4 asignado a ese programa
+
+[ERROR] 19:11:29:14 CódigoFacilito-Consola
+/(4502:4502): 
+Opcion invalida. Vuelva a elegir una opcion 
+
+[INFO] 19:11:53:274 CódigoFacilito-Consola
+/(4502:4502): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:12:32:423 CódigoFacilito-Consola
+/(4502:4576): Esperando atencion de Kernel..
+
+[INFO] 19:12:32:423 CódigoFacilito-Consola
+/(4502:4576): El archivo se envió correctamente
+
+[INFO] 19:12:32:460 CódigoFacilito-Consola
+/(4502:4576): PID: 5 asignado a ese programa
+
+[INFO] 19:13:15:126 CódigoFacilito-Consola
+/(4502:4502): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:13:25:52 CódigoFacilito-Consola
+/(4502:4585): Esperando atencion de Kernel..
+
+[INFO] 19:13:25:52 CódigoFacilito-Consola
+/(4502:4585): El archivo se envió correctamente
+
+[INFO] 19:13:25:88 CódigoFacilito-Consola
+/(4502:4585): PID: 6 asignado a ese programa
+
+[INFO] 19:15:19:28 CódigoFacilito-Consola
+/(4605:4605): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:15:19:881 CódigoFacilito-Consola
+/(4605:4605): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:15:23:816 CódigoFacilito-Consola
+/(4605:4609): Esperando atencion de Kernel..
+
+[INFO] 19:15:23:816 CódigoFacilito-Consola
+/(4605:4609): El archivo se envió correctamente
+
+[INFO] 19:15:23:856 CódigoFacilito-Consola
+/(4605:4609): PID: 1 asignado a ese programa
+
+[INFO] 19:15:23:936 CódigoFacilito-Consola
+/(4605:4609): Esperando la confirmacion de Kernel..
+[INFO] 19:15:23:976 CódigoFacilito-Consola
+/(4605:4609): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:15:24:496 CódigoFacilito-Consola
+/(4605:4609): Fecha Inicio:Wed Jul 26 19:15:23 2017
+
+[INFO] 19:15:24:496 CódigoFacilito-Consola
+/(4605:4609): Fecha Fin:Wed Jul 26 19:15:24 2017
+
+[INFO] 19:15:24:496 CódigoFacilito-Consola
+/(4605:4609): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:15:24:496 CódigoFacilito-Consola
+/(4605:4609): Cantidad de impresiones: 0
+[INFO] 19:15:26:308 CódigoFacilito-Consola
+/(4605:4605): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:15:57:861 CódigoFacilito-Consola
+/(4605:4617): Esperando atencion de Kernel..
+
+[INFO] 19:15:57:861 CódigoFacilito-Consola
+/(4605:4617): El archivo se envió correctamente
+
+[INFO] 19:15:57:900 CódigoFacilito-Consola
+/(4605:4617): PID: 2 asignado a ese programa
+
+[INFO] 19:15:58:20 CódigoFacilito-Consola
+/(4605:4617): Esperando la confirmacion de Kernel..
+[INFO] 19:15:58:60 CódigoFacilito-Consola
+/(4605:4617): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:16:33:628 CódigoFacilito-Consola
+/(4605:4617): Fecha Inicio:Wed Jul 26 19:15:57 2017
+
+[INFO] 19:16:33:628 CódigoFacilito-Consola
+/(4605:4617): Fecha Fin:Wed Jul 26 19:16:33 2017
+
+[INFO] 19:16:33:628 CódigoFacilito-Consola
+/(4605:4617): Diferencia: Horas:0 Minutos:0 Segundos:36
+[INFO] 19:16:33:628 CódigoFacilito-Consola
+/(4605:4617): Cantidad de impresiones: 0
+[INFO] 19:16:45:919 CódigoFacilito-Consola
+/(4605:4605): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:16:49:634 CódigoFacilito-Consola
+/(4605:4628): Esperando atencion de Kernel..
+
+[INFO] 19:16:49:634 CódigoFacilito-Consola
+/(4605:4628): El archivo se envió correctamente
+
+[INFO] 19:16:49:672 CódigoFacilito-Consola
+/(4605:4628): PID: 3 asignado a ese programa
+
+[INFO] 19:19:05:180 CódigoFacilito-Consola
+/(4703:4703): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:19:05:746 CódigoFacilito-Consola
+/(4703:4703): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:19:09:20 CódigoFacilito-Consola
+/(4703:4707): Esperando atencion de Kernel..
+
+[INFO] 19:19:09:20 CódigoFacilito-Consola
+/(4703:4707): El archivo se envió correctamente
+
+[INFO] 19:19:09:56 CódigoFacilito-Consola
+/(4703:4707): PID: 1 asignado a ese programa
+
+[INFO] 19:19:09:136 CódigoFacilito-Consola
+/(4703:4707): Esperando la confirmacion de Kernel..
+[INFO] 19:19:09:176 CódigoFacilito-Consola
+/(4703:4707): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:19:09:696 CódigoFacilito-Consola
+/(4703:4707): Fecha Inicio:Wed Jul 26 19:19:09 2017
+
+[INFO] 19:19:09:696 CódigoFacilito-Consola
+/(4703:4707): Fecha Fin:Wed Jul 26 19:19:09 2017
+
+[INFO] 19:19:09:696 CódigoFacilito-Consola
+/(4703:4707): Diferencia: Horas:0 Minutos:0 Segundos:0
+[INFO] 19:19:09:696 CódigoFacilito-Consola
+/(4703:4707): Cantidad de impresiones: 0
+[INFO] 19:19:13:126 CódigoFacilito-Consola
+/(4703:4703): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:19:18:425 CódigoFacilito-Consola
+/(4703:4712): Esperando atencion de Kernel..
+
+[INFO] 19:19:18:425 CódigoFacilito-Consola
+/(4703:4712): El archivo se envió correctamente
+
+[INFO] 19:19:18:464 CódigoFacilito-Consola
+/(4703:4712): PID: 2 asignado a ese programa
+
+[INFO] 19:19:18:584 CódigoFacilito-Consola
+/(4703:4712): Esperando la confirmacion de Kernel..
+[INFO] 19:19:18:624 CódigoFacilito-Consola
+/(4703:4712): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:19:54:184 CódigoFacilito-Consola
+/(4703:4712): Fecha Inicio:Wed Jul 26 19:19:18 2017
+
+[INFO] 19:19:54:184 CódigoFacilito-Consola
+/(4703:4712): Fecha Fin:Wed Jul 26 19:19:54 2017
+
+[INFO] 19:19:54:184 CódigoFacilito-Consola
+/(4703:4712): Diferencia: Horas:0 Minutos:0 Segundos:36
+[INFO] 19:19:54:184 CódigoFacilito-Consola
+/(4703:4712): Cantidad de impresiones: 0
+[INFO] 19:19:56:220 CódigoFacilito-Consola
+/(4703:4703): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:19:59:965 CódigoFacilito-Consola
+/(4703:4722): Esperando atencion de Kernel..
+
+[INFO] 19:19:59:965 CódigoFacilito-Consola
+/(4703:4722): El archivo se envió correctamente
+
+[INFO] 19:20:00:4 CódigoFacilito-Consola
+/(4703:4722): PID: 3 asignado a ese programa
+
+[INFO] 19:20:00:124 CódigoFacilito-Consola
+/(4703:4722): Esperando la confirmacion de Kernel..
+[INFO] 19:20:00:164 CódigoFacilito-Consola
+/(4703:4722): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:20:00:724 CódigoFacilito-Consola
+/(4703:4722): Fecha Inicio:Wed Jul 26 19:19:59 2017
+
+[INFO] 19:20:00:724 CódigoFacilito-Consola
+/(4703:4722): Fecha Fin:Wed Jul 26 19:20:00 2017
+
+[INFO] 19:20:00:724 CódigoFacilito-Consola
+/(4703:4722): Diferencia: Horas:0 Minutos:0 Segundos:1
+[INFO] 19:20:00:724 CódigoFacilito-Consola
+/(4703:4722): Cantidad de impresiones: 0
+[INFO] 19:20:03:435 CódigoFacilito-Consola
+/(4703:4703): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:20:07:355 CódigoFacilito-Consola
+/(4703:4729): Esperando atencion de Kernel..
+
+[INFO] 19:20:07:355 CódigoFacilito-Consola
+/(4703:4729): El archivo se envió correctamente
+
+[INFO] 19:20:07:392 CódigoFacilito-Consola
+/(4703:4729): PID: 4 asignado a ese programa
+
+[INFO] 19:20:07:512 CódigoFacilito-Consola
+/(4703:4729): Esperando la confirmacion de Kernel..
+[INFO] 19:20:07:552 CódigoFacilito-Consola
+/(4703:4729): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:21:07:480 CódigoFacilito-Consola
+/(4703:4703): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:21:11:295 CódigoFacilito-Consola
+/(4703:4741): Esperando atencion de Kernel..
+
+[INFO] 19:21:11:295 CódigoFacilito-Consola
+/(4703:4741): El archivo se envió correctamente
+
+[INFO] 19:21:11:332 CódigoFacilito-Consola
+/(4703:4741): PID: 5 asignado a ese programa
+
+[INFO] 19:21:11:412 CódigoFacilito-Consola
+/(4703:4741): Esperando la confirmacion de Kernel..
+[INFO] 19:21:11:452 CódigoFacilito-Consola
+/(4703:4741): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:21:13:572 CódigoFacilito-Consola
+/(4703:4741): Fecha Inicio:Wed Jul 26 19:21:11 2017
+
+[INFO] 19:21:13:572 CódigoFacilito-Consola
+/(4703:4741): Fecha Fin:Wed Jul 26 19:21:13 2017
+
+[INFO] 19:21:13:572 CódigoFacilito-Consola
+/(4703:4741): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 19:21:13:572 CódigoFacilito-Consola
+/(4703:4741): Cantidad de impresiones: 0
+[ERROR] 19:25:26:511 CódigoFacilito-Consola
+/(4703:4729): No hay más espacio
+[INFO] 19:25:41:787 CódigoFacilito-Consola
+/(4771:4771): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:25:42:804 CódigoFacilito-Consola
+/(4771:4771): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:25:48:246 CódigoFacilito-Consola
+/(4771:4774): Esperando atencion de Kernel..
+
+[INFO] 19:25:48:247 CódigoFacilito-Consola
+/(4771:4774): El archivo se envió correctamente
+
+[INFO] 19:25:48:284 CódigoFacilito-Consola
+/(4771:4774): PID: 1 asignado a ese programa
+
+[INFO] 19:25:48:364 CódigoFacilito-Consola
+/(4771:4774): Esperando la confirmacion de Kernel..
+[INFO] 19:25:48:404 CódigoFacilito-Consola
+/(4771:4774): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:25:50:44 CódigoFacilito-Consola
+/(4771:4774): Fecha Inicio:Wed Jul 26 19:25:48 2017
+
+[INFO] 19:25:50:44 CódigoFacilito-Consola
+/(4771:4774): Fecha Fin:Wed Jul 26 19:25:50 2017
+
+[INFO] 19:25:50:44 CódigoFacilito-Consola
+/(4771:4774): Diferencia: Horas:0 Minutos:0 Segundos:2
+[INFO] 19:25:50:44 CódigoFacilito-Consola
+/(4771:4774): Cantidad de impresiones: 0
+[INFO] 19:26:04:808 CódigoFacilito-Consola
+/(4771:4771): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:26:09:827 CódigoFacilito-Consola
+/(4771:4799): Esperando atencion de Kernel..
+
+[INFO] 19:26:09:827 CódigoFacilito-Consola
+/(4771:4799): El archivo se envió correctamente
+
+[INFO] 19:26:09:864 CódigoFacilito-Consola
+/(4771:4799): PID: 2 asignado a ese programa
+
+[INFO] 19:26:09:984 CódigoFacilito-Consola
+/(4771:4799): Esperando la confirmacion de Kernel..
+[INFO] 19:26:10:24 CódigoFacilito-Consola
+/(4771:4799): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:27:33:680 CódigoFacilito-Consola
+/(4771:4799): Fecha Inicio:Wed Jul 26 19:26:09 2017
+
+[INFO] 19:27:33:680 CódigoFacilito-Consola
+/(4771:4799): Fecha Fin:Wed Jul 26 19:27:33 2017
+
+[INFO] 19:27:33:680 CódigoFacilito-Consola
+/(4771:4799): Diferencia: Horas:0 Minutos:1 Segundos:24
+[INFO] 19:27:33:680 CódigoFacilito-Consola
+/(4771:4799): Cantidad de impresiones: 0
+[INFO] 19:28:56:324 CódigoFacilito-Consola
+/(4771:4771): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:29:14:237 CódigoFacilito-Consola
+/(4959:4959): Leí el archivo y extraje el puerto: 8080 
+[INFO] 19:29:14:929 CódigoFacilito-Consola
+/(4959:4959): 
+-------------------------------------------
+Estoy conectado con Kernel
+-------------------------------------------
+
+[INFO] 19:29:21:961 CódigoFacilito-Consola
+/(4959:4962): Esperando atencion de Kernel..
+
+[INFO] 19:29:21:961 CódigoFacilito-Consola
+/(4959:4962): El archivo se envió correctamente
+
+[INFO] 19:29:21:0 CódigoFacilito-Consola
+/(4959:4962): PID: 3 asignado a ese programa
+
+[INFO] 19:29:22:120 CódigoFacilito-Consola
+/(4959:4962): Esperando la confirmacion de Kernel..
+[INFO] 19:29:22:160 CódigoFacilito-Consola
+/(4959:4962): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:29:23:200 CódigoFacilito-Consola
+/(4771:4963): Esperando atencion de Kernel..
+
+[INFO] 19:29:23:201 CódigoFacilito-Consola
+/(4771:4963): El archivo se envió correctamente
+
+[INFO] 19:29:23:240 CódigoFacilito-Consola
+/(4771:4963): PID: 4 asignado a ese programa
+
+[INFO] 19:29:23:360 CódigoFacilito-Consola
+/(4771:4963): Esperando la confirmacion de Kernel..
+[INFO] 19:29:23:400 CódigoFacilito-Consola
+/(4771:4963): Paginas suficientes - El proceso se almaceno exitosamente
+[INFO] 19:29:56:600 CódigoFacilito-Consola
+/(4959:4962): Fecha Inicio:Wed Jul 26 19:29:21 2017
+
+[INFO] 19:29:56:600 CódigoFacilito-Consola
+/(4959:4962): Fecha Fin:Wed Jul 26 19:29:56 2017
+
+[INFO] 19:29:56:600 CódigoFacilito-Consola
+/(4959:4962): Diferencia: Horas:0 Minutos:0 Segundos:35
+[INFO] 19:29:56:600 CódigoFacilito-Consola
+/(4959:4962): Cantidad de impresiones: 0
+[INFO] 19:30:15:480 CódigoFacilito-Consola
+/(4771:4963): Fecha Inicio:Wed Jul 26 19:29:23 2017
+
+[INFO] 19:30:15:480 CódigoFacilito-Consola
+/(4771:4963): Fecha Fin:Wed Jul 26 19:30:15 2017
+
+[INFO] 19:30:15:480 CódigoFacilito-Consola
+/(4771:4963): Diferencia: Horas:0 Minutos:0 Segundos:52
+[INFO] 19:30:15:480 CódigoFacilito-Consola
+/(4771:4963): Cantidad de impresiones: 0

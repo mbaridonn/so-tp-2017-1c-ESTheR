@@ -703,6 +703,7 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 			printf("Sólo se pudieron asignar %d páginas al proceso %d\n", cantPagsAsignadas, PID);
 			confirmacion = noHayPaginas;
 			send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0);
+			pthread_mutex_unlock(&mutexAsignarPagina);
 			return;
 		}
 		estructuraAdm[frameAAsignar].PID = PID;

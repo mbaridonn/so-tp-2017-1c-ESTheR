@@ -131,7 +131,7 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 			metadataInicio.tamanio = espacioRequerido;
 			solicitarEscrituraAMemoria(entrada->PID, entrada->nroPag, posMetadataInicial, sizeof(heapMetadata), &metadataInicio);
 			solicitarEscrituraAMemoria(entrada->PID, entrada->nroPag, posMetadataInicial+sizeof(heapMetadata)+espacioRequerido, sizeof(heapMetadata), &metadataFin);
-			ptrInicioBloque = posMetadataInicial + sizeof(heapMetadata);
+			ptrInicioBloque = entrada->nroPag * tamPag + posMetadataInicial + sizeof(heapMetadata);
 
 			//Actualizar entrada de la tabla de heap
 			entrada->tamanioDisponible -= espacioRequerido + sizeof(heapMetadata);
@@ -173,12 +173,11 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 }
 
 void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
+	printf("liberarMemoriaDinamica: %d\n", puntero);
 	int nroPagDelBloque = puntero / tamPag;
 	int offsetDelBloque = puntero % tamPag - sizeof(heapMetadata);//Quiero apuntar al metadata, no al bloque de datos
 
 	int espacio_liberado = 0;
-
-	printf("nroPag: %d\n", nroPagDelBloque);
 
 	bool esEntradaDeProcesoYPagina(entradaTablaHeap* entrada) {
 		return entrada->PID == PID && entrada->nroPag == nroPagDelBloque;
@@ -207,10 +206,12 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	//Consolidacion a derecha
 	metadataADerecha = (heapMetadata*) &pagina[offsetDelBloque + sizeof(heapMetadata) + metadataAModificar->tamanio];
 	if (metadataADerecha->estaLibre) {
+		printf("Se pudo consolidar a derecha\n");
 		metadataAModificar->tamanio += metadataADerecha->tamanio + sizeof(heapMetadata);
 		entradaAModificar->tamanioDisponible += sizeof(heapMetadata);
-		solicitarEscrituraAMemoria(entradaAModificar->PID, entradaAModificar->nroPag, offsetDelBloque, sizeof(heapMetadata), metadataAModificar);
 	}
+	solicitarEscrituraAMemoria(entradaAModificar->PID, entradaAModificar->nroPag, offsetDelBloque, sizeof(heapMetadata), metadataAModificar);
+
 	//Consolidacion a izquierda (tengo que buscar el bloque anterior desde el principio de la página)
 	int offsetMetadataIzq = 0;
 	while (offsetMetadataIzq < offsetDelBloque) {
@@ -218,6 +219,7 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 		if (metadataAIzquierda->estaLibre) {
 			heapMetadata* metadataSiguiente = (heapMetadata*) &pagina[offsetMetadataIzq + sizeof(heapMetadata) + metadataAIzquierda->tamanio];
 			if (metadataSiguiente->estaLibre) {
+				printf("Se pudo consolidar a izquierda\n");
 				metadataAIzquierda->tamanio += sizeof(heapMetadata) + metadataSiguiente->tamanio;
 				entradaAModificar->tamanioDisponible += sizeof(heapMetadata);
 				solicitarEscrituraAMemoria(entradaAModificar->PID, entradaAModificar->nroPag, offsetMetadataIzq, sizeof(heapMetadata), metadataAIzquierda);

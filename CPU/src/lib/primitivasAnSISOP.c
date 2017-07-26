@@ -166,7 +166,6 @@ u_int32_t recibirUIntDeKernel() {
 //PRIMITIVAS
 
 t_puntero definirVariable(t_nombre_variable var_nombre){
-	printf("StackPointer: %d, stackSize: %d, tamPAg: %d\n", pcbAEjecutar->stackPointer, stackSize, tamPag);
 	if((pcbAEjecutar->stackPointer+4) > ((stackSize + pcbAEjecutar->cant_paginas_de_codigo) * tamPag)){
 		printf("StackOverflow. Se finaliza el proceso\n");
 		codigoError = -10;//Defino nuevo Exit Code -10: stackOverflow (!!)
@@ -278,13 +277,11 @@ void asignar(t_puntero direccion_variable, t_valor_variable valor){
 	//DEBERÍA RECIBIR UNA CONFIRMACIÓN??
 }
 
-void irAlLabel(t_nombre_etiqueta nombre_etiqueta){//BORRAR PRINTFS INNECESARIOS !!!
+void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
 	printf("ANSISOP_irALabel %s\n", nombre_etiqueta);
 	char** string_cortado = string_split(nombre_etiqueta, "\n");//NO SE ESTA LIBERANDO LA MEMORIA
-	printf("nombreEtiqueta: %s\n", nombre_etiqueta);
-	printf("etiquetasSize %d, indiceEtiquetas %s\n", pcbAEjecutar->etiquetas_size, pcbAEjecutar->indice_etiquetas);// SIZE MAYOR AL DEBIDO ??
 	t_puntero_instruccion numeroInstr = metadata_buscar_etiqueta(string_cortado[0], pcbAEjecutar->indice_etiquetas, pcbAEjecutar->etiquetas_size);
-	printf("Numero de instruccion: %d", numeroInstr);
+	printf("Numero de instruccion: %d\n", numeroInstr);
 	if(numeroInstr == -1){
 		printf("No se encontro la etiqueta\n");//FALTA ERROR   (PENDIENTE!!)
 		return;

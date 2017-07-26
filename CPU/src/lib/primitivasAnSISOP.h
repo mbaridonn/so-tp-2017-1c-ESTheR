@@ -16,7 +16,7 @@ enum notificacionesKernelCPU{
 };
 
 enum accionesCPUMemoria{
-	cpu_mem_leer, cpu_mem_escribir
+	cpu_mem_leer, cpu_mem_escribir, cpu_mem_finalizar_cpu
 };
 
 enum confirmacion {
