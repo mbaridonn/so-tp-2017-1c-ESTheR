@@ -64,6 +64,13 @@ char *solicitarLecturaAMemoria(int pid, int nroPagina, int offset, int tamanio) 
 	return bytesLeidos;
 }
 
+bool hayMemoryLeaksDe(int PID){
+	bool hayEntradaDePID(entradaTablaHeap* entrada) {
+		return (entrada->PID == PID);
+	}
+	return list_any_satisfy(tablaHeap, (void*) hayEntradaDePID);
+}
+
 u_int32_t tieneEspacioContiguoSuficiente(entradaTablaHeap* entrada, int espacioRequerido) {
 	u_int32_t ptrInicioBloque = 0;
 	char* pagina = NULL;

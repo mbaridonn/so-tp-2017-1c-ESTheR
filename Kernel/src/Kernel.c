@@ -261,7 +261,7 @@ void eliminar_pedido(pedido_script *pedido){
 void avisar_a_consola_si_hubo_exito(int confirmacion, t_pcb *pcb){
 	pedido_script *pedido = obtener_pedido_segun_PID(pcb->id_proceso);
 	avisar_accion_a_consola(pedido->clie_consola,confirmacion_de_memoria);
-	esperarSenialDeCPU(&(pedido->clie_consola));
+	//esperarSenialDeCPU(&(pedido->clie_consola)); // Al esperar una senial y al estar el select esperando movimiento hay quilombo.
 	avisarAConsolaSegunConfirmacion(confirmacion, &(pedido->clie_consola));
 	proceso_por_cliente *proc_del_cliente = crear_proceso_por_cliente(pcb->id_proceso, pedido->clie_consola);
 	list_add(lista_proceso_por_cliente, proc_del_cliente);

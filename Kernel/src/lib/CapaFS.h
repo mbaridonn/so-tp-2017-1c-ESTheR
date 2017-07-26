@@ -24,6 +24,7 @@ typedef struct{
 	int offset;
 } entradaTablaArchivosDeProceso;
 
+void liberarArchivosDeProceso(int PID);
 void inicializarTablasDeArchivos();
 u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags);
 void cerrarArchivo(int PID, u_int32_t fileDescriptor);

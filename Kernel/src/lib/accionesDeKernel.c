@@ -346,15 +346,19 @@ void finalizarUnProceso(t_pcb *pcb) {
 		printf("Error enviando el process_id\n");
 		exit(-1);
 	}
+	printf("Se finalizo el proceso %d.\n",pcb->id_proceso);
 	poner_proceso_en_EXIT(pcb);
+	if(hayMemoryLeaksDe(pcb->id_proceso)){
+		printf("El proceso tiene memory leaks.\n"); // No se está liberando las entradas de la tabla de heap.
+	}else{
+		printf("El proceso no tiene memory leaks.\n");
+	}
+	liberarArchivosDeProceso(pcb->id_proceso);
 	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
 	cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
 	eliminar_proc_por_cliente_segun_PID(pcb->id_proceso);
-	//FALTA: MEMORY LEAKS
-    //Al finalizar un proceso, el Kernel deberá informar si un proceso liberó todas las estructuras en las páginas de Heap.
 
-	//AL ELIMINAR UN PROCESO, HABRÍA QUE ELIMINAR SU TABLA DE ARCHIVOS DE tablasDeArchivosDeProcesos
-} //ESTO NO ESTÁ PROBADO, PERO BUENO, HAY QUE TENER FE
+}
 
 void tomarAccionSegunConfirmacion(u_int32_t confirmacion, t_pcb *pcb) {
 	if (confirmacion == noHayPaginas) {

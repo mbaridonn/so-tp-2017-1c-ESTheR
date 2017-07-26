@@ -232,7 +232,7 @@ char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tam
 		enviarPathAFS(tablaArchivosGlobal[fdGlobal].nombreArchivo);
 		avisarAccionAFS(tablasDeArchivosDeProcesos[PID][posicionReal].offset);//Uso avisarAccion para pasar parámetro
 		avisarAccionAFS(tamanio);//Uso avisarAccion para pasar parámetro
-		char* bytesLeidos = malloc(tamanio);
+		char* bytesLeidos = reservarMemoria(tamanio);
 		if (recv(servFS, bytesLeidos, tamanio, 0) == -1) {
 			printf("Error recibiendo el archivo leido\n");
 			exit(-1);
@@ -300,5 +300,15 @@ int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t
 	} else {
 		//Enviar mensaje a CPU: El programa intentó escribir un archivo sin permisos (Exit Code -4)
 		return k_cpu_error;
+	}
+}
+
+void liberarArchivosDeProceso(int PID){
+	int i = 0;
+	while(i<CANT_ARCH_TABLA_ARCH){
+		if(tablasDeArchivosDeProcesos[PID][i].flags!=NULL){
+			cerrarArchivo(PID,i+3);
+		}
+		i++;
 	}
 }

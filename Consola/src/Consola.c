@@ -431,7 +431,7 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			break;
 		case confirmacion_de_memoria:
 		{
-			enviarSenialAKernel(un_hilo_por_programa->serv_kernel);
+			//enviarSenialAKernel(un_hilo_por_programa->serv_kernel); // Comentado por el quilombo que hacia un recv en simultaneo compitiendo con el select en kernel.
 			esperarConfirmacionDeKernel(&(un_hilo_por_programa->serv_kernel));
 			break;
 		}
