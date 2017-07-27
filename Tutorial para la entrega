@@ -1,9 +1,31 @@
 Tutorial para la entrega:
 -Chequear en configuración de la VM: Dispositivos->Red->Preferencias de Red que este conectado a Adaptador puente
 -Abrir Ubuntu Server
--git clone https://github.com/sisoputnfrba/tp-2017-1c-C-digo-Facilito.git
 -Obtener IP: ifconfig. Ver Direc. inet de eth0
--Para modificar los archivos de config: sudo nano archivoConfig.txt
 -Ingresar la IP en el campo Host Name (or IP address) de Putty y luego presionar el botón Open
+-Crear directorio git: mkdir git
+-Ingreso a directorio git: cd git
+-git clone https://github.com/sisoputnfrba/tp-2017-1c-C-digo-Facilito.git
 
-COMO COMPILO EL PROYECTO??
+Instalar bibliotecas:
+-git clone https://github.com/sisoputnfrba/so-commons-library.git
+-git clone https://github.com/sisoputnfrba/ansisop-parser.git
+-cd so-commons-library/
+-sudo make install
+-Voy saliendo con: cd .. hasta que llego a git/
+-cd ansisop-parser
+-cd parser
+-make all
+-sudo make install
+
+Compilar:
+-Ingresar al directorio donde se encuentra el makefile del programa (Debug)
+-make all (si falla, hacer rm <nombrePrograma> para eliminarlo y volver a hacer make all)
+-Ejecutarlo: ./<nombrePrograma>
+
+Comandos utiles:
+-Para modificar los archivos de config: sudo nano archivoConfig.txt
+-Copiar path de un archivo: readlink -f <nombreArchivo>
+-Crear directorio: mkdir <nombreDirectorio>
+-Pullear: hacer cd hasta la carpeta de git y ahi git pull
+-Compilo a partir del makefile: make all o make <nombrePrograma>
