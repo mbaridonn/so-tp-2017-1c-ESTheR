@@ -3,19 +3,10 @@
 #include <pthread.h>
 #include "CapaFS.h"//OJO!! DEPENDENCIA CIRCULAR
 
-pthread_mutex_t mutexPlanificar = PTHREAD_MUTEX_INITIALIZER;
 
 void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
 	quitar_PCB_de_Lista(listaActual, pcb);
 	list_add(listaDestino, pcb);
-}
-
-void wait(){
-	pthread_mutex_lock(&mutexPlanificar);
-}
-
-void signal(){
-	pthread_mutex_unlock(&mutexPlanificar);
 }
 
 int recibirAccionDe(int *cliente){
@@ -366,7 +357,7 @@ void finalizarUnProceso(t_pcb *pcb) {
 	}
 	liberarArchivosDeProceso(pcb->id_proceso);
 	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
-	cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
+	//cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
 	eliminar_proc_por_cliente_segun_PID(pcb->id_proceso);
 
 }
@@ -443,7 +434,7 @@ void proced_script(int *unCliente) {
 	esperarSenialDeCPU(unCliente);//En realidad es consola
 	list_add(lista_pedidos_script,pedido);
 	list_add(listaPCBs_NEW, pcb);
-	pthread_mutex_unlock(&mutexPlanificar);
+	planificar();
 }
 
 int recibir_int_de(int cliente){
@@ -685,7 +676,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		mover_pcb_segun_motivo(pcb,motivo_liberacion);
 		printf("Llegue haca aca2\n");
 		unaCPU->libre = 1;
-		pthread_mutex_unlock(&mutexPlanificar);
+		planificar();
 		break;
 	}
 	case cpu_k_obtener_valor_compartida:

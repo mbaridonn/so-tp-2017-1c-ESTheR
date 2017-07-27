@@ -139,6 +139,7 @@ void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
 		//printf("Send serialized_buffer_length to CPU failed\n");
 		exit(-1);
 	}
+	esperarSenialDeCPU(unaCPU);
 	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)< 0) {
 		log_error(kernel_log, "Send serialized_pcb to CPU failed");
 		//printf("Send serialized_pcb to CPU failed\n");
@@ -271,9 +272,7 @@ void planificar() {
 	cliente_CPU *cpuDesocupada;
 	t_pcb *pcb;
 	mostrar_tipo_de_algoritmo_de_planificacion();
-	while (1) {
-		wait();
-		printf("Voy a planificar!!!!!!!!!!!!\n");
+		printf("Voy a planificar\n");
 		if(planificacionActivada){
 			while(proceso_new_puede_pasar_a_READY() || proceso_ready_puede_pasar_a_EXEC()){
 				if(proceso_new_puede_pasar_a_READY()){
@@ -294,7 +293,6 @@ void planificar() {
 				}
 			}
 		}
-	}
 
 }
 
@@ -490,7 +488,7 @@ void habilitarConsolaKernel() {
 					signal();
 				}
 			}*/ //Esta era la idea principal, se ve que el signal no se "acumula"
-			if(config->GRADO_MULTIPROG > viejo_grado_multiprog)signal();
+			if(config->GRADO_MULTIPROG > viejo_grado_multiprog)planificar();
 			log_info(kernel_log, "El nuevo grado de multiprogramación es: %s\n", opcion);
 			//printf("El nuevo grado de multiprogramación es: %s\n", opcion);
 			free(opcion);
@@ -714,7 +712,7 @@ int main(int argc, char* argv[]) {
 				cliente_CPU *nuevaCPU = crearClienteCPU(&cliente);
 				list_add(listaCPUs, nuevaCPU);
 				setInformacionSockets(client_socket, procesos_por_socket, cpu);
-				signal();
+				planificar();
 				break;
 
 			case file_system:

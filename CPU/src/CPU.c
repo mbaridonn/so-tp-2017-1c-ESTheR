@@ -286,17 +286,22 @@ void recibir_planificacion_y_quantum() {
 t_pcb *recibir_pcb() {
 	//Recibo PCB y lo deserializo
 	void* tmp_buff = calloc(1, sizeof(int));
-	int pcb_size = 0, pcb_size_index = 0;
-	recv(serv_kernel, tmp_buff, sizeof(int), 0);
-	deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
-	void *pcb_serializado = calloc(1, (size_t) pcb_size);
-	recv(serv_kernel, pcb_serializado, (size_t) pcb_size, 0);
-	int pcb_serializado_index = 0;
-	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
-	deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
-	free(tmp_buff);
-	free(pcb_serializado);
-	return incomingPCB;
+		int pcb_size = 0, pcb_size_index = 0;
+		if(recv(serv_kernel, tmp_buff, sizeof(int), 0)==-1){
+			printf("Error al recibir tamanio del pcb serializado.\n");
+		}
+		deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
+		void *pcb_serializado = calloc(1, (size_t) pcb_size);
+		enviarSenialAKernel();
+		if(recv(serv_kernel, pcb_serializado, (size_t) pcb_size, 0)==-1){
+			printf("Error al recibir el pcb serializado.\n");
+		}
+		int pcb_serializado_index = 0;
+		t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
+		deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
+		free(tmp_buff);
+		free(pcb_serializado);
+		return incomingPCB;
 }
 
 void conectarse_con_memoria(struct sockaddr_in *direccionServidor2) {
