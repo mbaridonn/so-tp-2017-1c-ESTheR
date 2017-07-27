@@ -407,6 +407,7 @@ void enviar_un_PCB_a_Kernel(t_pcb *pcb) {
 		//printf("El envio de la longitud del buffer a Kernel fallo\n");
 		exit(-1);
 	}
+	esperarSenialDeKernel();
 	if (send(serv_kernel, serialized_pcb, (size_t) serialized_buffer_index, 0)< 0) {
 		log_error(cpu_log, "El envio de pcb a Kernel fallo");
 		//printf("El envio de pcb a Kernel fallo\n");
@@ -427,8 +428,11 @@ void enviar_motivo_liberacion(){
 void devolver_pcb_y_liberarse(t_pcb *pcb) {
 	cpu_kernel_aviso_desocupada();
 	enviarIntAKernel(pcb->id_proceso);
+	esperarSenialDeKernel();
 	enviar_motivo_liberacion();
+	esperarSenialDeKernel();
 	enviar_un_PCB_a_Kernel(pcb);
+	mostrarPcb(pcb);
 }
 
 void desconectarCPU(int senial){

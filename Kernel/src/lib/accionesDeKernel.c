@@ -509,10 +509,16 @@ t_pcb *recibir_pcb_de(int cliente) {
 	//Recibo PCB y lo deserializo
 	void* tmp_buff = calloc(1, sizeof(int));
 	int pcb_size = 0, pcb_size_index = 0;
-	recv(cliente, tmp_buff, sizeof(int), 0);
+	enviarSenialACPU(&cliente);
+	if(recv(cliente, tmp_buff, sizeof(int), 0)==-1){
+		printf("Error al recibir tamanio del pcb serializado.\n");
+	}
 	deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
 	void *pcb_serializado = calloc(1, (size_t) pcb_size);
-	recv(cliente, pcb_serializado, (size_t) pcb_size, 0);
+	enviarSenialACPU(&cliente);
+	if(recv(cliente, pcb_serializado, (size_t) pcb_size, 0)==-1){
+		printf("Error al recibir el pcb serializado.\n");
+	}
 	int pcb_serializado_index = 0;
 	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
 	deserializar_pcb(&incomingPCB, pcb_serializado, &pcb_serializado_index);
@@ -670,6 +676,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 	switch(accion){
 	case cpuLibre:
 	{
+		enviarSenialACPU(&(unaCPU->clie_CPU));
 		int motivo_liberacion = recibir_int_de(unaCPU->clie_CPU);
 		t_pcb *pcb = recibir_pcb_de(unaCPU->clie_CPU);
 		mostrarPcb(pcb);
