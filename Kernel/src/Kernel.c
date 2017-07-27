@@ -663,7 +663,7 @@ int main(int argc, char* argv[]) {
 	lista_futuras_desconexiones = list_create();
 
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = inet_addr("127.0.0.1"); // Estos a que hacen referencia en realidad?
+	direccionServidor.sin_addr.s_addr = INADDR_ANY; // Estos a que hacen referencia en realidad?
 	direccionServidor.sin_port = htons(config->PUERTO_PROG);
 
 	//PARA MEMORIA
