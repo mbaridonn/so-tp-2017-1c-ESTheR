@@ -444,21 +444,6 @@ void proced_script(int *unCliente) {
 	list_add(lista_pedidos_script,pedido);
 	list_add(listaPCBs_NEW, pcb);
 	pthread_mutex_unlock(&mutexPlanificar);
-
-	/*Envia archivo a Memoria
-	avisarAccionAMemoria(k_mem_inicializarPrograma);//FALTA SLEEP (PENDIENTE!!)
-	u_int32_t cant_pags = cant_pags_script + config->STACK_SIZE;
-	kernel_mem_start_process(&(pcb->id_proceso), &cant_pags);
-	u_int32_t confirmacion = confirmacionMemoria();
-	enviarArchivoAMemoria(bufferArchivo, fsize);
-	esperarSenialDeMemoria();
-
-	tomarAccionSegunConfirmacion(confirmacion, pcb);
-	avisarAConsolaSegunConfirmacion(confirmacion, unCliente);
-
-	enviarPIDaConsola(pid,unCliente);
-
-	free(bufferArchivo);*/
 }
 
 int recibir_int_de(int cliente){

@@ -98,7 +98,7 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 		printf("El espacio requerido supera el tamaño máximo reservable por petición\n");
 		//Enviar mensaje a CPU para que finalice abruptamente (Exit Code -8)
 		enviarIntACPU(&clieCPU, noSePudoReservarMemoria);
-		return 0; //VER SI ES EL MEJOR VALOR A RETORNAR (IMPORTA?)
+		return 0;
 	}
 
 	//Chequeo si no hay espacio disponible en una página ya asignada
@@ -148,7 +148,7 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 			printf("No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria\n");
 			//Enviar mensaje a CPU para que finalice abruptamente (Exit Code -9)
 			enviarIntACPU(&clieCPU, confirmacion);
-			return 0; //VER SI ES EL MEJOR VALOR A RETORNAR (IMPORTA?)
+			return 0;
 		}
 		contador_paginas++;
 		entradaTablaHeap* entradaNueva = reservarMemoria(sizeof(entradaTablaHeap));

@@ -3,3 +3,4 @@
 -12 = CPU desconectada con SIGKILL
 -13 = proceso finalizado desde consola de Kernel 
 -14 = no se pudo crear archivo por falta de bloques
+-15 = no se pudo borrar archivo

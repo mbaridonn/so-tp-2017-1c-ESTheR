@@ -212,7 +212,8 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 	printf("ANSISOP_obtenerPosicion %c \n", var_nombre);
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
 		printf("En indice de stack se encuentra vacio \n");
-		return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR   (PENDIENTE!!)
+		codigoError = -20;
+		return EXIT_FAILURE;
 	}
 
 	t_puntero posicionAbsoluta;
@@ -222,7 +223,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		t_var* var_local;
 		bool notFound = true;
 		int i;
-		for(i=0; i < contexto->cant_vars/*list_size(contexto->vars)*/; i++){
+		for(i=0; i < contexto->cant_vars; i++){
 			var_local = &contexto->vars[i];
 			if(var_local->var_id == var_nombre){
 				notFound = false;
@@ -231,17 +232,18 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		}
 		if(notFound){
 			printf("No se encontro la variable %c en el stack \n", var_nombre);
-			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR  (PENDIENTE!!)
+			codigoError = -20;
+			return EXIT_FAILURE;
 		}
 		else{
 			posicionAbsoluta = var_local->page_number * tamPag + var_local->offset;
 		}
 	} else { //Es un argumento
-		if((var_nombre-'0') > contexto->cant_args/*list_size(contexto->args)*/){
-			return EXIT_FAILURE;//DEBERÍA PRODUCIR UN ERROR  (PENDIENTE!!)
+		if((var_nombre-'0') > contexto->cant_args){
+			codigoError = -20;
+			return EXIT_FAILURE;
 		}else{
-			t_arg* argumento =  &contexto->args[var_nombre-'0'];
-			//EL ARGUMENTO X TIENE QUE ESTAR NECESARIAMENTE EN LA POSICIÓN X??
+			t_arg* argumento =  &contexto->args[var_nombre-'0'];//EL ARGUMENTO X TIENE QUE ESTAR NECESARIAMENTE EN LA POSICIÓN X??
 			posicionAbsoluta = argumento->page_number * tamPag + argumento->offset;
 		}
 	}
@@ -283,7 +285,8 @@ void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
 	t_puntero_instruccion numeroInstr = metadata_buscar_etiqueta(string_cortado[0], pcbAEjecutar->indice_etiquetas, pcbAEjecutar->etiquetas_size);
 	printf("Numero de instruccion: %d\n", numeroInstr);
 	if(numeroInstr == -1){
-		printf("No se encontro la etiqueta\n");//FALTA ERROR   (PENDIENTE!!)
+		printf("No se encontro la etiqueta\n");
+		codigoError = -20;
 		return;
 	}
 	pcbAEjecutar->program_counter = numeroInstr - 1;
@@ -331,7 +334,6 @@ void finalizar(void){
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
 		terminoPrograma = true;
 		printf("Finalizó la ejecucion del programa\n");
-		//finalizarPor(OP_CPU_PROGRAM_END);
 	}else{
 		pcbAEjecutar->program_counter = contexto->ret_pos;
 	}
@@ -341,8 +343,7 @@ void finalizar(void){
 void retornar(t_valor_variable var_retorno){
 	printf("ANSISOP_retornar\n");
 	// Tomo contexto actual:
-	t_stack_entry* registroActual = list_get(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1
-			/*pcbActual->stack->elements_count -1 ES LO MISMO??*/);
+	t_stack_entry* registroActual = list_get(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
 	// Calculo la dirección de retorno a partir de retVar:
 	t_puntero offset_absoluto = (registroActual->ret_vars->page_number * tamPag) + registroActual->ret_vars->offset;
 	asignar(offset_absoluto, var_retorno);
@@ -422,7 +423,7 @@ t_puntero reservar(t_valor_variable espacio){
 		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
 	} else /*if (confirmacion==sePudoReservarMemoriaEnNuevaPag)*/{
 		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
-		pcbAEjecutar->contadorPags++;//NO SIEMPRE!!
+		pcbAEjecutar->contadorPags++;
 	}
 	return direccion;//DEVUELVE 0 SI NO SE PUDO RESERVAR
 }
@@ -475,7 +476,8 @@ void borrar(t_descriptor_archivo descriptor_archivo){
 	enviarIntAKernel(descriptor_archivo);
 	int confirmacion = recibirUIntDeKernel();
 	if(confirmacion == k_cpu_error){
-		//ERROR      PENDIENTE!!!
+		printf("No se pudo borrar archivo (Exit Code -14)\n");
+		codigoError = -14;//Defino nuevo Exit Code -14 (!!)
 	}
 }
 
@@ -507,7 +509,7 @@ void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valo
 	enviarIntAKernel(tamanio);
 	esperarSenialDeKernel();
 	printf("Bytes a escribir: %.*s \n", tamanio, (char*)informacion);
-	if (send(serv_kernel, informacion, tamanio, 0) == -1) {//CÓMO ESTOY OBTENIENDO informacion??
+	if (send(serv_kernel, informacion, tamanio, 0) == -1) {
 		printf("Error al enviar bytes a escribir\n");
 		exit(-1);
 	}
@@ -545,6 +547,5 @@ void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valo
 	int offset = informacion % tamPag;
 
 	solicitarEscrituraAMemoria(pcbAEjecutar->id_proceso, nroPag, offset, tamanio, bytesLeidos);
-	//CREO QUE NO SE PUEDE USAR asignar(informacion, bytesLeidos) PORQUE EL TAMANIO PUEDE SER MAYOR AL DE UNA VARIABLE (4 BYTES)
 	free(bytesLeidos);
 }
