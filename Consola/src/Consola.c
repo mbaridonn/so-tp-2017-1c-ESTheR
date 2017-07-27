@@ -112,8 +112,7 @@ hilo_por_programa *obtener_hilo_por_programa_segun_pid(int pid) {
 }
 
 hilo_por_programa *crear_hilo_por_programa() {
-	hilo_por_programa *hilo_por_PID = reservarMemoria(
-			sizeof(hilo_por_programa));
+	hilo_por_programa *hilo_por_PID = reservarMemoria(sizeof(hilo_por_programa));
 	hilo_por_PID->tiempo_inicio = reservarMemoria(sizeof(tiempo_proceso));
 	hilo_por_PID->tiempo_fin = reservarMemoria(sizeof(tiempo_proceso));
 	hilo_por_PID->tiempo_inicio->fecha = reservarMemoria(50);
@@ -124,8 +123,7 @@ hilo_por_programa *crear_hilo_por_programa() {
 
 void settearVariables(t_config *archivo_Modelo) {
 	config = reservarMemoria(sizeof(t_configuracion));
-	config->ipKernel = strdup(
-			config_get_string_value(archivo_Modelo, "IP_KERNEL"));
+	config->ipKernel = strdup(config_get_string_value(archivo_Modelo, "IP_KERNEL"));
 	config->puerto = config_get_int_value(archivo_Modelo, "PUERTO_KERNEL");
 }
 void mostrarArchivoConfig() {
@@ -150,18 +148,15 @@ void leerArchivo() {
 	t_config *archivo_config = config_create(rutaArchivo);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
-	log_info(consola_log, "Leí el archivo y extraje el puerto: %d ",
-			config->puerto);
+	log_info(consola_log, "Leí el archivo y extraje el puerto: %d ",config->puerto);
 }
 
 void mostrarConfirmacion(int confirmacion) {
 	u_int32_t conf = confirmacion;
 	if (conf == hayPaginas) {
-		log_info(consola_log,
-				"Paginas suficientes - El proceso se almaceno exitosamente");
+		log_info(consola_log,"Paginas suficientes - El proceso se almaceno exitosamente");
 	} else {
-		log_error(consola_log,
-				"Paginas insuficientes - El proceso no pudo almacenarse en MP");
+		log_error(consola_log,"Paginas insuficientes - El proceso no pudo almacenarse en MP");
 	}
 }
 
@@ -169,8 +164,7 @@ void esperarConfirmacionDeKernel(int *kernel) {
 	u_int32_t confirmacion;
 	log_info(consola_log, "Esperando la confirmacion de Kernel..");
 	if (recv((*kernel), &confirmacion, sizeof(u_int32_t), 0) == -1) {
-		log_error(consola_log,
-				"Error recibiendo la confirmacion de parte de Kernel");
+		log_error(consola_log,"Error recibiendo la confirmacion de parte de Kernel");
 		exit(-1);
 	}
 	mostrarConfirmacion(confirmacion);
@@ -404,15 +398,12 @@ void liberar_futura_desconexion_segun_PID(int pid){
 void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 	enviarSenialAKernel(un_hilo_por_programa->serv_kernel);
 	while (1) {
-		printf("Esperando accion de KernelSITO desde PID: %d\n",
-				un_hilo_por_programa->PID);
-		int accion = recibir_accion_de_kernel(
-				un_hilo_por_programa->serv_kernel);
+		printf("Esperando accion de KernelSITO desde PID: %d\n",un_hilo_por_programa->PID);
+		int accion = recibir_accion_de_kernel(un_hilo_por_programa->serv_kernel);
 		printf("La accion fue: %d\n",accion);
 		switch (accion) {
 		case finalizo_proceso:
-			printf("El programa con PID: %d ha finalizado\n",
-					un_hilo_por_programa->PID);
+			printf("El programa con PID: %d ha finalizado\n",un_hilo_por_programa->PID);
 			int exit_code = recibir_exit_code(un_hilo_por_programa->serv_kernel);
 			guardarFechaHoraEjecucion(un_hilo_por_programa->tiempo_fin);
 			mostrarTiempoInicioFinDiferencia(un_hilo_por_programa->tiempo_inicio, un_hilo_por_programa->tiempo_fin);
@@ -421,11 +412,9 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			matar_hilo(un_hilo_por_programa,-1);
 			break;
 		case print: {
-			char *mensaje = obtener_un_mensaje(
-					un_hilo_por_programa->serv_kernel);
+			char *mensaje = obtener_un_mensaje(un_hilo_por_programa->serv_kernel);
 			(un_hilo_por_programa->cantImpresiones)++;
-			printf("Mensaje de PID %d: %s\n", un_hilo_por_programa->PID,
-					mensaje);
+			printf("Mensaje de PID %d: %s\n", un_hilo_por_programa->PID,mensaje);
 			free(mensaje);
 			break;
 		}
@@ -560,8 +549,7 @@ void iniciarPrograma() {
 	un_hilo_por_programa->nombre_script = nombreScript;
 	un_hilo_por_programa->serv_kernel = serv_kernel;
 	list_add(lista_hilos_por_PID, un_hilo_por_programa);
-	if (pthread_create(&hilo_programa, NULL, hacer_muchas_cosas,
-			un_hilo_por_programa)) {
+	if (pthread_create(&hilo_programa, NULL, hacer_muchas_cosas,un_hilo_por_programa)) {
 		printf("Error al crear el thread de iniciar programa.\n");
 		exit(-1);
 	}

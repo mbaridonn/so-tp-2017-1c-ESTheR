@@ -45,18 +45,15 @@ void settearVariables(t_config *archivo_Modelo) {
 	config->PUERTO_CPU = config_get_int_value(archivo_Modelo, "PUERTO_CPU");
 	char *aux = config_get_string_value(archivo_Modelo, "IP_MEMORIA");
 	strcpy(config->IP_MEMORIA, aux);
-	config->PUERTO_MEMORIA = config_get_int_value(archivo_Modelo,
-			"PUERTO_MEMORIA");
+	config->PUERTO_MEMORIA = config_get_int_value(archivo_Modelo,"PUERTO_MEMORIA");
 	aux = config_get_string_value(archivo_Modelo, "IP_FS");
 	strcpy(config->IP_FS, aux);
 	config->PUERTO_FS = config_get_int_value(archivo_Modelo, "PUERTO_FS");
 	config->QUANTUM = config_get_int_value(archivo_Modelo, "QUANTUM");
-	config->QUANTUM_SLEEP = config_get_int_value(archivo_Modelo,
-			"QUANTUM_SLEEP");
+	config->QUANTUM_SLEEP = config_get_int_value(archivo_Modelo,"QUANTUM_SLEEP");
 	aux = config_get_string_value(archivo_Modelo, "ALGORITMO");
 	strcpy(config->ALGORITMO, aux);
-	config->GRADO_MULTIPROG = config_get_int_value(archivo_Modelo,
-			"GRADO_MULTIPROG");
+	config->GRADO_MULTIPROG = config_get_int_value(archivo_Modelo,"GRADO_MULTIPROG");
 	config->STACK_SIZE = config_get_int_value(archivo_Modelo, "STACK_SIZE");
 	inicializarSemaforos(archivo_Modelo);
 	inicializarVariablesCompartidas(archivo_Modelo);
@@ -64,31 +61,32 @@ void settearVariables(t_config *archivo_Modelo) {
 
 void leerArchivoConfig() {
 	if (access(rutaArchivo, F_OK) == -1) {
-		printf("No se encontró el Archivo \n");
+		log_error(kernel_log, "No se encontró el Archivo ");
+		//printf("No se encontró el Archivo \n");
 		exit(-1);
 	}
 	t_config *archivo_config = config_create(rutaArchivo);
 	settearVariables(archivo_config);
 	config_destroy(archivo_config);
-	printf("Leí el archivo y extraje el puerto: %d\n", config->PUERTO_PROG);
+	log_info(kernel_log, "Leí el archivo y extraje el puerto: %d\n", config->PUERTO_PROG);
+	//printf("Leí el archivo y extraje el puerto: %d\n", config->PUERTO_PROG);
 }
 
 void faltaDeParametros(int argc) {
 	if (argc == 1) {
+		//log_error(kernel_log, "Te falto el parametro");
 		printf("Te falto el parametro  \n");
 	}
 	exit(-1);
 }
 
-void conectarseConMemoria(int *servMemoria,
-		struct sockaddr_in *direccionServidor2) {
+void conectarseConMemoria(int *servMemoria,	struct sockaddr_in *direccionServidor2) {
 	conectar(servMemoria, direccionServidor2);
 	handshake(servMemoria, kernel);
 	msjConexionCon("una Memoria");
 }
 
-void conectarseConFS(int *servFS,
-		struct sockaddr_in *direccionServidorFS) {
+void conectarseConFS(int *servFS, struct sockaddr_in *direccionServidorFS) {
 	conectar(servFS, direccionServidorFS);
 	handshake(servFS, kernel);
 	msjConexionCon("un FileSystem");
@@ -98,10 +96,12 @@ int obtenerTamanioDePagina(int *servMemoria) {
 	int tamPaginaMemoria;
 	printf("Estoy Pansado el tamanio");
 	if (recv((*servMemoria), &tamPaginaMemoria, sizeof(int), 0) == -1) {
-		printf("Error recibiendo longitud del archivo\n");
+		log_error(kernel_log, "Error recibiendo longitud del archivo");
+		//printf("Error recibiendo longitud del archivo\n");
 		return -1;
 	}
-	printf("El tamanio recibido es: %d\n", tamPaginaMemoria);
+	log_info(kernel_log, "El tamanio recibido es: %d\n", tamPaginaMemoria);
+	//printf("El tamanio recibido es: %d\n", tamPaginaMemoria);
 	return tamPaginaMemoria;
 }
 
@@ -127,24 +127,25 @@ int cantidad_procesos_en_memoria(){
 
 void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
 	//PARA CPU
-
 	//Serializo el PCB y lo envio a CPU
 	//abstraer la asquerosidad de abajo
+
 	void * serialized_pcb = NULL;
 	int serialized_buffer_index = 0;
 	serializar_pcb(pcb, &serialized_pcb, &serialized_buffer_index);
 
-	if (send((*unaCPU), &serialized_buffer_index, (size_t) sizeof(int), 0)
-			< 0) {
-		printf("Send serialized_buffer_length to CPU failed\n");
+	if (send((*unaCPU), &serialized_buffer_index, (size_t) sizeof(int), 0)< 0) {
+		log_error(kernel_log, "Send serialized_buffer_length to CPU failed");
+		//printf("Send serialized_buffer_length to CPU failed\n");
 		exit(-1);
 	}
-	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)
-			< 0) {
-		printf("Send serialized_pcb to CPU failed\n");
+	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)< 0) {
+		log_error(kernel_log, "Send serialized_pcb to CPU failed");
+		//printf("Send serialized_pcb to CPU failed\n");
 		exit(-1);
 	}
-	printf("PCB enviado a CPU exitosamente\n");
+	log_info(kernel_log, "PCB enviado a CPU exitosamente");
+	//printf("PCB enviado a CPU exitosamente\n");
 }
 
 void cliente_CPU_destroy(cliente_CPU *puntero){
@@ -156,8 +157,7 @@ void liberarSiEraCPU(int proceso){
 		bool esElClienteActual(cliente_CPU *unaCPU) {
 				return unaCPU->clie_CPU == sd;
 			}
-		list_remove_and_destroy_by_condition(listaCPUs,
-						(void*) esElClienteActual, (void*) cliente_CPU_destroy);
+		list_remove_and_destroy_by_condition(listaCPUs,(void*) esElClienteActual, (void*) cliente_CPU_destroy);
 	}
 }
 
@@ -301,13 +301,15 @@ void planificar() {
 void abrirHiloPlanificador() {
 	pthread_t hilo_comandos;
 	if (pthread_create(&hilo_comandos, NULL, planificar, NULL)) {
-		printf("Error al crear el thread de planificación.\n");
+		log_error(kernel_log, "Error al crear el thread de planificación");
+		//printf("Error al crear el thread de planificación.\n");
 		exit(-1);
 	}
 }
 
 void limpiarMensajes() {
 	system("clear");
+	//log_info(kernel_log, "Consola limpiada!\n");
 	printf("Consola limpiada!\n");
 }
 
@@ -316,10 +318,14 @@ void mostrar_info_de(int PID){
 				return est->pid == PID;
 	}
 	estadisticas_proceso *estadisticas = list_find(lista_estadisticas_de_procesos,(void*)es_estadistica_de);
-	printf("Cantidad de rafagas ejecutadas: %d\n",estadisticas->cant_rafagas_ejec);
-	printf("Cantidad de operaciones privilegiadas ejecutadas: %d\n",estadisticas->cant_syscalls_ejec);
-	printf("Cantidad de acciones alocar: %d y cantidad de bytes alocados: %d\n",estadisticas->cant_op_alocar,estadisticas->cant_bytes_alocados);
-	printf("Cantidad de acciones liberar: %d y cantidad de bytes liberados: %d\n",estadisticas->cant_op_liberar,estadisticas->cant_bytes_liberados);
+	log_info(kernel_log, "Cantidad de rafagas ejecutadas: %d",estadisticas->cant_rafagas_ejec);
+	//printf("Cantidad de rafagas ejecutadas: %d\n",estadisticas->cant_rafagas_ejec);
+	log_info(kernel_log, "Cantidad de operaciones privilegiadas ejecutadas: %d",estadisticas->cant_syscalls_ejec);
+	//printf("Cantidad de operaciones privilegiadas ejecutadas: %d\n",estadisticas->cant_syscalls_ejec);
+	log_info(kernel_log, "Cantidad de acciones alocar: %d y cantidad de bytes alocados: %d",estadisticas->cant_op_alocar,estadisticas->cant_bytes_alocados);
+	//printf("Cantidad de acciones alocar: %d y cantidad de bytes alocados: %d\n",estadisticas->cant_op_alocar,estadisticas->cant_bytes_alocados);
+	log_info(kernel_log, "Cantidad de acciones liberar: %d y cantidad de bytes liberados: %d",estadisticas->cant_op_liberar,estadisticas->cant_bytes_liberados);
+	//printf("Cantidad de acciones liberar: %d y cantidad de bytes liberados: %d\n",estadisticas->cant_op_liberar,estadisticas->cant_bytes_liberados);
 	int *lista_de_FDs;
 	lista_de_FDs = obtener_FDs_de_proceso(PID);
 	int i = 0;
@@ -329,7 +335,8 @@ void mostrar_info_de(int PID){
 		i++;
 	}
 	if(lista_de_FDs[0]==0){
-		printf("el proceso no tiene abierto ningun archivo.");
+		//log_error(kernel_log, "El proceso no tiene abierto ningun archivo.");
+		printf("El proceso no tiene abierto ningun archivo.\n");
 	}
 	printf("\n");
 	free(lista_de_FDs);
@@ -339,10 +346,12 @@ void list_read_id(t_list *listaProcesos){
 	int i = 0;
 	t_pcb *pcb;
 	if(list_size(listaProcesos)==0){
-		printf("Actualmente no hay\n");
+		log_error(kernel_log, "Actualmente no hay\n");
+		//printf("Actualmente no hay\n");
 	}
 	while(i < list_size(listaProcesos)){
 		pcb = list_get(listaProcesos,i);
+		//log_info(kernel_log, "%d ",pcb->id_proceso);
 		printf("%d ",pcb->id_proceso);
 		i++;
 	}
@@ -370,8 +379,9 @@ void finalizar_ejecucion_de_proceso(int *pid){
 
 void enviar_accion_a_consola(int clie_consola,int accion){
 	int una_accion = accion;
-	if(send(clie_consola,&una_accion,sizeof(int),0)<0){
-		printf("Error enviando accion a consola\n");
+	if(send(clie_consola,&una_accion,sizeof(int),0) <0){
+		log_error(kernel_log, "Error enviando accion a consola");
+		//printf("Error enviando accion a consola\n");
 		exit(-1);
 	}
 }
@@ -455,7 +465,8 @@ void habilitarConsolaKernel() {
 			mostrar_info_de(atoi(opcion));
 			t_list *lista = lista_que_tiene_este_pcb(atoi(opcion));
 			t_pcb *pcb = obtener_PCB_segun_PID_en(lista,atoi(opcion));
-			printf("EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
+			log_info(kernel_log, "EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
+			//printf("EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
 			free(opcion);
 			break;
 		}
@@ -480,7 +491,8 @@ void habilitarConsolaKernel() {
 				}
 			}*/ //Esta era la idea principal, se ve que el signal no se "acumula"
 			if(config->GRADO_MULTIPROG > viejo_grado_multiprog)signal();
-			printf("El nuevo grado de multiprogramación es: %s\n", opcion);
+			log_info(kernel_log, "El nuevo grado de multiprogramación es: %s\n", opcion);
+			//printf("El nuevo grado de multiprogramación es: %s\n", opcion);
 			free(opcion);
 			break;
 		}
@@ -508,7 +520,8 @@ void habilitarConsolaKernel() {
 		}
 		default:
 		{
-			printf("'%c' no es un comando valido\n", comando);
+			log_error(kernel_log, "'%c' no es un comando valido\n", comando);
+			//printf("'%c' no es un comando valido\n", comando);
 			break;
 		}
 		}
@@ -520,7 +533,8 @@ void habilitarConsolaKernel() {
 void abrirHiloConsolaKernel(){
 	pthread_t hilo_consola_kernel;
 	if(pthread_create(&hilo_consola_kernel,NULL,habilitarConsolaKernel,NULL)){
-		printf("Error al crear el thread de Consola para Kernel.\n");
+		log_error(kernel_log, "Error al crear el thread de Consola para Kernel.");
+		//printf("Error al crear el thread de Consola para Kernel.\n");
 		exit(-1);
 	}
 }
@@ -531,7 +545,8 @@ void enviar_planificacion(int cpu){
 		algoritmo = FIFO;
 	}
 	if(send(cpu,&algoritmo,sizeof(int),0) == -1){
-		printf("Error al enviar el tipo de algoritmo a CPU.\n");
+		log_error(kernel_log, "Error al enviar el tipo de algoritmo a CPU.");
+		//printf("Error al enviar el tipo de algoritmo a CPU.\n");
 		exit(-1);
 	}
 }
@@ -542,14 +557,16 @@ void enviar_quantum(int cpu){
 		quantum = -1;
 	}
 	if(send(cpu,&quantum,sizeof(int),0) == -1){
-		printf("Error al enviar el quantum a CPU.\n");
+		log_error(kernel_log, "Error al enviar el quantum a CPU.");
+		//printf("Error al enviar el quantum a CPU.\n");
 		exit(-1);
 	}
 }
 
 void enviar_quantum_sleep(int cpu){
 	if(send(cpu,&config->QUANTUM_SLEEP,sizeof(int),0) == -1){
-		printf("Error al enviar el quantum a CPU.\n");
+		log_error(kernel_log, "Error al enviar el quantum a CPU.");
+		//printf("Error al enviar el quantum a CPU.\n");
 		exit(-1);
 	}
 }
@@ -601,6 +618,7 @@ int main(int argc, char* argv[]) {
 	}
 	rutaArchivo = strdup(argv[1]);
 
+	inicializarLog();
 	inicializarTablasDeArchivos();
 	inicializar_tablaHeap();
 	inicializar_contadores_procesos();
@@ -745,6 +763,9 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+
+	log_destroy(kernel_log);
 	liberar_tablaHeap();
+
 	return 0;
 }

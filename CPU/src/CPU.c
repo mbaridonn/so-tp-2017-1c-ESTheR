@@ -466,11 +466,13 @@ int main(int argc, char* argv[]) {
 
 	if (argc == 1)
 	{
-		printf("Falta ingresar el path del archivo de configuracion\n");
+		log_error(cpu_log, "Falta ingresar el path del archivo de configuracion");
+		//printf("Falta ingresar el path del archivo de configuracion\n");
 		return -1;
 	}
 	if (argc != 2)
 	{
+		log_error(cpu_log, "Numero incorrecto de argumentos");
 		printf("Numero incorrecto de argumentos\n");
 		return -1;
 	}
