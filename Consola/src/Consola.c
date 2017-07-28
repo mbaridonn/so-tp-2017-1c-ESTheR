@@ -398,7 +398,7 @@ void liberar_futura_desconexion_segun_PID(int pid){
 void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 	enviarSenialAKernel(un_hilo_por_programa->serv_kernel);
 	while (1) {
-		printf("Esperando accion de KernelSITO desde PID: %d\n",un_hilo_por_programa->PID);
+		printf("Esperando accion de Kernel desde PID: %d\n",un_hilo_por_programa->PID);
 		int accion = recibir_accion_de_kernel(un_hilo_por_programa->serv_kernel);
 		printf("La accion fue: %d\n",accion);
 		switch (accion) {
@@ -408,13 +408,13 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			guardarFechaHoraEjecucion(un_hilo_por_programa->tiempo_fin);
 			mostrarTiempoInicioFinDiferencia(un_hilo_por_programa->tiempo_inicio, un_hilo_por_programa->tiempo_fin);
 			mostrarCantidadImpresiones(un_hilo_por_programa->cantImpresiones);
-			printf("Exit_Code: %d\n",exit_code);
+			log_info(consola_log, "Exit_Code: %d\n",exit_code);
 			matar_hilo(un_hilo_por_programa,-1);
 			break;
 		case print: {
 			char *mensaje = obtener_un_mensaje(un_hilo_por_programa->serv_kernel);
 			(un_hilo_por_programa->cantImpresiones)++;
-			printf("Mensaje de PID %d: %s\n", un_hilo_por_programa->PID,mensaje);
+			log_info(consola_log, "Mensaje de PID %d: %s\n", un_hilo_por_programa->PID,mensaje);
 			free(mensaje);
 			break;
 		}
@@ -444,7 +444,8 @@ void recibir_y_mostrar_mensajes(hilo_por_programa *un_hilo_por_programa) {
 			break;
 		}
 		default:
-			printf("Accion recibida por Kernel invalida.\n");
+			log_error(consola_log, "Accion recibida por Kernel invalida.\n");
+			exit(-1);
 		}
 	}
 }
@@ -621,8 +622,7 @@ void elegirComando() {
 			limpiarMensajes();
 			break;
 		default:
-			log_error(consola_log,
-					"\nOpcion invalida. Vuelva a elegir una opcion \n");
+			log_error(consola_log, "\nOpcion invalida. Vuelva a elegir una opcion \n");
 			break;
 		}
 

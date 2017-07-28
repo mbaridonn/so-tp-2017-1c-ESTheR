@@ -3,6 +3,7 @@
 
 #include <parser/metadata_program.h>
 #include <parser/parser.h>
+#include <commons/log.h>
 #include "pcb.h"
 
 enum accionesCPU{
@@ -27,7 +28,7 @@ enum confirmacion {
 void solicitarA(int *cliente, char *nombreCli);
 bool terminoElPrograma(void);
 int hayError();
-void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel, int _serv_memoria);
+void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel, int _serv_memoria, t_log* log);
 void esperarSenialDeKernel();
 char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio);
 u_int32_t recibirUIntDeKernel();

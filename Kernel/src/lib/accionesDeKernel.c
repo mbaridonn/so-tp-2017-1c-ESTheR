@@ -672,9 +672,7 @@ void atenderACPU(cliente_CPU *unaCPU){
 		t_pcb *pcb = recibir_pcb_de(unaCPU->clie_CPU);
 		mostrarPcb(pcb);
 		actualizar_info_pcb(pcb);
-		printf("Llegue haca aca\n");
 		mover_pcb_segun_motivo(pcb,motivo_liberacion);
-		printf("Llegue haca aca2\n");
 		unaCPU->libre = 1;
 		planificar();
 		break;

@@ -12,15 +12,17 @@ int stackSize;
 int tamPag;
 int serv_kernel;
 int serv_memoria;
+t_log* cpu_log;
 
 //FUNCIONES EXTRA
 
-void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel, int _serv_memoria){
+void inicializarPrimitivasANSISOP(t_pcb* _pcbAEjecutar, int _stackSize, int _tamPag, int _serv_kernel, int _serv_memoria, t_log* log){
 	pcbAEjecutar = _pcbAEjecutar;
 	stackSize = _stackSize;
 	tamPag = _tamPag;
 	serv_kernel = _serv_kernel;
 	serv_memoria = _serv_memoria;
+	cpu_log = log;
 
 	terminoPrograma = false;
 	codigoError = 0;
@@ -46,14 +48,15 @@ bool estaBloqueado(){
 void esperarSenialDeMemoria() {
 	char senial[2] = "a";
 	if (recv(serv_memoria, senial, 2, 0) == -1) {
-		printf("Error al recibir senial antes de enviar paginas\n");
+		log_error(cpu_log, "Error al recibir senial antes de enviar paginas");
+		exit (-1);
 	}
 }
 
 void avisarAccionAMemoria(int accion) {
 	u_int32_t aux = accion;
 	if (send(serv_memoria, &aux, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la accion.\n");
+		log_error(cpu_log, "Error enviando la accion.");
 		exit(-1);
 	}
 	esperarSenialDeMemoria();
@@ -61,19 +64,19 @@ void avisarAccionAMemoria(int accion) {
 
 void enviarBufferAMemoria(char *buffer, int tamanio) {
 	if (send(serv_memoria, &tamanio, sizeof(int), 0) == -1) {
-		printf("Error enviando longitud del archivo\n");
+		log_error(cpu_log, "Error enviando longitud del archivo");
 		exit(-1);
 	}
 	esperarSenialDeMemoria();
 	if (send(serv_memoria, buffer, tamanio, 0) == -1) {
-		printf("Error enviando el buffer\n");
+		log_error(cpu_log, "Error enviando el buffer");
 		exit(-1);
 	}
 }
 
 void enviarIntAMemoria(int valor){
 	if (send(serv_memoria, &valor, sizeof(int), 0) == -1) {
-		printf("Error enviando mensaje a Memoria\n");
+		log_error(cpu_log, "Error enviando mensaje a Memoria");
 		exit(-1);
 	}
 }
@@ -87,40 +90,46 @@ char * conseguirDatosDeLaMemoria(int PID, int nroPag, int offset, int tamanio) {
 	avisarAccionAMemoria(offset);
 	avisarAccionAMemoria(tamanio);
 	if (recv(serv_memoria, instruccion, tamanio, 0) == -1) {
-		printf("Error al recibir instrucción de Memoria\n");
+		log_error(cpu_log, "Error al recibir instrucción de Memoria");
+		exit(-1);
 	}
 	instruccion[tamanio] = '\0';
 	return instruccion;
 }
 
-void solicitarEscrituraAMemoria(int pid, int nroPagina, int offset, int tamanio,
-		char *bytesAEscribir) {
+void solicitarEscrituraAMemoria(int pid, int nroPagina, int offset, int tamanio, char *bytesAEscribir) {
 	avisarAccionAMemoria(cpu_mem_escribir);
 	enviarIntAMemoria(pid);
 	enviarIntAMemoria(nroPagina);
 	enviarIntAMemoria(offset);
 	enviarBufferAMemoria(bytesAEscribir,tamanio);
-
 }
 
 void solicitarA(int *cliente, char *nombreCli) {
 	char a[2] = "a";
-	send((*cliente), a, 2, 0);
-	printf("Esperando atencion de %s..\n", nombreCli);
-	recv((*cliente), a, 2, 0);
+	if (send((*cliente), a, 2, 0) == -1){
+		log_error(cpu_log, "Error al enviar solicitud de atencion a Kernel");
+		exit(-1);
+	}
+	log_info(cpu_log, "Esperando atencion de %s..\n", nombreCli);
+	if (recv((*cliente), a, 2, 0) == -1){
+		log_error(cpu_log, "Error al recibir respuesta a solicitud de atencion de Kernel");
+		exit(-1);
+	}
 }
 
 void esperarSenialDeKernel() {
 	char senial[2] = "a";
 	if (recv(serv_kernel, senial, 2, 0) == -1) {
-		printf("Error al recibir senial de Kernel\n");
+		log_error(cpu_log, "Error al recibir senial de Kernel");
+		exit(-1);
 	}
 }
 
 void enviarSenialAKernel() {
 	char senial[2] = "a";
 	if (send(serv_kernel, senial, 2, 0) == -1) {
-		printf("Error al enviar la senial\n");
+		log_error(cpu_log, "Error al enviar la senial");
 		exit(-1);
 	}
 }
@@ -128,7 +137,8 @@ void enviarSenialAKernel() {
 void enviarIntAKernel(int mensaje){
 	esperarSenialDeKernel();
 	if(send(serv_kernel,&mensaje,sizeof(int),0)==-1){
-		printf("Error enviando mensaje a Kernel.\n");
+		log_error(cpu_log, "Error enviando mensaje a Kernel.");
+		exit(-1);
 	}
 }
 
@@ -136,12 +146,12 @@ void enviarPathAKernel(char *path){
 	int tamPath = strlen(path)+1;
 	esperarSenialDeKernel();
 	if (send(serv_kernel, &tamPath, sizeof(int), 0) == -1) {
-		printf("Error enviando la longitud del Path\n");
+		log_error(cpu_log, "Error enviando la longitud del Path");
 		exit(-1);
 	}
 	esperarSenialDeKernel();
 	if (send(serv_kernel, path, tamPath, 0) == -1) {
-		printf("Error enviando el Path\n");
+		log_error(cpu_log, "Error enviando el Path");
 		exit(-1);
 	}
 }
@@ -149,7 +159,7 @@ void enviarPathAKernel(char *path){
 void enviarBanderasAKernel(t_banderas flags){
 	esperarSenialDeKernel();
 	if (send(serv_kernel, &flags, sizeof(flags), 0) == -1) {
-		printf("Error enviando las banderas\n");
+		log_error(cpu_log, "Error enviando las banderas");
 		exit(-1);
 	}
 }
@@ -157,7 +167,7 @@ void enviarBanderasAKernel(t_banderas flags){
 u_int32_t recibirUIntDeKernel() {
 	u_int32_t valor;
 	if (recv(serv_kernel, &valor, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo u_int32_t de Kernel\n");
+		log_error(cpu_log, "Error recibiendo u_int32_t de Kernel");
 		exit(-1);
 	}
 	return valor;
@@ -167,7 +177,7 @@ u_int32_t recibirUIntDeKernel() {
 
 t_puntero definirVariable(t_nombre_variable var_nombre){
 	if((pcbAEjecutar->stackPointer+4) > ((stackSize + pcbAEjecutar->cant_paginas_de_codigo) * tamPag)){
-		printf("StackOverflow. Se finaliza el proceso\n");
+		log_info(cpu_log, "StackOverflow. Se finaliza el proceso\n");
 		codigoError = -10;//Defino nuevo Exit Code -10: stackOverflow (!!)
 		return -1;
 	}
@@ -184,7 +194,7 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 	}
 
 	if(!esArgumento(var_nombre)){ // Es una variable
-		printf("ANSISOP_definirVariable %c \n", var_nombre);
+		log_info(cpu_log, "ANSISOP_definirVariable %c", var_nombre);
 		t_var* nuevaVar = malloc(sizeof(t_var));
 		nuevaVar->var_id = var_nombre;
 		nuevaVar->page_number = pagina;
@@ -193,7 +203,7 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 		add_var(&lineaStack, nuevaVar);
 	}
 	else{ // Es un argumento
-		printf("ANSISOP_definirVariable (argumento) %c \n", var_nombre);
+		log_info(cpu_log, "ANSISOP_definirVariable (argumento) %c", var_nombre);
 		t_arg* nuevoArg = malloc(sizeof(t_var));
 		nuevoArg->page_number = pagina;
 		nuevoArg->offset = offset;
@@ -203,15 +213,15 @@ t_puntero definirVariable(t_nombre_variable var_nombre){
 
 	int posAbsoluta = pcbAEjecutar->stackPointer;
 	pcbAEjecutar->stackPointer += TAM_VARIABLE;
-	printf("Posicion relativa de %c: %d %d %d \n", var_nombre, pagina, offset, TAM_VARIABLE);
-	printf("Posicion absoluta de %c: %i \n", var_nombre, posAbsoluta);
+	log_info(cpu_log, "Posicion relativa de %c: %d %d %d", var_nombre, pagina, offset, TAM_VARIABLE);
+	log_info(cpu_log, "Posicion absoluta de %c: %i \n", var_nombre, posAbsoluta);
 	return posAbsoluta;
 }
 
 t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
-	printf("ANSISOP_obtenerPosicion %c \n", var_nombre);
+	log_info(cpu_log, "ANSISOP_obtenerPosicion %c", var_nombre);
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
-		printf("En indice de stack se encuentra vacio \n");
+		log_error(cpu_log, "En indice de stack se encuentra vacio \n");
 		codigoError = -20;
 		return EXIT_FAILURE;
 	}
@@ -231,7 +241,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 			}
 		}
 		if(notFound){
-			printf("No se encontro la variable %c en el stack \n", var_nombre);
+			log_error(cpu_log, "No se encontro la variable %c en el stack \n", var_nombre);
 			codigoError = -20;
 			return EXIT_FAILURE;
 		}
@@ -240,6 +250,7 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 		}
 	} else { //Es un argumento
 		if((var_nombre-'0') > contexto->cant_args){
+			log_error(cpu_log, "No se encontro el argumento %c en el stack \n", var_nombre);
 			codigoError = -20;
 			return EXIT_FAILURE;
 		}else{
@@ -247,12 +258,12 @@ t_puntero obtenerPosicionVariable(t_nombre_variable var_nombre){
 			posicionAbsoluta = argumento->page_number * tamPag + argumento->offset;
 		}
 	}
-	printf("Posicion absoluta de %c: %d \n", var_nombre, posicionAbsoluta);
+	log_info(cpu_log, "Posicion absoluta de %c: %d \n", var_nombre, posicionAbsoluta);
 	return posicionAbsoluta;
 }
 
 t_valor_variable dereferenciar(t_puntero direccion_variable){
-	printf("ANSISOP_dereferenciar posicion: %d \n", direccion_variable);
+	log_info(cpu_log, "ANSISOP_dereferenciar posicion: %d", direccion_variable);
 
 	int pagina = (direccion_variable / tamPag) /*+ pcbAEjecutar->cant_paginas_de_codigo*/;
 	int offset = direccion_variable % tamPag;
@@ -264,12 +275,12 @@ t_valor_variable dereferenciar(t_puntero direccion_variable){
 	//DEBERÍA RECIBIR UNA CONFIRMACIÓN??
 	t_valor_variable valor = *ptrValor;
 	free(ptrValor);
-	printf("Se obtuvo el valor: %d \n", valor);
+	log_info(cpu_log, "Se obtuvo el valor: %d \n", valor);
 	return valor;
 }
 
 void asignar(t_puntero direccion_variable, t_valor_variable valor){
-	printf("ANSISOP_asignar (valor: %d, direccion_variable: %d)\n", valor, direccion_variable);
+	log_info(cpu_log, "ANSISOP_asignar (valor: %d, direccion_variable: %d)\n", valor, direccion_variable);
 	int pagina, offset, tamanio;
 	pagina = (direccion_variable / tamPag);
 	offset = direccion_variable % tamPag;
@@ -280,12 +291,12 @@ void asignar(t_puntero direccion_variable, t_valor_variable valor){
 }
 
 void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
-	printf("ANSISOP_irALabel %s\n", nombre_etiqueta);
+	log_info(cpu_log, "ANSISOP_irALabel %s", nombre_etiqueta);
 	char** string_cortado = string_split(nombre_etiqueta, "\n");//NO SE ESTA LIBERANDO LA MEMORIA
 	t_puntero_instruccion numeroInstr = metadata_buscar_etiqueta(string_cortado[0], pcbAEjecutar->indice_etiquetas, pcbAEjecutar->etiquetas_size);
-	printf("Numero de instruccion: %d\n", numeroInstr);
+	log_info(cpu_log, "Numero de instruccion: %d\n", numeroInstr);
 	if(numeroInstr == -1){
-		printf("No se encontro la etiqueta\n");
+		log_error(cpu_log, "No se encontro la etiqueta\n");
 		codigoError = -20;
 		return;
 	}
@@ -293,7 +304,7 @@ void irAlLabel(t_nombre_etiqueta nombre_etiqueta){
 }
 
 void llamarSinRetorno(t_nombre_etiqueta etiqueta){
-	printf("ANSISOP_llamarSinRetorno %s\n", etiqueta);
+	log_info(cpu_log, "ANSISOP_llamarSinRetorno %s", etiqueta);
 	t_stack_entry* nuevaLineaStack = stack_entry_create();
 	nuevaLineaStack->ret_pos = pcbAEjecutar->program_counter;
 	list_add(pcbAEjecutar->indice_stack->elements, nuevaLineaStack);
@@ -301,7 +312,7 @@ void llamarSinRetorno(t_nombre_etiqueta etiqueta){
 }
 
 void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar){
-	printf("ANSISOP_llamarConRetorno (etiqueta: %s, retornar: %d)\n", etiqueta, donde_retornar);
+	log_info(cpu_log, "ANSISOP_llamarConRetorno (etiqueta: %s, retornar: %d)", etiqueta, donde_retornar);
 	t_stack_entry* nuevaLineaStackEjecucionActual;
 	nuevaLineaStackEjecucionActual = stack_entry_create();
 	nuevaLineaStackEjecucionActual->ret_vars = malloc(sizeof(t_ret_var));
@@ -314,7 +325,7 @@ void llamarConRetorno(t_nombre_etiqueta etiqueta, t_puntero donde_retornar){
 }
 
 void finalizar(void){
-	printf("ANSISOP_finalizar\n");
+	log_info(cpu_log, "ANSISOP_finalizar\n");
 	//Obtengo contexto quitado de la lista y lo limpio.
 	t_stack_entry* contexto = list_remove(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
 	//int i;
@@ -333,7 +344,7 @@ void finalizar(void){
 	}
 	if(list_is_empty(pcbAEjecutar->indice_stack->elements)){
 		terminoPrograma = true;
-		printf("Finalizó la ejecucion del programa\n");
+		log_info(cpu_log, "Finalizó la ejecucion del programa\n");
 	}else{
 		pcbAEjecutar->program_counter = contexto->ret_pos;
 	}
@@ -341,7 +352,7 @@ void finalizar(void){
 }
 
 void retornar(t_valor_variable var_retorno){
-	printf("ANSISOP_retornar\n");
+	log_info(cpu_log, "ANSISOP_retornar");
 	// Tomo contexto actual:
 	t_stack_entry* registroActual = list_get(pcbAEjecutar->indice_stack->elements, list_size(pcbAEjecutar->indice_stack->elements) - 1);
 	// Calculo la dirección de retorno a partir de retVar:
@@ -360,7 +371,7 @@ t_valor_variable obtenerValorCompartida(t_nombre_compartida var_compartida_nombr
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarPathAKernel(nombreVariable);//Asumo que el nombre termina con un \0
 	int valor = recibirUIntDeKernel(); //EN REALIDAD, PODRÍA FALLAR Y SE DEBERÍA PRODUCIR UN ERROR
-	printf("obtenerValorCompartida(%s) = %d\n", nombreVariable, valor);
+	log_info(cpu_log, "obtenerValorCompartida(%s) = %d\n", nombreVariable, valor);
 	free(nombreVariable);
 	return valor;
 }
@@ -375,7 +386,7 @@ t_valor_variable asignarValorCompartida(t_nombre_compartida var_compartida_nombr
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarPathAKernel(nombreVariable);//Asumo que el nombre termina con un \0
 	enviarIntAKernel(var_compartida_valor);
-	printf("cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, var_compartida_valor);
+	log_info(cpu_log, "cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, var_compartida_valor);
 	//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE. EN REALIDAD, PODRÍA FALLAR Y SE DEBERÍA PRODUCIR UN ERROR
 	free(nombreVariable);
 	return var_compartida_valor;
@@ -384,7 +395,7 @@ t_valor_variable asignarValorCompartida(t_nombre_compartida var_compartida_nombr
 //OPERACIONES DE KERNEL
 
 void wait(t_nombre_semaforo identificador_semaforo){
-	printf("El identificador de semaforo es: %s\n",identificador_semaforo);
+	log_info(cpu_log, "wait(semaforo: %s)",identificador_semaforo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_wait);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -392,13 +403,14 @@ void wait(t_nombre_semaforo identificador_semaforo){
 	int confirmacion = recibirUIntDeKernel();
 	if(confirmacion == k_cpu_bloquear){
 		esta_bloqueado = true;
-		printf("Kernel me dijo que me bloquee: nro %d\n",confirmacion);
+		log_info(cpu_log, "Kernel me dijo que me bloquee: nro %d\n",confirmacion);
 	}else{
-		printf("Kernel me dijo que continue: nro %d\n",confirmacion);
+		log_info(cpu_log, "Kernel me dijo que continue: nro %d\n",confirmacion);
 	}
 }
 
 void signal_ANSISOP(t_nombre_semaforo identificador_semaforo){
+	log_info(cpu_log, "signal(semaforo: %s)\n",identificador_semaforo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_signal);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -406,6 +418,7 @@ void signal_ANSISOP(t_nombre_semaforo identificador_semaforo){
 }
 
 t_puntero reservar(t_valor_variable espacio){
+	log_info(cpu_log, "Reservar memoria dinamica: %d",espacio);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_reservar);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -414,39 +427,40 @@ t_puntero reservar(t_valor_variable espacio){
 	int confirmacion = recibirUIntDeKernel();
 	u_int32_t direccion = recibirUIntDeKernel();
 	if (confirmacion==noSePudoReservarMemoria){
-		printf("El espacio requerido supera el tamaño máximo reservable por petición (Exit Code -8)\n");
+		log_info(cpu_log, "El espacio requerido supera el tamaño máximo reservable por petición (Exit Code -8)\n");
 		codigoError = -8;
 	} else if (confirmacion==noHayPaginas){
-		printf("No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria (Exit Code -9)\n");
+		log_info(cpu_log, "No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria (Exit Code -9)\n");
 		codigoError = -9;
 	} else if (confirmacion==sePudoReservarMemoriaEnMismaPag){
-		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
+		log_info(cpu_log, "Se pudo reservar memoria, direccion: %u\n", direccion);
 	} else /*if (confirmacion==sePudoReservarMemoriaEnNuevaPag)*/{
-		printf("Se pudo reservar memoria, direccion: %u\n", direccion);
+		log_info(cpu_log, "Se pudo reservar memoria, direccion: %u\n", direccion);
 		pcbAEjecutar->contadorPags++;
 	}
 	return direccion;//DEVUELVE 0 SI NO SE PUDO RESERVAR
 }
 
 void liberar(t_puntero puntero){
+	log_info(cpu_log, "Liberar memoria (direccion: %u)", puntero);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_liberar);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarIntAKernel(puntero);
 	int confirmacion = recibirUIntDeKernel();
 	if (confirmacion == noSePudoLiberarMemoria){
-		printf("No se pudo liberar Memoria, dicha memoria no está asignada al proceso (Exit Code -11)\n");
+		log_info(cpu_log, "No se pudo liberar Memoria, dicha memoria no está asignada al proceso (Exit Code -11)\n");
 		codigoError = -11;//Defino nuevo Exit Code -11: error al liberar Memoria (!!)
 	} else if (confirmacion==exitoLiberacionPagina){
-		printf("Se pudo liberar Memoria, y tambien la pagina\n");
+		log_info(cpu_log, "Se pudo liberar Memoria, y tambien la pagina\n");
 		pcbAEjecutar->contadorPags--;
 	} else /*confirmacion==falloLiberacionPagina || confirmacion==sePudoLiberarMemoria*/{
-		printf("Se pudo liberar Memoria\n");
+		log_info(cpu_log, "Se pudo liberar Memoria\n");
 	}
 }
 
 t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
-	printf("ANSISOP_abrir: %s \n", direccion);
+	log_info(cpu_log, "ANSISOP_abrir: %s", direccion);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_abrir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -454,35 +468,37 @@ t_descriptor_archivo abrir(t_direccion_archivo direccion, t_banderas flags){
 	enviarBanderasAKernel(flags);
 	t_descriptor_archivo fd = recibirUIntDeKernel();
 	if(fd != 0 && fd != 1){
-		printf("FD del archivo: %u\n", fd);
+		log_info(cpu_log, "FD del archivo: %u\n", fd);
 		return fd;
 	} else if (fd == 1){
 		//En realidad 1 es un FD válido, pero como está reservado lo usamos para indicar el error
-		printf("No se pudo crear archivo por falta de bloques (Exit Code -14)\n");
+		log_info(cpu_log, "No se pudo crear archivo por falta de bloques (Exit Code -14)\n");
 		codigoError = -14;//Defino nuevo Exit Code -14 (!!)
 	} else /*if (fd == 0)*/{
 		//En realidad 0 es un FD válido, pero como está reservado lo usamos para indicar el error
-		printf("El programa intentó acceder a un archivo que no existe (Exit Code -2)\n");
+		log_info(cpu_log, "El programa intentó acceder a un archivo que no existe (Exit Code -2)\n");
 		codigoError = -2;
 	}
 	return 0;
 }
 
 void borrar(t_descriptor_archivo descriptor_archivo){
-	printf("ANSISOP_borrar: %d\n", descriptor_archivo);
+	log_info(cpu_log, "ANSISOP_borrar: %d", descriptor_archivo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_borrar_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarIntAKernel(descriptor_archivo);
 	int confirmacion = recibirUIntDeKernel();
 	if(confirmacion == k_cpu_error){
-		printf("No se pudo borrar archivo (Exit Code -14)\n");
+		log_info(cpu_log, "No se pudo borrar archivo (Exit Code -14)\n");
 		codigoError = -14;//Defino nuevo Exit Code -14 (!!)
+	} else {
+		log_info(cpu_log, "Se pudo borrar archivo\n");
 	}
 }
 
 void cerrar(t_descriptor_archivo descriptor_archivo){
-	printf("ANSISOP_cerrar: %d\n", descriptor_archivo);
+	log_info(cpu_log, "ANSISOP_cerrar: %d\n", descriptor_archivo);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_cerrar_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -491,7 +507,7 @@ void cerrar(t_descriptor_archivo descriptor_archivo){
 }
 
 void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posicion){
-	printf("ANSISOP_moverCursor: %d, %d\n", descriptor_archivo, posicion);
+	log_info(cpu_log, "ANSISOP_moverCursor: %d, %d\n", descriptor_archivo, posicion);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_mover_cursor_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -501,29 +517,29 @@ void moverCursor(t_descriptor_archivo descriptor_archivo, t_valor_variable posic
 }
 
 void escribir(t_descriptor_archivo descriptor_archivo, void* informacion, t_valor_variable tamanio){
-	printf("ANSISOP_escribir(fd:%d, tamanio:%d)\n", descriptor_archivo, tamanio);
+	log_info(cpu_log, "ANSISOP_escribir(fd:%d, tamanio:%d)", descriptor_archivo, tamanio);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_escribir_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
 	enviarIntAKernel(descriptor_archivo);
 	enviarIntAKernel(tamanio);
 	esperarSenialDeKernel();
-	printf("Bytes a escribir: %.*s \n", tamanio, (char*)informacion);
+	log_info(cpu_log, "Bytes a escribir: %.*s", tamanio, (char*)informacion);
 	if (send(serv_kernel, informacion, tamanio, 0) == -1) {
-		printf("Error al enviar bytes a escribir\n");
+		log_error(cpu_log, "Error al enviar bytes a escribir");
 		exit(-1);
 	}
 	int confirmacion = recibirUIntDeKernel();
 	if (confirmacion == k_cpu_accion_OK){
-		printf("Escritura realizada correctamente\n");
+		log_info(cpu_log, "Escritura realizada correctamente\n");
 	} else {
-		printf("El programa intentó escribir un archivo sin permisos, o no queda mas espacio en FS (Exit Code -4)\n");
+		log_info(cpu_log, "El programa intentó escribir un archivo sin permisos, o no queda mas espacio en FS (Exit Code -4)\n");
 		codigoError = -4;
 	}
 }
 
 void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valor_variable tamanio){
-	printf("ANSISOP_leer(fd:%d, informacion:%d, tamanio:%d)\n", descriptor_archivo, informacion, tamanio);
+	log_info(cpu_log, "ANSISOP_leer(fd:%d, informacion:%d, tamanio:%d)", descriptor_archivo, informacion, tamanio);
 	solicitarA(&serv_kernel,"Kernel");
 	enviarIntAKernel(cpu_k_leer_archivo);
 	enviarIntAKernel(pcbAEjecutar->id_proceso);
@@ -534,10 +550,11 @@ void leer(t_descriptor_archivo descriptor_archivo, t_puntero informacion, t_valo
 	if (respuesta!=k_cpu_error){
 		enviarSenialAKernel();
 		if (recv(serv_kernel, bytesLeidos, tamanio, 0) == -1) {
-			printf("Error al recibir bytes leidos de Kernel\n");
+			log_error(cpu_log, "Error al recibir bytes leidos de Kernel\n");
+			exit(-1);
 		}
 	} else {
-		printf("El programa intentó leer un archivo sin permisos (Exit Code -3)\n");
+		log_info(cpu_log, "El programa intentó leer un archivo sin permisos (Exit Code -3)\n");
 		codigoError = -3;
 		return;
 	}

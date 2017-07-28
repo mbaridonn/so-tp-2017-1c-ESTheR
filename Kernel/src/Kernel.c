@@ -196,7 +196,6 @@ bool str_compare(char vec1[],char vec2[]){
 	}
 	while(vec1[i]!='\0'){
 		if(vec1[i]!=vec2[i]){
-			printf("E\n");
 			return false;
 		}
 		i++;
