@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <commons/log.h>
 #include <commons/collections/list.h>
 #include "funcionesMemoria.h"
 
@@ -14,6 +13,8 @@ pthread_mutex_t mutexCache = PTHREAD_MUTEX_INITIALIZER;
 int tamFrame = 0;
 int cantFrames = 0;
 int *retardoMemoria = NULL;
+
+t_log *memoria_log;
 
 char* memoriaPrincipal;
 
@@ -54,7 +55,7 @@ t_list* colaEntradasCache; //Necesaria para implementar el algoritmo LRU (OJO! N
 void *reservarMemoria(int tamanio) {
 	void *puntero = malloc(tamanio);
 	if (puntero == NULL) {
-		printf("No hay más espacio\n");
+		log_error(memoria_log, "No se pudo reservar memoria.");
 		exit(-1);
 	}
 	return puntero;
@@ -67,7 +68,7 @@ void mili_sleep(int retardo){
 
 int divisionRoundUp(int dividendo, int divisor) {
 	if (dividendo <= 0 || divisor <= 0) {
-		printf("Esta division funciona unicamente con enteros positivos\n");
+		log_error(memoria_log, "La division roundUp funciona únicamente con enteros positivos.");
 		exit(-1);
 	}
 	return 1 + ((dividendo - 1) / divisor);
@@ -146,27 +147,28 @@ void dumpCache() {
 }
 
 void inicializarCache() {
-	memoriaCache = malloc(sizeof(entradaCache) * entradasCache);
+	memoriaCache = reservarMemoria(sizeof(entradaCache) * entradasCache);
 	limpiarCache();
 	colaEntradasCache = list_create();
 }
 
 void inicializarMemoriaPrincipal(int valorTamFrame, int valorCantFrames,
-		int valorEntradasCache, int valorCacheXProceso, int *ptrRetardoMemoria) {
+		int valorEntradasCache, int valorCacheXProceso, int *ptrRetardoMemoria, t_log *mem_log) {
 	tamFrame = valorTamFrame;
 	cantFrames = valorCantFrames;
 	retardoMemoria=ptrRetardoMemoria;//Apunta a la posición de retardoMemoria en Memoria.c
+	memoria_log = mem_log;
 	int memoriaTotal = tamFrame * cantFrames;
-	printf("Memoria Total: %i \n", memoriaTotal);
+	log_info(memoria_log, "Memoria Total: %i", memoriaTotal);
 	memoriaPrincipal = reservarMemoria(memoriaTotal);
 
 	int cantBytesEstructuraAdm = sizeof(tablaPagInv) * cantFrames;
 	estructuraAdm = (tablaPagInv*) memoriaPrincipal;
 	cantFramesEstructuraAdm = divisionRoundUp(cantBytesEstructuraAdm, tamFrame); //Coincide con 1er frame para procesos
-	printf("bytesEstructuraAdm: %i \n", cantBytesEstructuraAdm);
-	printf("cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
+	log_info(memoria_log, "bytesEstructuraAdm: %i \n", cantBytesEstructuraAdm);
+	log_info(memoria_log, "cantFramesEstructuraAdm: %i \n", cantFramesEstructuraAdm);
 
-	cantPagsPorPID = malloc(sizeof(int) * cantFrames); //REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
+	cantPagsPorPID = reservarMemoria(sizeof(int) * cantFrames); //REVISAR TAMAÑO (en realidad alcanza con una entrada por PID)
 
 	inicializarCantPagsPorPID(); //Pone en cero la cant de páginas de cada proceso
 	inicializarTablaPags(cantFramesEstructuraAdm);
@@ -301,9 +303,9 @@ void atenderComandos() {
 			if (isInt(subcomando)) {
 				nuevoRetardoMemoria = atoi(subcomando);
 				*retardoMemoria=nuevoRetardoMemoria;
-				printf("Retardo Memoria seteado en %d", *retardoMemoria);
+				log_info(memoria_log, "Retardo Memoria seteado en %d", *retardoMemoria);
 			} else {
-				printf("El retardo tiene que ser un número entero positivo\n");
+				printf("El retardo tiene que ser un número entero positivo.\n");
 			}
 			break;
 		case 'd':
@@ -332,11 +334,10 @@ void atenderComandos() {
 			break;
 		case 'f':
 			limpiarCache();
-			printf("El contenido de la caché ha sido vaciado\n");
+			log_info(memoria_log, "El contenido de la caché ha sido vaciado");
 			break;
 		case 's':
-			printf(
-					"Size:\n"
+			printf("Size:\n"
 							"-memory: Indica el tamaño de la memoria en cantidad de frames, la cantidad de frames ocupados"
 							" y la cantidad de frames libres\n"
 							"-PID: indica el tamaño total del proceso con dicho PID\n");
@@ -346,8 +347,7 @@ void atenderComandos() {
 				int cantFramesOcup = cantFramesOcupados();
 				printf("Cantidad de frames: %d\n", cantFrames);
 				printf("Cantidad de frames ocupados: %d\n", cantFramesOcup);
-				printf("Cantidad de frames libres: %d\n",
-						cantFrames - cantFramesOcup);
+				printf("Cantidad de frames libres: %d\n", cantFrames - cantFramesOcup);
 			} else {
 				int PID;
 				if (isInt(subcomando)) {
@@ -372,27 +372,18 @@ void atenderComandos() {
 }
 
 void recibirArchivoDe(int *cliente, int PID) {
-	FILE *archivo;
-	archivo = fopen("prueba.txt", "w");
-	if (archivo == NULL) {
-		printf("No se pudo escribir el archivo\n");
-		exit(-1);
-	}
-
-	u_int32_t fsize = 0;
+	u_int32_t fsize;
 	if (recv((*cliente), &fsize, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo longitud del archivo\n");
+		log_error(memoria_log, "Error recibiendo longitud del archivo.");
 		exit(-1);
 	}
-
 	bufferArchivo = reservarMemoria(fsize + 1);
 	if (recv((*cliente), bufferArchivo, fsize + 1, 0) == -1) {
-		printf("Error recibiendo el archivo\n");
+		log_error(memoria_log, "Error recibiendo el archivo.");
 		exit(-1);
 	}
-	printf("%s\n\n", bufferArchivo);
+	log_info(memoria_log, "%s\n", bufferArchivo);
 
-	fwrite(bufferArchivo, 1, fsize, archivo);
 	escribirPagina(PID,0,0,fsize,bufferArchivo);
 
 	free(bufferArchivo);
@@ -401,15 +392,16 @@ void recibirArchivoDe(int *cliente, int PID) {
 void enviarSenialAKernel() {
 	char senial[2] = "a";
 	if (send(clienteKernel, senial, 2, 0) == -1) {
-		printf("Error al enviar la senial antes de asignar paginas\n");
+		log_error(memoria_log, "Error al enviar señal a Kernel");
+		exit (-1);
 	}
 }
 
 int recibir_cant_paginas() {
 	u_int32_t cant_pags;
 	if (recv(clienteKernel, &cant_pags, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo la cantidad de paginas.\n");
-		return EXIT_FAILURE;
+		log_error(memoria_log, "Error recibiendo la cantidad de paginas.");
+		exit (-1);
 	}
 	return cant_pags;
 }
@@ -417,8 +409,8 @@ int recibir_cant_paginas() {
 int recibir_process_id() {
 	int process_id;
 	if (recv(clienteKernel, &process_id, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el process_id\n");
-		return EXIT_FAILURE;
+		log_error(memoria_log, "Error recibiendo el process_id");
+		exit (-1);
 	}
 	return process_id;
 }
@@ -426,8 +418,8 @@ int recibir_process_id() {
 int recibir_int_de_CPU(int cpu){
 	int un_int;
 	if (recv(cpu, &un_int, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el process_id\n");
-		return EXIT_FAILURE;
+		log_error(memoria_log, "Error recibiendo int de CPU");
+		exit (-1);
 	}
 	return un_int;
 }
@@ -435,8 +427,8 @@ int recibir_int_de_CPU(int cpu){
 int recibir_int_de_Kernel(){
 	int un_int;
 	if (recv(clienteKernel, &un_int, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el process_id\n");
-		return EXIT_FAILURE;
+		log_error(memoria_log, "Error recibiendo int de Kernel");
+		exit (-1);
 	}
 	return un_int;
 }
@@ -446,7 +438,7 @@ void kernel_mem_inicializarPrograma() {
 	enviarSenialAKernel();
 	process_id = recibir_process_id();
 	cant_pags = recibir_cant_paginas();
-	printf("Me llego el ID: %d y Cantidad de Paginas: %d\n", process_id, cant_pags);
+	log_info(memoria_log, "Me llego el ID: %d y Cantidad de Paginas: %d", process_id, cant_pags);
 	inicializarPrograma(process_id, cant_pags);
 
 	recibirArchivoDe(&clienteKernel, process_id);
@@ -456,7 +448,7 @@ void kernel_mem_inicializarPrograma() {
 int accionPedidaPorKernel() {
 	int accionPedida;
 	if (recv(clienteKernel, &accionPedida, sizeof(int), 0) == -1) {
-		printf("Error recibiendo la accion pedida\n");
+		log_error(memoria_log, "Error recibiendo la accion pedida");
 		exit(-1);
 	}
 	return accionPedida;
@@ -470,10 +462,10 @@ void kernel_mem_finalizarProceso(){
 
 void kernel_mem_leerPaginas(){
 	int pid = recibir_process_id(), nroPagina = recibir_int_de_Kernel(), offset = recibir_int_de_Kernel(), tamanio = recibir_int_de_Kernel();
-	printf("Ejecuto comando: leerPagina(%d,%d,%d,%d)\n",pid,nroPagina,offset,tamanio);
+	log_info(memoria_log, "Ejecuto comando: leerPagina(%d,%d,%d,%d)",pid,nroPagina,offset,tamanio);
 	char *bytesLeidos = leerPagina(pid,nroPagina,offset,tamanio);
 	if(send(clienteKernel,bytesLeidos,tamanio,0)==-1){
-		printf("Error al enviar bytesLeidos a Kernel.\n");
+		log_error(memoria_log, "Error al enviar bytesLeidos a Kernel.");
 		exit(-1);
 	}
 }
@@ -481,13 +473,13 @@ void kernel_mem_leerPaginas(){
 char *recibirBufferDeCPU(int *tamanio,int cpu){
 	char *buffer;
 	if (recv(cpu, tamanio, sizeof(int), 0) == -1) {
-		printf("Error recibiendo longitud del buffer\n");
+		log_error(memoria_log, "Error recibiendo longitud del buffer");
 		exit(-1);
 	}
 	buffer = reservarMemoria(*tamanio);
 	enviarSenialACPU(cpu);
 	if (recv(cpu, buffer, *tamanio, 0) == -1) {
-		printf("Error recibiendo el buffer\n");
+		log_error(memoria_log, "Error recibiendo el buffer");
 		exit(-1);
 	}
 	return buffer;
@@ -496,13 +488,13 @@ char *recibirBufferDeCPU(int *tamanio,int cpu){
 char *recibirBufferDeKernel(int *tamanio){
 	char *buffer;
 	if (recv(clienteKernel, tamanio, sizeof(int), 0) == -1) {
-		printf("Error recibiendo longitud del buffer\n");
+		log_error(memoria_log, "Error recibiendo longitud del buffer");
 		exit(-1);
 	}
 	buffer = reservarMemoria(*tamanio);
 	enviarSenialAKernel();
 	if (recv(clienteKernel, buffer, *tamanio, 0) == -1) {
-		printf("Error recibiendo el buffer\n");
+		log_error(memoria_log, "Error recibiendo el buffer");
 		exit(-1);
 	}
 	return buffer;
@@ -511,21 +503,20 @@ char *recibirBufferDeKernel(int *tamanio){
 void kernel_mem_escribirPaginas(){
 	int pid = recibir_process_id(), nroPagina = recibir_int_de_Kernel(), offset = recibir_int_de_Kernel(), tamanio;
 	char *bytesAEscribir = recibirBufferDeKernel(&tamanio);
-	printf("Ejecuto comando: escribirPagina(%d,%d,%d,%d)\n",pid,nroPagina,offset,tamanio);
+	log_info(memoria_log, "Ejecuto comando: escribirPagina(%d,%d,%d,%d)",pid,nroPagina,offset,tamanio);
 	escribirPagina(pid,nroPagina,offset,tamanio,bytesAEscribir);
 	free(bytesAEscribir);
-
 }
 
 void kernel_mem_liberarPagina(){
 	int pid = recibir_int_de_Kernel(), nroPagina = recibir_int_de_Kernel();
-	printf("Ejecuto comando: liberarPaginaDeProceso(%d,%d)\n",pid,nroPagina);
+	log_info(memoria_log, "Ejecuto comando: liberarPaginaDeProceso(%d,%d)", pid, nroPagina);
 	liberarPaginaDeProceso(pid,nroPagina);
 }
 
 void kernel_mem_asignar_paginas(){
 	int pid = recibir_int_de_Kernel(), cantPags = recibir_int_de_Kernel();
-	printf("Ejecuto comando: asignarPaginasAProceso(%d,%d)\n",pid,cantPags);
+	log_info(memoria_log, "Ejecuto comando: asignarPaginasAProceso(%d,%d)", pid, cantPags);
 	asignarPaginasAProceso(pid, cantPags);
 }
 
@@ -561,7 +552,7 @@ void atenderKernel() {
 void enviarSenialACPU(int fdCPU){
 	char senial[2] = "a";
 	if (send(fdCPU, senial, 2, 0) == -1) {
-		printf("Error al enviar la senial antes de asignar paginas\n");
+		log_error(memoria_log, "Error al enviar la senial antes a CPU");
 		exit(-1);
 	}
 }
@@ -569,31 +560,29 @@ void enviarSenialACPU(int fdCPU){
 void leerYEnviarBytesLeidosACPU(int fdCPU){
 	int PID, nroPag, offset, tamanio;
 	if (recv(fdCPU, &PID, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el PID\n");
+		log_error(memoria_log, "Error recibiendo el PID");
 		exit(-1);
 	}
 	enviarSenialACPU(fdCPU);
 	if (recv(fdCPU, &nroPag, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el nroPag\n");
+		log_error(memoria_log, "Error recibiendo el nroPag");
 		exit(-1);
 	}
 	enviarSenialACPU(fdCPU);
 	if (recv(fdCPU, &offset, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el offset\n");
+		log_error(memoria_log, "Error recibiendo el offset");
 		exit(-1);
 	}
 	enviarSenialACPU(fdCPU);
 	if (recv(fdCPU, &tamanio, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el tamanio\n");
+		log_error(memoria_log, "Error recibiendo el tamanio");
 		exit(-1);
 	}
 	enviarSenialACPU(fdCPU);
-	printf("Ejecuto comando: leerPagina(%d,%d,%d,%d)\n",PID,nroPag,offset,tamanio);
+	log_info(memoria_log, "Ejecuto comando: leerPagina(%d,%d,%d,%d)",PID,nroPag,offset,tamanio);
 	char* bytesLeidos = leerPagina(PID,nroPag,offset,tamanio);
-	//instruccion[tamanio+1]='\0';//NO ROMPE, PERO ESTOY ACCEDIENDO A UNA POSICION NO RESERVADA
-	//printf("Lei la instruccion '%s''\n", instruccion);
 	if (send(fdCPU, bytesLeidos, tamanio, 0) == -1) {
-		printf("Error al enviar la senial antes de asignar paginas\n");
+		log_error(memoria_log, "Error al enviar la senial antes de asignar paginas");
 		exit(-1);
 	}
 	free(bytesLeidos);
@@ -602,20 +591,20 @@ void leerYEnviarBytesLeidosACPU(int fdCPU){
 void cpu_m_escribir_pagina(int cpu){
 	int pid = recibir_int_de_CPU(cpu), nroPagina = recibir_int_de_CPU(cpu), offset = recibir_int_de_CPU(cpu), tamanio;
 	char *bytes = recibirBufferDeCPU(&tamanio,cpu);
-	printf("Ejecuto comando: escribirPagina(%d,%d,%d,%d)\n",pid,nroPagina,offset,tamanio);
+	log_info(memoria_log, "Ejecuto comando: escribirPagina(%d,%d,%d,%d)",pid,nroPagina,offset,tamanio);
 	escribirPagina(pid,nroPagina,offset,tamanio,bytes);
 	free(bytes);
 }
 
 void atenderCPU(int fdCPU) {
-	printf("el FD del CPU es: %d\n", fdCPU);
+	log_info(memoria_log, "El FD del CPU es: %d", fdCPU);
 	while (1) {
 		int accionPedida;
 		if (recv(fdCPU, &accionPedida, sizeof(int), 0) == -1) {
-			printf("Error recibiendo la accion pedida\n");
+			log_error(memoria_log, "Error recibiendo la accion pedida");
 			exit(-1);
 		}
-		printf("Recibi la accion %d\n",accionPedida);
+		log_info(memoria_log, "Recibi la accion %d",accionPedida);
 		enviarSenialACPU(fdCPU);
 		switch (accionPedida) {
 		case cpu_mem_leer:
@@ -658,7 +647,7 @@ int buscarPagina(int PID, int nroPag) {
 			//Capaz sería más fácil (aunque menos eficiente) que vuelva a la pos 0
 		}
 		if (frameActual == frameBase) {
-			printf("No se encontró la página\n");
+			log_info(memoria_log, "No se encontró la página");
 			return -1;
 		}
 	}
@@ -683,7 +672,7 @@ int proximoFrameLibre(int frameBase) {
 			//Capaz sería más fácil (aunque menos eficiente) que vuelva a la pos 0
 		}
 		if (frameActual == frameBase) {
-			printf("No se encontró ninguna página libre\n");
+			log_info(memoria_log, "No se encontró ninguna página libre");
 			return -1;
 		}
 	}
@@ -700,7 +689,7 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 		nroPag = cantPagsPorPID[PID];
 		frameAAsignar = proximoFrameLibre(hash(PID, nroPag));
 		if (frameAAsignar == -1) {	//No se encontró ninguna página libre
-			printf("Sólo se pudieron asignar %d páginas al proceso %d\n", cantPagsAsignadas, PID);
+			log_info(memoria_log, "Sólo se pudieron asignar %d páginas al proceso %d\n", cantPagsAsignadas, PID);
 			confirmacion = noHayPaginas;
 			send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0);
 			pthread_mutex_unlock(&mutexAsignarPagina);
@@ -713,17 +702,16 @@ void asignarPaginasAProceso(int PID, int pagsRequeridas) {
 	}
 	confirmacion = hayPaginas;
 	send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0);
-	printf("Se pudieron asignar las páginas al proceso %d\n", PID);
+	log_info(memoria_log, "Se pudieron asignar las páginas al proceso %d", PID);
 
 	pthread_mutex_unlock(&mutexAsignarPagina);
 }
 
 void inicializarPrograma(int PID, int cantPags) {
 	//No agrego mili_sleep(retardoMemoria), ya lo hace en asignarPaginasAProceso
-
 	if (cantPagsPorPID[PID]) {//Chequea que el programa no esté ya inicializado (es decir, que la cant de pags sea distinata de cero)
-		printf("El programa ya se encuentra inicializado\n");
-		exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
+		log_error(memoria_log, "El programa ya se encuentra inicializado\n");
+		exit(-1);
 	}
 	asignarPaginasAProceso(PID, cantPags);
 }
@@ -818,7 +806,7 @@ char *leerPagina(int PID, int nroPag, int offset, int tamanio) {
 	if (offset + tamanio > tamFrame) {
 		proxPag = proximaPagina(PID, nroPag);
 		if (proxPag == -1) {
-			printf("Se está intentando leer más allá del límite de memoria asignada\n");
+			log_error(memoria_log, "Se está intentando leer más allá del límite de memoria asignada\n");
 			exit(-1);//EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA LECTURA
 		}
 		tamanioRestante = tamanio - (tamFrame - offset);//Si hay otra pág, me guardo el tamaño restante
@@ -854,7 +842,7 @@ void escribirPagina(int PID, int nroPag, int offset, int tamanio, char *buffer) 
 	if (offset + tamanio > tamFrame) {
 		int proxPag = proximaPagina(PID, nroPag);
 		if (proxPag == -1) {
-			printf("Se está intentando escribir más allá del límite de la página\n");
+			log_error(memoria_log, "Se está intentando escribir más allá del límite de la página\n");
 			exit(-1); //EN REALIDAD DEBERÍA RETORNAR UN MENSAJE AL QUE PIDIÓ LA ESCRITURA
 		}
 		int tamanioRestante = tamanio - (tamFrame - offset);
@@ -898,7 +886,7 @@ void finalizarPrograma(int PID) {
 			memoriaCache[i].PID = -1;
 	}
 	pthread_mutex_unlock(&mutexCache);
-	printf("Se ha finalizado el proceso %d\n", PID);
+	log_info(memoria_log, "Se ha finalizado el proceso %d\n", PID);
 }
 
 void liberarPaginaDeProceso(int PID, int nroPag){
@@ -912,15 +900,16 @@ void liberarPaginaDeProceso(int PID, int nroPag){
 		estructuraAdm[frameALiberar].PID = -1;//La elimino
 		cantPagsPorPID[PID]--;
 		confirmacion = exitoLiberacionPagina;
-		printf("Se libero la pagina %d del proceso %d\n", nroPag, PID);
+		log_info(memoria_log, "Se libero la pagina %d del proceso %d", nroPag, PID);
 	} else {//SI NO ES LA ÚLTIMA, NO SE HACE NADA (EN REALIDAD, SE DEBERÍA ELIMINAR IGUAL!!)
 		//En ese caso, habría que replantear la condición (SIEMPRE HAY QUE CHEQUEAR QUE EXISTA EL FRAME)
-		printf("No se puede liberar la pagina %d del proceso %d\n", nroPag, PID);
+		log_info(memoria_log, "No se puede liberar la pagina %d del proceso %d", nroPag, PID);
 		confirmacion = falloLiberacionPagina;
 	}
 
 	if(send(clienteKernel, &confirmacion, sizeof(u_int32_t), 0)==-1){
-		printf("Error enviando confirmacion de liberar pagina.\n");
+		log_error(memoria_log, "Error enviando confirmacion de liberar pagina.\n");
+		exit(-1);
 	}
 
 	//HACE FALTA ELIMINAR LA PÁGINA DE LA CACHÉ?

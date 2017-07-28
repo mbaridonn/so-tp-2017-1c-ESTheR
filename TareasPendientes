@@ -5,7 +5,7 @@ TESTS SCRIPTS:
 
 GENERAL
 -Chequear Memory Leaks.
--Faltan logs en bibliotecas de CPU y Memoria.
+-Faltan logs en bibliotecas de CPU y Kernel.
 
 MEMORIA
 -Se debería poder hacer un dump de los datos almacenados en la memoria de un proceso en particular.
