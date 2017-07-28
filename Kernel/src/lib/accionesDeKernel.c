@@ -3,6 +3,9 @@
 #include <pthread.h>
 #include "CapaFS.h"//OJO!! DEPENDENCIA CIRCULAR
 
+enum acciones_de_consola_de_consola{
+	finalizar_un_programa
+};
 
 void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
 	quitar_PCB_de_Lista(listaActual, pcb);
@@ -317,17 +320,54 @@ void asignar_exit_code_a_pcb_segun_motivo(t_pcb *un_pcb,int motivo){
 		}
 }
 
+bool tiene_nuevo_exit_code(int pid){
+	bool es_el_pid(pid_nuevo_exit_code *p_n_e_c){
+		return p_n_e_c->pid == pid;
+	}
+	return list_any_satisfy(lista_pids_con_nuevos_exit_code,(void*)es_el_pid);
+}
+
+pid_nuevo_exit_code *obtener_p_n_e_c_segun_PID(int pid){
+	bool es_el_pid(pid_nuevo_exit_code *p_n_e_c){
+			return p_n_e_c->pid == pid;
+	}
+	return list_find(lista_pids_con_nuevos_exit_code,(void*)es_el_pid);
+}
+
+void p_n_e_c_destroyer(pid_nuevo_exit_code *p_n_e_c){
+	free(p_n_e_c);
+}
+
+void eliminar_p_n_e_c_segun_PID(int pid){
+	bool es_el_pid(pid_nuevo_exit_code *p_n_e_c){
+		return p_n_e_c->pid == pid;
+	}
+	list_remove_and_destroy_by_condition(lista_pids_con_nuevos_exit_code,(void*)es_el_pid,(void*)p_n_e_c_destroyer);
+}
+
+void set_nuevo_exit_code_si_es_necesario(t_pcb *un_pcb){
+	printf("Voy a chequear si necesita un nuevo exit code\n");
+	pid_nuevo_exit_code *p_n_e_c = list_get(lista_pids_con_nuevos_exit_code,0);
+	printf("Lista pid: %d, lista exit_code: %d y PCB id: %d\n",p_n_e_c->pid,p_n_e_c->nuevo_exit_code,un_pcb->id_proceso);
+	if(tiene_nuevo_exit_code(un_pcb->id_proceso)){
+		printf("Necesita un nuevo exit code\n");
+		pid_nuevo_exit_code *p_n_e_c = obtener_p_n_e_c_segun_PID(un_pcb->id_proceso);
+		un_pcb->exit_code = p_n_e_c->nuevo_exit_code;
+		eliminar_p_n_e_c_segun_PID(un_pcb->id_proceso);
+	}
+}
+
 void avisar_finalizacion_proceso_a_consola(int pid){
 	int consola_clie = obtener_cliente_segun_PID(pid);
+	t_list *lista = lista_que_tiene_este_pcb(pid);
+	t_pcb *un_pcb = obtener_PCB_segun_PID_en(lista,pid);
 	if(!se_desconecto(consola_clie)){
+		printf("Estoy por enviarle la accion de finalizarse a consola!!\n");
+		set_nuevo_exit_code_si_es_necesario(un_pcb);
 		avisar_accion_a_consola(consola_clie,finalizo_proceso);
-		t_list *lista = lista_que_tiene_este_pcb(pid);
-		t_pcb *un_pcb = obtener_PCB_segun_PID_en(lista,pid);
 		enviarIntACPU(&consola_clie,un_pcb->exit_code); // En realidad es a una consola.
 	}else{
 		futura_desconexion_consola *f_desconex = obtener_futura_desconexion_segun_consola(consola_clie);
-		t_list *lista = lista_que_tiene_este_pcb(pid);
-		t_pcb *un_pcb = obtener_PCB_segun_PID_en(lista,pid);
 		asignar_exit_code_a_pcb_segun_motivo(un_pcb,f_desconex->motivo_desc);
 	}
 	eliminar_futura_desconexion_de(consola_clie);
@@ -484,6 +524,37 @@ void atenderAConsola(int *unaConsola) {
 		break;
 	}
 	default:
+		printf("Accion invalida.");
+		break;
+	}
+}
+
+pid_nuevo_exit_code *crear_pid_nuevo_exit_code(int pid, int exit_code){
+	pid_nuevo_exit_code *p_n_e_c = reservarMemoria(sizeof(pid_nuevo_exit_code));
+	p_n_e_c->pid = pid;
+	p_n_e_c->nuevo_exit_code = exit_code;
+	return p_n_e_c;
+}
+
+void atenderAConsolaDeConsola(int *consola_de_consola){
+	int accion = recibirAccionDe(consola_de_consola);
+	switch(accion){
+	case finalizar_un_programa:
+		printf("Recibi la accion de finalizar un proceso\n");
+		enviarSenialACPU(consola_de_consola);
+		int pid = recibir_int_de(*consola_de_consola);
+		printf("Recibi el PID: %d\n",pid);
+		int consola = obtener_cliente_segun_PID(pid);
+		printf("Obtuve el fd de consola\n");
+		enviarSenialACPU(consola_de_consola);
+		int nuevo_exit_code = recibir_int_de(*consola_de_consola);
+		pid_nuevo_exit_code *p_n_e_c = crear_pid_nuevo_exit_code(pid,nuevo_exit_code);
+		list_add(lista_pids_con_nuevos_exit_code,p_n_e_c);
+		printf("Recibi el exit code: %d\n",nuevo_exit_code);
+		finalizar_programas_de(consola);
+		break;
+	default:
+		printf("Accion invalida.");
 		break;
 	}
 }

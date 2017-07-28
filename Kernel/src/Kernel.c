@@ -657,6 +657,7 @@ int main(int argc, char* argv[]) {
 	lista_estadisticas_de_procesos = list_create();
 	lista_proceso_por_cliente = list_create();
 	lista_futuras_desconexiones = list_create();
+	lista_pids_con_nuevos_exit_code = list_create();
 
 	direccionServidor.sin_family = AF_INET;
 	direccionServidor.sin_addr.s_addr = INADDR_ANY; // Estos a que hacen referencia en realidad?
@@ -717,6 +718,11 @@ int main(int argc, char* argv[]) {
 				printf("Me conecte con File System!\n");
 				break;
 
+			case main_de_consola:
+				printf("Me conecte con la consola de Consola!\n");
+				setInformacionSockets(client_socket, procesos_por_socket, main_de_consola);
+				break;
+
 			default:
 				printf("No me puedo conectar con vos.\n");
 				break;
@@ -753,6 +759,11 @@ int main(int argc, char* argv[]) {
 				cliente_CPU *cpu = obtenerClienteCPUSegunFD(client_socket[i]);
 				confirmarAtencionA(&client_socket[i]);
 				atenderACPU(cpu);
+				break;
+			case main_de_consola:
+				printf("Hubo movimiento en una Consola de Consola\n");
+				confirmarAtencionA(&client_socket[i]);
+				atenderAConsolaDeConsola(&client_socket[i]);
 				break;
 			default:
 				break;

@@ -18,12 +18,20 @@ char *rutaArchivo;// = "/home/utnso/git/tp-2017-1c-C-digo-Facilito/Consola/src/C
 
 pthread_mutex_t mutexDesconexionMasiva = PTHREAD_MUTEX_INITIALIZER;
 
+enum acciones_de_consola_de_consola{
+	finalizar_un_programa
+};
+
 enum notificacionesConsolaKernel {
 	finalizo_proceso, print, finalizacion_forzosa, confirmacion_de_memoria
 };
 
 enum motivos_finalizacion{
 	desconexion_consola, consola_de_consola, consola_de_kernel
+};
+
+enum procesos {
+	kernel, cpu, consola, file_system, memoria, main_de_consola
 };
 
 t_list *lista_hilos_por_PID;
@@ -58,10 +66,6 @@ typedef struct{
 	int pid;
 	int motivo;
 }futura_desconexion_consola;
-
-enum procesos {
-	kernel, cpu, consola, file_system, memoria
-};
 
 enum acciones {
 	startProgram, endProgram, futura_desconexion
@@ -311,6 +315,26 @@ void mostrar_exit_code_segun_motivo(int motivo){
 	}
 }
 
+int obtener_exit_code_segun_motivo(int motivo){
+	switch(motivo){
+		case desconexion_consola:
+		{
+			return -6;
+			break;
+		}
+		case consola_de_consola:
+		{
+			return -7;
+			break;
+		}
+		case consola_de_kernel:
+		{
+			return -13;
+			break;
+		}
+	}
+}
+
 void avisar_a_kernel_motivo_futura_desconexion(int serv_kernel,int motivo){
 	int mot = motivo;
 	if(send(serv_kernel,&mot,sizeof(int),0)<0){
@@ -333,13 +357,29 @@ futura_desconexion_consola *crear_futura_desconexion_consola(int pid,int motivo)
 	return fut_desc;
 }
 
+void enviar_accion_a_kernel(int serv_kernel,int accion){
+	int acc = accion;
+	if(send(serv_kernel,&acc,sizeof(int),0)==-1){
+		printf("Error al enviar accion a Kernel\n");
+	}
+}
+
 void finalizar_programa_segun_PID(int pid, int motivo) {
-	hilo_por_programa *unHiloPorPrograma = NULL;
+	int serv_kernel;
+	int exit_code = obtener_exit_code_segun_motivo(motivo);
+	printf("Recibi el exit code: %d\n",exit_code);
+	conectar(&serv_kernel,&direccionServidor);
+	handshake(&serv_kernel, main_de_consola);
+	msjConexionCon("Kernel");
+	solicitarA(&serv_kernel,"Kernel");
+	enviar_accion_a_kernel(serv_kernel,finalizar_un_programa);
+	esperar_senial_de_kernel(serv_kernel);
+	enviar_accion_a_kernel(serv_kernel,pid);// Le envio el PID en realidad
+	esperar_senial_de_kernel(serv_kernel);
+	enviar_accion_a_kernel(serv_kernel,exit_code);
+	/*hilo_por_programa *unHiloPorPrograma = NULL;
 	unHiloPorPrograma = obtener_hilo_por_programa_segun_pid(pid);
 
-	/*guardarFechaHoraEjecucion(tiempoFin);
-	 mostrarTiempoInicioFinDiferencia(tiempoInicio, tiempoFin);
-	 mostrarCantidadImpresiones(unHiloPorPrograma->cantImpresiones);*/ // HAY QUE MOSTRAR ESTOS DATOS EH
 	if(unHiloPorPrograma == NULL){
 		printf("El proceso %d no pertenece a esta consola\n\n", pid);
 	}else{
@@ -364,7 +404,7 @@ void finalizar_programa_segun_PID(int pid, int motivo) {
 		matar_hilo(unHiloPorPrograma,motivo);
 		printf("Fue ANIQUILADOX exitosamente el proceso de PID: %d\n\n", pid);
 	}
-	}
+	}*/
 }
 
 int recibir_exit_code(int serv_kernel){

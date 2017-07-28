@@ -6,7 +6,7 @@
 #define MAX_CLIENTS 30
 
 enum procesos {
-	kernel, cpu, consola, file_system, memoria
+	kernel, cpu, consola, file_system, memoria, main_de_consola
 };
 
 enum accionesFS{
@@ -107,6 +107,11 @@ typedef struct{
 	int motivo_desc;
 }futura_desconexion_consola;
 
+typedef struct{
+	int pid;
+	int nuevo_exit_code;
+}pid_nuevo_exit_code;
+
 t_configuracion *config;
 
 t_list *listaPCBs_NEW;
@@ -121,6 +126,7 @@ t_list *lista_bloqueos;
 t_list *lista_estadisticas_de_procesos;
 t_list *lista_proceso_por_cliente;
 t_list *lista_futuras_desconexiones;
+t_list *lista_pids_con_nuevos_exit_code;
 
 
 int cliente, cliente2, servMemoria, servFS,cant_historica_procesos_memoria, cant_procesos_finalizados, cant_procesos_detenidos;;
