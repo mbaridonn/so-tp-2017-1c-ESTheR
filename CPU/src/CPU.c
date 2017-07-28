@@ -167,7 +167,7 @@ t_pcb *recibir_pcb() {
 		deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
 		void *pcb_serializado = calloc(1, (size_t) pcb_size);
 		enviarSenialAKernel();
-		if(recv(serv_kernel, pcb_serializado, (size_t) pcb_size, 0)==-1){
+		if(recv(serv_kernel, pcb_serializado, (size_t) pcb_size, MSG_WAITALL)==-1){
 			log_error(cpu_log, "Error al recibir el pcb serializado.");
 		}
 		int pcb_serializado_index = 0;
@@ -270,7 +270,7 @@ void enviar_un_PCB_a_Kernel(t_pcb *pcb) {
 		exit(-1);
 	}
 	esperarSenialDeKernel();
-	if (send(serv_kernel, serialized_pcb, (size_t) serialized_buffer_index, 0)< 0) {
+	if (send(serv_kernel, serialized_pcb, (size_t) serialized_buffer_index, MSG_WAITALL)< 0) {
 		log_error(cpu_log, "El envio de pcb a Kernel fallo");
 		exit(-1);
 	}

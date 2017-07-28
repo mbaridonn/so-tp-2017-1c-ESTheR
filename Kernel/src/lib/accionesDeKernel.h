@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "estructurasComunes.h"
+#include <sys/socket.h>
 #include "pcb.h"
 #define FALSE 0
 #define TRUE 1

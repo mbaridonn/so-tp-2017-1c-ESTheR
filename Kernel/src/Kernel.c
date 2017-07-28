@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -140,7 +139,7 @@ void enviar_un_PCB_a_CPU(t_pcb *pcb, int *unaCPU) {
 		exit(-1);
 	}
 	esperarSenialDeCPU(unaCPU);
-	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, 0)< 0) {
+	if (send((*unaCPU), serialized_pcb, (size_t) serialized_buffer_index, MSG_WAITALL)< 0) {
 		log_error(kernel_log, "Send serialized_pcb to CPU failed");
 		//printf("Send serialized_pcb to CPU failed\n");
 		exit(-1);
@@ -686,7 +685,7 @@ int main(int argc, char* argv[]) {
 	esperarConexionDe(&direccionServidor);
 
 	abrirHiloConsolaKernel();
-	abrirHiloPlanificador();
+	//abrirHiloPlanificador();
 
 	while (1) {
 		prepararSockets(client_socket);

@@ -507,7 +507,7 @@ t_pcb *recibir_pcb_de(int cliente) {
 	deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
 	void *pcb_serializado = calloc(1, (size_t) pcb_size);
 	enviarSenialACPU(&cliente);
-	if(recv(cliente, pcb_serializado, (size_t) pcb_size, 0)==-1){
+	if(recv(cliente, pcb_serializado, (size_t) pcb_size, MSG_WAITALL)==-1){
 		printf("Error al recibir el pcb serializado.\n");
 	}
 	int pcb_serializado_index = 0;
