@@ -83,17 +83,21 @@ u_int32_t tieneEspacioContiguoSuficiente(entradaTablaHeap* entrada, int espacioR
 	heapMetadata* metadata;
 	int offset = 0;
 	pagina = solicitarLecturaAMemoria(PID, entrada->nroPag, 0, tamPag);
-	printf("entrada->nroPag: %d\n", entrada->nroPag);
+	log_info(kernel_log, "entrada->nroPag: %d", entrada->nroPag);
+	//printf("entrada->nroPag: %d\n", entrada->nroPag);
 	while (!ptrInicioBloque && offset < tamPag) {
 		metadata = (heapMetadata*) &pagina[offset]; //Hay que usar el offset así para que no se aplique aritmética de punteros
-		printf("metadata->estaLibre: %d\n", metadata->estaLibre);
-		printf("metadata->tamanio: %d\n", metadata->tamanio);
+		log_info(kernel_log, "metadata->estaLibre: %d", metadata->estaLibre);
+		//printf("metadata->estaLibre: %d\n", metadata->estaLibre);
+		log_info(kernel_log,"metadata->tamanio: %d", metadata->tamanio);
+		//printf("metadata->tamanio: %d\n", metadata->tamanio);
 		if (metadata->estaLibre && metadata->tamanio >= (espacioRequerido + sizeof(heapMetadata))) {
 			ptrInicioBloque = offset; //Devuelve puntero al metadata (No a los datos!!)
 		}
 		offset += sizeof(heapMetadata) + metadata->tamanio;
 	}
-	printf("offset: %d\n", offset);
+	log_info(kernel_log,"offset: %d", offset);
+	//printf("offset: %d\n", offset);
 	free(pagina);
 	return ptrInicioBloque;
 }
@@ -101,7 +105,8 @@ u_int32_t tieneEspacioContiguoSuficiente(entradaTablaHeap* entrada, int espacioR
 u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 	u_int32_t ptrInicioBloque = 0;
 	if (espacioRequerido > tamPag - 2 * sizeof(heapMetadata)) {
-		printf("El espacio requerido supera el tamaño máximo reservable por petición\n");
+		log_info(kernel_log,"El espacio requerido supera el tamaño máximo reservable por petición");
+		//printf("El espacio requerido supera el tamaño máximo reservable por petición\n");
 		//Enviar mensaje a CPU para que finalice abruptamente (Exit Code -8)
 		enviarIntACPU(&clieCPU, noSePudoReservarMemoria);
 		return 0;
@@ -113,7 +118,6 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 	}
 	t_list* entradasConEspacio = list_filter(tablaHeap, (void*) tieneEspacioDisponible);
 	if (!list_is_empty(entradasConEspacio)) {
-		printf("Entre aca 1\n");
 		//Hay que iterar hasta que una página tenga espacio CONTIGUO suficiente
 		int cantEntradasConEspacio = list_size(entradasConEspacio);
 		int iteradorEntrada = 0;
@@ -126,7 +130,8 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 			iteradorEntrada++;
 		}
 		if (posMetadataInicial) { //Si se encontró, inserto Metadata en Memoria
-			printf("posMetadataInicial: %d\n", posMetadataInicial);
+			log_info(kernel_log,"posMetadataInicial: %d", posMetadataInicial);
+			//printf("posMetadataInicial: %d\n", posMetadataInicial);
 			heapMetadata metadataInicio, metadataFin;
 			char *bytesLeidos = solicitarLecturaAMemoria(entrada->PID, entrada->nroPag, posMetadataInicial, sizeof(heapMetadata));
 			memcpy(&metadataInicio, bytesLeidos, sizeof(heapMetadata));
@@ -151,7 +156,8 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 		int paginasRequeridas = 1; //Siempre!! (No se puede allocar espacio mayor a una pág)
 		int confirmacion = solicitarAsignarPaginasAProceso(PID, paginasRequeridas);
 		if(confirmacion==noHayPaginas){
-			printf("No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria\n");
+			log_info(kernel_log,"No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria");
+			//printf("No se pueden asignar mas paginas al proceso. No hay mas páginas en Memoria\n");
 			//Enviar mensaje a CPU para que finalice abruptamente (Exit Code -9)
 			enviarIntACPU(&clieCPU, confirmacion);
 			return 0;
@@ -179,7 +185,8 @@ u_int32_t reservarMemoriaDinamica(/*t_valor_variable*/int espacioRequerido) {
 }
 
 void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
-	printf("liberarMemoriaDinamica: %d\n", puntero);
+	log_info(kernel_log,"liberarMemoriaDinamica: %d", puntero);
+	//printf("liberarMemoriaDinamica: %d\n", puntero);
 	int nroPagDelBloque = puntero / tamPag;
 	int offsetDelBloque = puntero % tamPag - sizeof(heapMetadata);//Quiero apuntar al metadata, no al bloque de datos
 
@@ -190,7 +197,8 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	}
 	entradaTablaHeap* entradaAModificar = list_find(tablaHeap, (void*) esEntradaDeProcesoYPagina);
 	if (!entradaAModificar) {
-		printf("Dicha memoria no está asignada al proceso\n");
+		log_info(kernel_log,"Dicha memoria no está asignada al proceso");
+		//printf("Dicha memoria no está asignada al proceso\n");
 		//Enviar mensaje a CPU para que finalice abruptamente
 		enviarIntACPU(&clieCPU,noSePudoLiberarMemoria);
 		return;
@@ -212,7 +220,8 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 	//Consolidacion a derecha
 	metadataADerecha = (heapMetadata*) &pagina[offsetDelBloque + sizeof(heapMetadata) + metadataAModificar->tamanio];
 	if (metadataADerecha->estaLibre) {
-		printf("Se pudo consolidar a derecha\n");
+		log_info(kernel_log,"Se pudo consolidar a derecha");
+		//printf("Se pudo consolidar a derecha\n");
 		metadataAModificar->tamanio += metadataADerecha->tamanio + sizeof(heapMetadata);
 		entradaAModificar->tamanioDisponible += sizeof(heapMetadata);
 	}
@@ -225,7 +234,8 @@ void liberarMemoriaDinamica(/*t_puntero*/u_int32_t puntero) {
 		if (metadataAIzquierda->estaLibre) {
 			heapMetadata* metadataSiguiente = (heapMetadata*) &pagina[offsetMetadataIzq + sizeof(heapMetadata) + metadataAIzquierda->tamanio];
 			if (metadataSiguiente->estaLibre) {
-				printf("Se pudo consolidar a izquierda\n");
+				log_info(kernel_log,"Se pudo consolidar a izquierda");
+				//printf("Se pudo consolidar a izquierda\n");
 				metadataAIzquierda->tamanio += sizeof(heapMetadata) + metadataSiguiente->tamanio;
 				entradaAModificar->tamanioDisponible += sizeof(heapMetadata);
 				solicitarEscrituraAMemoria(entradaAModificar->PID, entradaAModificar->nroPag, offsetMetadataIzq, sizeof(heapMetadata), metadataAIzquierda);
