@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <signal.h>
 #include <commons/collections/queue.h>
 #include <commons/collections/list.h>
 #include "libreriaSockets.h"
@@ -194,7 +195,7 @@ void matar_hilo(hilo_por_programa *un_hilo_por_programa, int motivo) {
 	close(un_hilo_por_programa->serv_kernel);
 	pthread_t thread = un_hilo_por_programa->hilo;
 	quitar_hilo_por_programa(un_hilo_por_programa);
-	if(motivo == desconexion_consola) pthread_mutex_unlock(&mutexDesconexionMasiva);
+	/*if(motivo == desconexion_consola)*/ pthread_mutex_unlock(&mutexDesconexionMasiva);
 	pthread_cancel(thread);
 }
 
@@ -612,9 +613,27 @@ void finalizarPrograma() {
 }
 
 void matar_todos_los_procesos(){
+
+	int serv_kernel;
+	int exit_code = obtener_exit_code_segun_motivo(desconexion_consola);
+	printf("Recibi el exit code: %d\n",exit_code);
+	conectar(&serv_kernel,&direccionServidor);
+	handshake(&serv_kernel, main_de_consola);
+	msjConexionCon("Kernel");
+
 	while(!list_is_empty(lista_hilos_por_PID)){
-		hilo_por_programa *un_hilo_por_programa = list_get(lista_hilos_por_PID,0);
-		finalizar_programa_segun_PID(un_hilo_por_programa->PID,desconexion_consola);
+		hilo_por_programa *un_hilo_por_programa = list_get(lista_hilos_por_PID,list_size(lista_hilos_por_PID)-1);
+
+		solicitarA(&serv_kernel,"Kernel");
+		enviar_accion_a_kernel(serv_kernel,finalizar_un_programa);
+		esperar_senial_de_kernel(serv_kernel);
+		enviar_accion_a_kernel(serv_kernel,un_hilo_por_programa->PID);// Le envio el PID en realidad
+		esperar_senial_de_kernel(serv_kernel);
+		enviar_accion_a_kernel(serv_kernel,exit_code);
+
+
+
+
 		pthread_mutex_lock(&mutexDesconexionMasiva);
 	}
 }
@@ -670,7 +689,14 @@ void elegirComando() {
 	} while (seguirAbierto);
 }
 
+void desconectarConsolaPorSenial(int senial){
+	if (senial == SIGINT) desconectarConsola();
+}
+
 int main(int argc, char* argv[]) {
+
+	signal(SIGINT, desconectarConsolaPorSenial);
+
 	if (argc == 1)
 	{
 		printf("Falta ingresar el path del archivo de configuracion\n");
