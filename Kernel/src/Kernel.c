@@ -342,7 +342,7 @@ void list_read_id(t_list *listaProcesos){
 	int i = 0;
 	t_pcb *pcb;
 	if(list_size(listaProcesos)==0){
-		log_error(kernel_log, "Actualmente no hay\n");
+		log_info(kernel_log, "Actualmente no hay\n");
 		//printf("Actualmente no hay\n");
 	}
 	while(i < list_size(listaProcesos)){
