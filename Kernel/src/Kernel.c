@@ -619,27 +619,6 @@ int main(int argc, char* argv[]) {
 	inicializar_tablaHeap();
 	inicializar_contadores_procesos();
 
-	/*	PRUEBA SERIALIZACIÓN (DESPUÉS BORRAR)
-	 * char* PROGRAMA =
-		"begin\n"
-		"variables a, b\n"
-		"a = 3\n"
-		"b = 5\n"
-		"a = b + 12\n"
-		"end\n"
-		"\n";
-
-	t_pcb* pcb = crearPCB(PROGRAMA,1,256);
-	void * serialized_pcb = NULL;
-	int serialized_buffer_index = 0;
-	serializar_pcb(pcb, &serialized_pcb, &serialized_buffer_index);//Pareciera funcionar
-
-	//Pruebo deserializado
-	int pcb_serializado_index = 0;
-	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
-	deserializar_pcb(&incomingPCB, serialized_pcb, &pcb_serializado_index);
-	exit(0);*/
-
 	leerArchivoConfig();
 	free(rutaArchivo);
 
@@ -660,7 +639,7 @@ int main(int argc, char* argv[]) {
 	lista_pids_con_nuevos_exit_code = list_create();
 
 	direccionServidor.sin_family = AF_INET;
-	direccionServidor.sin_addr.s_addr = INADDR_ANY; // Estos a que hacen referencia en realidad?
+	direccionServidor.sin_addr.s_addr = INADDR_ANY;
 	direccionServidor.sin_port = htons(config->PUERTO_PROG);
 
 	//PARA MEMORIA
@@ -686,7 +665,6 @@ int main(int argc, char* argv[]) {
 	esperarConexionDe(&direccionServidor);
 
 	abrirHiloConsolaKernel();
-	//abrirHiloPlanificador();
 
 	while (1) {
 		prepararSockets(client_socket);
@@ -728,11 +706,6 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 		}
-
-		/*
-		 list_destroy_and_destroy_elements(listaPCBs_NEW,);
-		 Que va en el segundo parametro del proced de arriba???
-		 */
 
 		setClienteActual(socketQueTuvoActividad(client_socket));
 		i = numeroSocketQueTuvoActividad(client_socket);

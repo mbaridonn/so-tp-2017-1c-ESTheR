@@ -3,9 +3,15 @@
 #include <pthread.h>
 #include "CapaFS.h"//OJO!! DEPENDENCIA CIRCULAR
 
+t_log* kernel_log;
+
 enum acciones_de_consola_de_consola{
 	finalizar_un_programa
 };
+
+void inicializarLogAccionesDeKernel(t_log* log){
+	kernel_log = log;
+}
 
 void transicion_colas_proceso(t_list *listaActual,t_list *listaDestino,t_pcb *pcb){
 	quitar_PCB_de_Lista(listaActual, pcb);

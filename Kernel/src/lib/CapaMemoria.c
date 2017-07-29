@@ -14,6 +14,12 @@ t_list* tablaHeap; //La tabla está asociada al PCB a través del PID. Es una ú
 
 int PID, tamPag, clieCPU, contador_paginas;
 
+t_log* kernel_log;
+
+void inicializarLogCapaMemoria(t_log* log){
+	kernel_log = log;
+}
+
 void inicializar_tablaHeap() {
 	tablaHeap = list_create();
 }

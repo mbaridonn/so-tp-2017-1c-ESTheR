@@ -24,6 +24,7 @@ typedef struct{
 	int offset;
 } entradaTablaArchivosDeProceso;
 
+void inicializarLogCapaFS(t_log* log);
 void liberarArchivosDeProceso(int PID);
 void inicializarTablasDeArchivos();
 u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_banderas flags);

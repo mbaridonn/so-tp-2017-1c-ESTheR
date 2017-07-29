@@ -2,12 +2,14 @@
 #define LIB_ACCIONESDEKERNEL_H_
 
 #include <stdio.h>
-#include "estructurasComunes.h"
 #include <sys/socket.h>
+#include <commons/log.h>
+#include "estructurasComunes.h"
 #include "pcb.h"
 #define FALSE 0
 #define TRUE 1
 
+void inicializarLogAccionesDeKernel(t_log* log);
 int recibirAccionDe(int *cliente);
 u_int32_t recibirTamArchivo(int *unCliente);
 void recibirArchivoDe(int *unCliente, char *bufferArchivo, u_int32_t fsize);

@@ -17,6 +17,10 @@ void conectar(int *cliente, struct sockaddr_in *direccionServidor);
 
 void inicializarLog(){
 	kernel_log = log_create("/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/Debug/Kernel.log", "CódigoFacilito-Kernel\n", true, LOG_LEVEL_TRACE);
+	inicializarLogAccionesDeKernel(kernel_log);
+	inicializarLogCapaFS(kernel_log);
+	inicializarLogCapaMemoria(kernel_log);
+	//AGREGAR SI CONSIDERAN NECESARIO CONEXIONES SELECT, PCB Y STACK
 }
 
 void agregarSocket(int client_socket[], int *cliente) {
