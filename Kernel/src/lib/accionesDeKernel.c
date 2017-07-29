@@ -27,7 +27,8 @@ int recibirAccionDe(int *cliente){
 u_int32_t recibirTamArchivo(int *unCliente) {
 	u_int32_t fsize;
 	if (recv((*unCliente), &fsize, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo longitud del archivo\n");
+		log_error(kernel_log, "Error recibiendo longitud del archivo");
+		//printf("Error recibiendo longitud del archivo\n");
 		exit(-1);
 	}
 	return fsize;
@@ -35,21 +36,24 @@ u_int32_t recibirTamArchivo(int *unCliente) {
 
 void recibirArchivoDe(int *unCliente, char *bufferArchivo, u_int32_t fsize) {
 	if (recv((*unCliente), bufferArchivo, fsize + 1, 0) == -1) {
-		printf("Error recibiendo el archivo\n");
+		log_error(kernel_log, "Error recibiendo el archivo");
+		//printf("Error recibiendo el archivo\n");
 		exit(-1);
 	}
 }
 
 void validarAperturaArchivo(FILE *archivo) {
 	if (archivo == NULL) {
-		printf("No se pudo escribir el archivo\n");
+		log_error(kernel_log, "No se pudo escribir el archivo");
+		//printf("No se pudo escribir el archivo\n");
 		exit(-1);
 	}
 }
 
 int divisionRoundUp(int dividendo, int divisor) {
 	if (dividendo <= 0 || divisor <= 0) {
-		printf("Esta division funciona unicamente con enteros positivos\n");
+		log_error(kernel_log, "Esta division funciona unicamente con enteros positivos");
+		//printf("Esta division funciona unicamente con enteros positivos\n");
 		exit(-1);
 	}
 	return 1 + ((dividendo - 1) / divisor);
@@ -58,7 +62,8 @@ int divisionRoundUp(int dividendo, int divisor) {
 void enviarSenialACPU(int *clieCPU) {
 	char senial[2] = "a";
 	if (send((*clieCPU), senial, 2, 0) == -1) {
-		printf("Error al enviar la senial\n");
+		log_error(kernel_log, "Error al enviar la senial");
+		//printf("Error al enviar la senial\n");
 		exit(-1);
 	}
 }
@@ -66,7 +71,8 @@ void enviarSenialACPU(int *clieCPU) {
 void esperarSenialDeCPU(int *clieCPU) {
 	char senial[2] = "a";
 	if (recv((*clieCPU), senial, 2, 0) == -1) {
-		printf("Error al recibir senial de CPU\n");
+		log_error(kernel_log, "Error al enviar la senial de CPU");
+		//printf("Error al recibir senial de CPU\n");
 	}
 }
 
@@ -74,13 +80,15 @@ char* recibirPathDeCPU(int *clieCPU){
 	int tamPath;
 	enviarSenialACPU(clieCPU);
 	if (recv((*clieCPU), &tamPath, sizeof(int), 0) == -1) {
-		printf("Error recibiendo la longitud del Path\n");
+		log_error(kernel_log, "Error recibiendo la longitud del Path");
+		//printf("Error recibiendo la longitud del Path\n");
 		exit(-1);
 	}
 	char* path = reservarMemoria(tamPath);
 	enviarSenialACPU(clieCPU);
 	if (recv((*clieCPU), path, tamPath, 0) == -1) {
-		printf("Error recibiendo el Path\n");
+		log_error(kernel_log, "Error recibiendo el Path");
+		//printf("Error recibiendo el Path\n");
 		exit(-1);
 	}
 	return path;
@@ -90,7 +98,8 @@ t_banderas *recibirBanderasDeCPU(int *clieCPU){
 	t_banderas *flags = reservarMemoria(sizeof(t_banderas));
 	enviarSenialACPU(clieCPU);
 	if (recv((*clieCPU), flags, sizeof(t_banderas), 0) == -1) {
-		printf("Error recibiendo las banderas\n");
+		log_error(kernel_log, "Error recibiendo las banderas");
+		//printf("Error recibiendo las banderas\n");
 		exit(-1);
 	}
 	return flags;
@@ -98,53 +107,62 @@ t_banderas *recibirBanderasDeCPU(int *clieCPU){
 
 void enviarIntACPU(int *clieCPU, int valor){
 	if (send((*clieCPU), &valor, sizeof(int), 0) == -1) {
-		printf("Error enviando mensaje a CPU\n");
+		log_error(kernel_log, "Error enviando mensaje a CPU");
+		//printf("Error enviando mensaje a CPU\n");
 		exit(-1);
 	}
 }
 
 void enviarIntAMemoria(int valor){
 	if (send(servMemoria, &valor, sizeof(int), 0) == -1) {
-		printf("Error enviando mensaje a Memoria\n");
+		log_error(kernel_log, "Error enviando mensaje a Memoria");
+		//printf("Error enviando mensaje a Memoria\n");
 		exit(-1);
 	}
 }
 
 void enviarBufferAMemoria(char *buffer, int tamanio) {
 	if (send(servMemoria, &tamanio, sizeof(int), 0) == -1) {
-		printf("Error enviando longitud del archivo\n");
+		log_error(kernel_log, "Error enviando longitud del archivo");
+		//printf("Error enviando longitud del archivo\n");
 		exit(-1);
 	}
 	esperarSenialDeMemoria();
 	if (send(servMemoria, buffer, tamanio, 0) == -1) {
-		printf("Error enviando el buffer\n");
+		log_error(kernel_log, "Error enviando el buffer");
+		//printf("Error enviando el buffer\n");
 		exit(-1);
 	}
 }
 
 void enviarArchivoAMemoria(char *buffer, u_int32_t tamBuffer) {
 	if (send(servMemoria, &tamBuffer, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando longitud del archivo\n");
+		log_error(kernel_log, "Error enviando longitud del archivo");
+		//printf("Error enviando longitud del archivo\n");
 		exit(-1);
 	}
 	if (send(servMemoria, buffer, tamBuffer + 1, 0) == -1) {
-		printf("Error enviando archivo\n");
+		log_error(kernel_log, "Error enviando archivo");
+		//printf("Error enviando archivo\n");
 		exit(-1);
 	}
-	printf("El archivo se envió correctamente\n");
+	log_info(kernel_log, "El archivo se envió correctamente");
+	//printf("El archivo se envió correctamente\n");
 }
 
 void esperarSenialDeMemoria() {
 	char senial[2] = "a";
 	if (recv(servMemoria, senial, 2, 0) == -1) {
-		printf("Error al recibir senial antes de enviar paginas\n");
+		log_error(kernel_log, "Error al recibir senial antes de enviar paginas");
+		//printf("Error al recibir senial antes de enviar paginas\n");
 	}
 }
 
 void esperarSenialDeFS() {
 	char senial[2] = "a";
 	if (recv(servFS, senial, 2, 0) == -1) {
-		printf("Error al recibir senial de FS\n");
+		log_error(kernel_log, "Error al recibir senial de FS");
+		//printf("Error al recibir senial de FS\n");
 	}
 }
 
@@ -155,21 +173,24 @@ bool esta_ejecutandose(int pid){
 void kernel_mem_start_process(int *process_id, u_int32_t *cant_pags) {
 	esperarSenialDeMemoria();
 	if (send(servMemoria, process_id, sizeof(int), 0) == -1) {
-		printf("Error enviando el process_id\n");
+		log_error(kernel_log, "Error enviando el process_id");
+		//printf("Error enviando el process_id\n");
 		exit(-1);
 	}
 	if (send(servMemoria, cant_pags, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la cantidad de paginas\n");
+		log_error(kernel_log, "Error enviando la cantidad de paginas");
+		//printf("Error enviando la cantidad de paginas\n");
 		exit(-1);
 	}
-	printf("Envie el process_id: %d y Cantidad de Paginas: %d\n", *process_id,
-			*cant_pags);
+	log_info(kernel_log, "Envie el process_id: %d y Cantidad de Paginas: %d", *process_id,*cant_pags);
+	//printf("Envie el process_id: %d y Cantidad de Paginas: %d\n", *process_id,*cant_pags);
 }
 
 u_int32_t confirmacionMemoria() {
 	u_int32_t confirmacion;
 	if (recv(servMemoria, &confirmacion, sizeof(u_int32_t), 0) == -1) {
-		printf("Error recibiendo la confirmacion\n");
+		log_error(kernel_log, "Error recibiendo la confirmacion");
+		//printf("Error recibiendo la confirmacion\n");
 		exit(-1);
 	}
 	return confirmacion;
@@ -189,7 +210,8 @@ void quitar_PCB_de_Lista(t_list *lista,t_pcb *pcb){
 void avisarAccionAMemoria(int accion) {
 	u_int32_t aux = accion;
 	if (send(servMemoria, &aux, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la accion.\n");
+		log_error(kernel_log, "Error enviando la accion");
+		//printf("Error enviando la accion.\n");
 		exit(-1);
 	}
 	esperarSenialDeMemoria();
@@ -198,7 +220,8 @@ void avisarAccionAMemoria(int accion) {
 void avisarAccionAFS(int accion) {
 	u_int32_t aux = accion;
 	if (send(servFS, &aux, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la accion.\n");
+		log_error(kernel_log, "Error enviando la accion");
+		//printf("Error enviando la accion.\n");
 		exit(-1);
 	}
 	esperarSenialDeFS();
@@ -277,7 +300,8 @@ int obtener_cliente_segun_PID(int pid){
 void avisar_accion_a_consola(int consola_clie,int accion){
 	int aux = accion;
 	if(send(consola_clie,&aux,sizeof(int),0) == -1){
-		printf("Error al enviar accion a consola\n");
+		log_error(kernel_log, "Error al enviar accion a consola");
+		//printf("Error al enviar accion a consola\n");
 	}
 }
 
@@ -354,7 +378,8 @@ void eliminar_p_n_e_c_segun_PID(int pid){
 void set_nuevo_exit_code_si_es_necesario(t_pcb *un_pcb){
 	printf("Voy a chequear si necesita un nuevo exit code\n");
 	pid_nuevo_exit_code *p_n_e_c = list_get(lista_pids_con_nuevos_exit_code,0);
-	printf("Lista pid: %d, lista exit_code: %d y PCB id: %d\n",p_n_e_c->pid,p_n_e_c->nuevo_exit_code,un_pcb->id_proceso);
+	log_info(kernel_log, "Lista pid: %d, lista exit_code: %d y PCB id: %d\n",p_n_e_c->pid,p_n_e_c->nuevo_exit_code,un_pcb->id_proceso);
+	//printf("Lista pid: %d, lista exit_code: %d y PCB id: %d\n",p_n_e_c->pid,p_n_e_c->nuevo_exit_code,un_pcb->id_proceso);
 	if(tiene_nuevo_exit_code(un_pcb->id_proceso)){
 		printf("Necesita un nuevo exit code\n");
 		pid_nuevo_exit_code *p_n_e_c = obtener_p_n_e_c_segun_PID(un_pcb->id_proceso);
@@ -391,15 +416,19 @@ void finalizarUnProceso(t_pcb *pcb) {
 	int process = pcb->id_proceso;
 	avisarAccionAMemoria(k_mem_finalizar_programa);
 	if (send(servMemoria, &process, sizeof(int), 0) == -1) {
-		printf("Error enviando el process_id\n");
+		log_error(kernel_log, "Error enviando el process_id");
+		//printf("Error enviando el process_id\n");
 		exit(-1);
 	}
-	printf("Se finalizo el proceso %d.\n",pcb->id_proceso);
+	log_info(kernel_log, "Se finalizo el proceso %d.",pcb->id_proceso);
+	//printf("Se finalizo el proceso %d.\n",pcb->id_proceso);
 	poner_proceso_en_EXIT(pcb);
 	if(hayMemoryLeaksDe(pcb->id_proceso)){
 		printf("El proceso tiene memory leaks.\n"); // No se está liberando las entradas de la tabla de heap.
+		//log_info(kernel_log, "El proceso tiene memory leaks.");
 	}else{
 		printf("El proceso no tiene memory leaks.\n");
+		//log_info(kernel_log, "El proceso no tiene memory leaks.");
 	}
 	liberarArchivosDeProceso(pcb->id_proceso);
 	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
@@ -421,7 +450,8 @@ void tomarAccionSegunConfirmacion(u_int32_t confirmacion, t_pcb *pcb) {
 void avisarAConsolaSegunConfirmacion(int confirmacion, int *consola) {
 	u_int32_t conf = confirmacion;
 	if (send((*consola), &conf, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando la confirmacion a consola.\n");
+		log_error(kernel_log, "Error enviando la confirmacion a consola");
+		//printf("Error enviando la confirmacion a consola.\n");
 		exit(-1);
 	}
 }
@@ -429,10 +459,12 @@ void avisarAConsolaSegunConfirmacion(int confirmacion, int *consola) {
 void enviarPIDaConsola(int pid, int *consola){
 	u_int32_t p_id = pid;
 	if (send((*consola), &p_id, sizeof(u_int32_t), 0) == -1) {
-		printf("Error enviando el pid a consola.\n");
+		log_error(kernel_log, "Error enviando el pid a consola");
+		//printf("Error enviando el pid a consola.\n");
 		exit(-1);
 	}
-	printf("PID: %d \n",p_id);
+	log_info(kernel_log, "PID: %d ",p_id);
+	//printf("PID: %d \n",p_id);
 }
 
 int obtenerValorDeVariableCompartida(char* nombreVariable){
@@ -486,7 +518,8 @@ void proced_script(int *unCliente) {
 int recibir_int_de(int cliente){
 	int accion;
 	if(recv(cliente, &accion, sizeof(int), 0) == -1){
-		printf("Error recibiendo un int.\n");
+		log_error(kernel_log, "Error recibiendo un int.");
+		//printf("Error recibiendo un int.\n");
 	}
 	return accion;
 }
@@ -509,7 +542,8 @@ void atenderAConsola(int *unaConsola) {
 	{
 		int *id_proceso_a_detener = reservarMemoria(sizeof(int));
 		*id_proceso_a_detener = recibir_int_de(*unaConsola);
-		printf("ID del proceso a conocer: %d\n", *id_proceso_a_detener);
+		log_info(kernel_log, "ID del proceso a conocer: %d", *id_proceso_a_detener);
+		//printf("ID del proceso a conocer: %d\n", *id_proceso_a_detener);
 		list_add(lista_detenciones_pendientes,id_proceso_a_detener);
 		if(esta_ejecutandose(*id_proceso_a_detener)){
 			printf("El proceso esta ejecutandose, este finalizara cuando CPU lo libere.\n");
@@ -530,6 +564,7 @@ void atenderAConsola(int *unaConsola) {
 		break;
 	}
 	default:
+		//log_info(kernel_log, "Accion invalida");
 		printf("Accion invalida.");
 		break;
 	}
@@ -549,17 +584,20 @@ void atenderAConsolaDeConsola(int *consola_de_consola){
 		printf("Recibi la accion de finalizar un proceso\n");
 		enviarSenialACPU(consola_de_consola);
 		int pid = recibir_int_de(*consola_de_consola);
-		printf("Recibi el PID: %d\n",pid);
+		log_info(kernel_log, "Recibi el PID: %d",pid);
+		//printf("Recibi el PID: %d\n",pid);
 		int consola = obtener_cliente_segun_PID(pid);
 		printf("Obtuve el fd de consola\n");
 		enviarSenialACPU(consola_de_consola);
 		int nuevo_exit_code = recibir_int_de(*consola_de_consola);
 		pid_nuevo_exit_code *p_n_e_c = crear_pid_nuevo_exit_code(pid,nuevo_exit_code);
 		list_add(lista_pids_con_nuevos_exit_code,p_n_e_c);
-		printf("Recibi el exit code: %d\n",nuevo_exit_code);
+		log_info(kernel_log, "Recibi el exit code: %d",nuevo_exit_code);
+		//printf("Recibi el exit code: %d\n",nuevo_exit_code);
 		finalizar_programas_de(consola);
 		break;
 	default:
+		//log_info(kernel_log, "Accion invalida");
 		printf("Accion invalida.");
 		break;
 	}
@@ -579,13 +617,15 @@ t_pcb *recibir_pcb_de(int cliente) {
 	int pcb_size = 0, pcb_size_index = 0;
 	enviarSenialACPU(&cliente);
 	if(recv(cliente, tmp_buff, sizeof(int), 0)==-1){
-		printf("Error al recibir tamanio del pcb serializado.\n");
+		log_error(kernel_log, "Error al recibir tamanio del pcb serializado.");
+		//printf("Error al recibir tamanio del pcb serializado.\n");
 	}
 	deserializar_data(&pcb_size, sizeof(int), tmp_buff, &pcb_size_index);
 	void *pcb_serializado = calloc(1, (size_t) pcb_size);
 	enviarSenialACPU(&cliente);
 	if(recv(cliente, pcb_serializado, (size_t) pcb_size, MSG_WAITALL)==-1){
-		printf("Error al recibir el pcb serializado.\n");
+		log_error(kernel_log, "Error al recibir el pcb serializado");
+		//printf("Error al recibir el pcb serializado.\n");
 	}
 	int pcb_serializado_index = 0;
 	t_pcb* incomingPCB = calloc(1, sizeof(t_pcb));
@@ -703,18 +743,31 @@ void mover_pcb_segun_motivo(t_pcb *pcb,int motivo_liberacion){
 }
 
 void mostrarPcb(t_pcb *pcb_prueba) {
-	printf("id_proceso: %d \n", pcb_prueba->id_proceso);
-	printf("program_counter: %d \n", pcb_prueba->program_counter);
-	printf("cant_instrucciones: %d \n", pcb_prueba->cant_instrucciones);
-	printf("cant_paginas_de_codigo: %d \n", pcb_prueba->cant_paginas_de_codigo);
-	printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
-	printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
-	printf("contadorPags: %u \n", pcb_prueba->contadorPags);
-	printf("stackPointer: %d \n", pcb_prueba->stackPointer);
-	printf("cantElementosStack: %d \n",	pcb_prueba->indice_stack->elements->elements_count);
-	printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
-	printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
-	printf("exit_code: %d \n\n", pcb_prueba->exit_code);
+	log_info(kernel_log, "id_proceso: %d ", pcb_prueba->id_proceso);
+	//printf("id_proceso: %d \n", pcb_prueba->id_proceso);
+	log_info(kernel_log, "program_counter: %d ", pcb_prueba->program_counter);
+	//printf("program_counter: %d \n", pcb_prueba->program_counter);
+	log_info(kernel_log, "cant_instrucciones: %d ", pcb_prueba->cant_instrucciones);
+	//printf("cant_instrucciones: %d \n", pcb_prueba->cant_instrucciones);
+	log_info(kernel_log, "cant_paginas_de_codigo: %d ", pcb_prueba->cant_paginas_de_codigo);
+	//printf("cant_paginas_de_codigo: %d \n", pcb_prueba->cant_paginas_de_codigo);
+	log_info(kernel_log, "indice_codigo->start: %u ", pcb_prueba->indice_codigo->start);
+	//printf("indice_codigo->start: %u \n", pcb_prueba->indice_codigo->start);
+	log_info(kernel_log, "indice_codigo->offset: %u ", pcb_prueba->indice_codigo->offset);
+	//printf("indice_codigo->offset: %u \n", pcb_prueba->indice_codigo->offset);
+	log_info(kernel_log, "contadorPags: %u ", pcb_prueba->contadorPags);
+	//printf("contadorPags: %u \n", pcb_prueba->contadorPags);
+	log_info(kernel_log, "stackPointer: %d ", pcb_prueba->stackPointer);
+	//printf("stackPointer: %d \n", pcb_prueba->stackPointer);
+	log_info(kernel_log, "cantElementosStack: %d ",	pcb_prueba->indice_stack->elements->elements_count);
+	//printf("cantElementosStack: %d \n",	pcb_prueba->indice_stack->elements->elements_count);
+	log_info(kernel_log, "etiquetas_size: %d ", pcb_prueba->etiquetas_size);
+	//printf("etiquetas_size: %d \n", pcb_prueba->etiquetas_size);
+	log_info(kernel_log, "indice_etiquetas: %c ", *(pcb_prueba->indice_etiquetas));
+	//printf("indice_etiquetas: %c \n", *(pcb_prueba->indice_etiquetas));
+	log_info(kernel_log, "exit_code: %d \n", pcb_prueba->exit_code);
+	//printf("exit_code: %d \n\n", pcb_prueba->exit_code);
+
 }
 
 void bloqueo_destroy(bloqueo *bloq){
@@ -740,7 +793,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	int accion = recibirAccionDe(&(unaCPU->clie_CPU));
 	enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 	int PID = recibir_int_de(unaCPU->clie_CPU);
-	printf("Me llego el PID %d y la accion %d\n", PID, accion);
+	log_info(kernel_log, "Me llego el PID %d y la accion %d", PID, accion);
+	//printf("Me llego el PID %d y la accion %d\n", PID, accion);
 	switch(accion){
 	case cpuLibre:
 	{
@@ -758,7 +812,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		int valorVariable = obtenerValorDeVariableCompartida(nombreVariable);//SI NO EXISTE, DEVUELVE 0 (DEBERÍA PRODUCIR ERROR)
-		printf("obtener_valor_compartida(%s) = %d\n", nombreVariable, valorVariable);
+		log_info(kernel_log, "obtener_valor_compartida(%s) = %d", nombreVariable, valorVariable);
+		//printf("obtener_valor_compartida(%s) = %d\n", nombreVariable, valorVariable);
 		enviarIntACPU(&(unaCPU->clie_CPU),valorVariable);
 		free(nombreVariable);
 		break;
@@ -768,7 +823,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 		char* nombreVariable = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int valorVariable = recibir_int_de(unaCPU->clie_CPU);
-		printf("cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, valorVariable);
+		log_info(kernel_log, "cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, valorVariable);
+		//printf("cpu_k_asignar_valor_compartida (%s, %d)\n", nombreVariable, valorVariable);
 		asignarValorAVariableCompartida(nombreVariable, valorVariable);//SI NO EXISTE, NO HACE NADA (DEBERÍA PRODUCIR ERROR)
 		free(nombreVariable);
 		break;
@@ -777,7 +833,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		char* path = recibirPathDeCPU(&(unaCPU->clie_CPU));
 		t_banderas *flags = recibirBanderasDeCPU(&(unaCPU->clie_CPU));
-		printf("Me llego el path %s \n", path);
+		log_info(kernel_log, "Me llego el path %s ", path);
+		//printf("Me llego el path %s \n", path);
 		u_int32_t fd = abrirArchivo(PID,path,*flags);
 		enviarIntACPU(&(unaCPU->clie_CPU), fd);
 		free(path);
@@ -788,7 +845,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
-		printf("cerrarArchivo(%d, %d)\n", PID, fd);
+		log_info(kernel_log, "cerrarArchivo(%d, %d)", PID, fd);
+		//printf("cerrarArchivo(%d, %d)\n", PID, fd);
 		cerrarArchivo(PID,fd);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
@@ -797,7 +855,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
-		printf("borrarArchivo(%d, %d)\n", PID, fd);
+		log_info(kernel_log, "borrarArchivo(%d, %d)", PID, fd);
+		//printf("borrarArchivo(%d, %d)\n", PID, fd);
 		int confirmacion = borrarArchivo(PID,fd);//Recibe si se pudo completar o si se produjo error
 		enviarIntACPU(&(unaCPU->clie_CPU),confirmacion);
 		break;
@@ -808,7 +867,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int posicion = recibir_int_de(unaCPU->clie_CPU);
-		printf("moverCursorArchivo(%d, %d, %d)\n", PID, fd, posicion);
+		log_info(kernel_log, "moverCursorArchivo(%d, %d, %d)", PID, fd, posicion);
+		//printf("moverCursorArchivo(%d, %d, %d)\n", PID, fd, posicion);
 		moverCursorArchivo(PID,fd,posicion);
 		//NO RECIBE CONFIRMACIÓN, ASUMO QUE SE REALIZA CORRECTAMENTE
 		break;
@@ -819,13 +879,15 @@ void atenderACPU(cliente_CPU *unaCPU){
 		u_int32_t fd = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int tamanio = recibir_int_de(unaCPU->clie_CPU);
-		printf("leerArchivo(%d, %d, %d)\n", PID, fd, tamanio);
+		log_info(kernel_log, "leerArchivo(%d, %d, %d)", PID, fd, tamanio);
+		//printf("leerArchivo(%d, %d, %d)\n", PID, fd, tamanio);
 		char* bytesLeidos = leerArchivo(PID,fd,tamanio);
 		if(bytesLeidos != NULL){
 			enviarIntACPU(&(unaCPU->clie_CPU), tamanio);
 			esperarSenialDeCPU(&(unaCPU->clie_CPU));
 			if (send(unaCPU->clie_CPU, bytesLeidos, tamanio, 0) == -1) {
-				printf("Error enviando los bytes leidos\n");
+				log_error(kernel_log, "Error enviando los bytes leidos");
+				//printf("Error enviando los bytes leidos\n");
 				exit(-1);
 			}
 		} else {
@@ -842,10 +904,12 @@ void atenderACPU(cliente_CPU *unaCPU){
 		char* bytesAEscribir = reservarMemoria(tamanio);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		if (recv(unaCPU->clie_CPU, bytesAEscribir, tamanio, 0) == -1) {
-			printf("Error al recibir bytes a escribir de CPU\n");
+			log_error(kernel_log, "Error al recibir bytes a escribir de CPU");
+			//printf("Error al recibir bytes a escribir de CPU\n");
 			exit(-1);
 		}
-		printf("escribirArchivo(%d, %d, %d)\n", PID, fd, tamanio);
+		log_info(kernel_log, "escribirArchivo(%d, %d, %d)", PID, fd, tamanio);
+		//printf("escribirArchivo(%d, %d, %d)\n", PID, fd, tamanio);
 		int confirmacion = escribirArchivo(PID,fd,bytesAEscribir,tamanio);
 		enviarIntACPU(&(unaCPU->clie_CPU), confirmacion);
 		free(bytesAEscribir);
@@ -857,7 +921,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 		int contador_paginas = recibir_int_de(unaCPU->clie_CPU);
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		int espacio_requerido = recibir_int_de(unaCPU->clie_CPU);
-		printf("Me llego el contPags %d y el esp req %d\n", contador_paginas, espacio_requerido);
+		log_info(kernel_log, "Me llego el contPags %d y el esp req %d", contador_paginas, espacio_requerido);
+		//printf("Me llego el contPags %d y el esp req %d\n", contador_paginas, espacio_requerido);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, contador_paginas);
 		u_int32_t direccion = reservarMemoriaDinamica(espacio_requerido);
 		actualizar_cant_op_alocar_de(PID);
@@ -869,7 +934,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 	{
 		enviarSenialACPU(&(unaCPU->clie_CPU));//LO QUERÍA AGREGAR EN recibirAccionDe, PERO NO SABÍA SI IBA A ROMPER LO ANTERIOR
 		u_int32_t direccion = recibir_int_de(unaCPU->clie_CPU);
-		printf("Me llego la direccion %d\n", direccion);
+		log_info(kernel_log, "Me llego la direccion %d", direccion);
+		//printf("Me llego la direccion %d\n", direccion);
 		inicializar_pid_tamPag_clieCPU_y_contador_paginas(PID,tamanioPagMemoria, unaCPU->clie_CPU, 0/*No es necesario*/);
 		liberarMemoriaDinamica(direccion);
 		actualizar_estadisticas_cant_op_liberar_de(PID); // Se actualiza siempre, se haya podido liberar o no.
@@ -908,7 +974,8 @@ void atenderACPU(cliente_CPU *unaCPU){
 		break;
 	}
 	default:
-		printf("Recibi un comando invalido!\n");
+		log_error(kernel_log, "Recibi un comando invalido!");
+		//printf("Recibi un comando invalido!\n");
 		exit(-1);
 		break;
 	}
