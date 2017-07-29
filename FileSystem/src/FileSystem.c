@@ -527,7 +527,8 @@ char *recibirPath(){
 
 void enviarIntAKernel(int valor){
 	if (send(clienteKernel, &valor, sizeof(int), 0) == -1) {
-		printf("Error enviando int a CPU\n");
+		log_error(fileSystem_log, "Error enviando int a CPU");
+		//printf("Error enviando int a CPU\n");
 		exit(-1);
 	}
 }
@@ -620,12 +621,14 @@ void atenderKernel() {
 int main(int argc, char* argv[]) {
 	if (argc == 1)
 	{
-		printf("Falta ingresar el path del archivo de configuracion\n");
+		//printf("Falta ingresar el path del archivo de configuracion\n");
+		log_error(fileSystem_log, "Falta ingresar el path del archivo de configuracion");
 		return -1;
 	}
 	if (argc != 2)
 	{
-		printf("Numero incorrecto de argumentos\n");
+		log_error(fileSystem_log, "Numero incorrecto de argumentos");
+		//printf("Numero incorrecto de argumentos\n");
 		return -1;
 	}
 	rutaArchivo = strdup(argv[1]);
