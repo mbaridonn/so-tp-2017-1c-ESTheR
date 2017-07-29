@@ -376,10 +376,6 @@ void eliminar_p_n_e_c_segun_PID(int pid){
 }
 
 void set_nuevo_exit_code_si_es_necesario(t_pcb *un_pcb){
-	printf("Voy a chequear si necesita un nuevo exit code\n");
-	pid_nuevo_exit_code *p_n_e_c = list_get(lista_pids_con_nuevos_exit_code,0);
-	log_info(kernel_log, "Lista pid: %d, lista exit_code: %d y PCB id: %d\n",p_n_e_c->pid,p_n_e_c->nuevo_exit_code,un_pcb->id_proceso);
-	//printf("Lista pid: %d, lista exit_code: %d y PCB id: %d\n",p_n_e_c->pid,p_n_e_c->nuevo_exit_code,un_pcb->id_proceso);
 	if(tiene_nuevo_exit_code(un_pcb->id_proceso)){
 		printf("Necesita un nuevo exit code\n");
 		pid_nuevo_exit_code *p_n_e_c = obtener_p_n_e_c_segun_PID(un_pcb->id_proceso);
@@ -785,7 +781,10 @@ void wake_up(int pos_semaforo){
 	}
 	list_remove_and_destroy_by_condition(lista_bloqueos,(void *)es_este_bloqueo,(void *)bloqueo_destroy);
 	t_pcb *un_pcb = obtener_PCB_segun_PID_en(listaPCBs_BLOCK,pid);
-	transicion_colas_proceso(listaPCBs_BLOCK,listaPCBs_READY,un_pcb);
+	if(tiene_este_pcb(listaPCBs_BLOCK,pid)){
+		transicion_colas_proceso(listaPCBs_BLOCK,listaPCBs_READY,un_pcb);
+	}
+
 }
 
 void atenderACPU(cliente_CPU *unaCPU){

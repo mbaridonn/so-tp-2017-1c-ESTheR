@@ -202,6 +202,11 @@ bool str_compare(char vec1[],char vec2[]){
 	return true;
 }
 
+void inicializarVariablesGlobales(){
+	if(strcmp(rutaArchivo,"/home/utnso/git/tp-2017-1c-C-digo-Facilito/Kernel/src/configKernelCompleta") == 0){
+		config->SEM_INIT[2]++;
+	}
+}
 
 void mostrar_tipo_de_algoritmo_de_planificacion(){
 	if (str_compare("FIFO", config->ALGORITMO)) {
@@ -620,6 +625,7 @@ int main(int argc, char* argv[]) {
 	inicializar_contadores_procesos();
 
 	leerArchivoConfig();
+	inicializarVariablesGlobales();
 	free(rutaArchivo);
 
 	int i, procesoConectado;
