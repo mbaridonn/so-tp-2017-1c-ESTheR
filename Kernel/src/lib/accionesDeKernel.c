@@ -416,7 +416,6 @@ void finalizarUnProceso(t_pcb *pcb) {
 		//printf("Error enviando el process_id\n");
 		exit(-1);
 	}
-	log_info(kernel_log, "Se finalizo el proceso %d.",pcb->id_proceso);
 	//printf("Se finalizo el proceso %d.\n",pcb->id_proceso);
 	poner_proceso_en_EXIT(pcb);
 	if(hayMemoryLeaksDe(pcb->id_proceso)){
@@ -429,6 +428,7 @@ void finalizarUnProceso(t_pcb *pcb) {
 	liberarArchivosDeProceso(pcb->id_proceso);
 	avisar_finalizacion_proceso_a_consola(pcb->id_proceso);
 	//cerrar_conexion_con(obtener_cliente_segun_PID(pcb->id_proceso));
+	log_info(kernel_log, "Se finalizo el proceso %d con exit_code: %d.",pcb->id_proceso,pcb->exit_code);
 	eliminar_proc_por_cliente_segun_PID(pcb->id_proceso);
 
 }

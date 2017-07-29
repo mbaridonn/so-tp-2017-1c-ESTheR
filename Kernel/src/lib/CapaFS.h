@@ -24,6 +24,9 @@ typedef struct{
 	int offset;
 } entradaTablaArchivosDeProceso;
 
+entradaTablaArchivosGlobal tablaArchivosGlobal[CANT_ARCH_TABLA_ARCH];
+entradaTablaArchivosDeProceso tablasDeArchivosDeProcesos[CANT_PROC_TABLA_ARCH][CANT_ARCH_TABLA_ARCH];
+
 void inicializarLogCapaFS(t_log* log);
 void liberarArchivosDeProceso(int PID);
 void inicializarTablasDeArchivos();

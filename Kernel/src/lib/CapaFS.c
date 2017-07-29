@@ -3,8 +3,7 @@
 
 t_log* kernel_log;
 
-entradaTablaArchivosGlobal tablaArchivosGlobal[CANT_ARCH_TABLA_ARCH];
-entradaTablaArchivosDeProceso tablasDeArchivosDeProcesos[CANT_PROC_TABLA_ARCH][CANT_ARCH_TABLA_ARCH];
+
 //Contiene TODAS las tablas de archivos de procesos, se accede a cada tabla por PID
 
 void inicializarLogCapaFS(t_log* log){

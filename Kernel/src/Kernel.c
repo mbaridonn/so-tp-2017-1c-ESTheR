@@ -394,11 +394,11 @@ void realizar_finalizacion_forsoza(int pid){
 
 void habilitarConsolaKernel() {
 	char* lineaIngresada;
-	char* subcomando = reservarMemoria(100);
-	lineaIngresada = reservarMemoria(100);
-	subcomando = reservarMemoria(100);
+	char* subcomando;
 	int seguirAbierto = 1;
 	do {
+		lineaIngresada = reservarMemoria(100);
+		subcomando = reservarMemoria(100);
 	printf("Comandos: (l)istado procesos, (i)nfo proceso, (t)abla global, \n "
 		             "(g)rado multiprogramación, (f)inalizar proceso, (d)etener planificación\n"
 		             "(c)lear\n");
@@ -466,7 +466,7 @@ void habilitarConsolaKernel() {
 			mostrar_info_de(atoi(opcion));
 			t_list *lista = lista_que_tiene_este_pcb(atoi(opcion));
 			t_pcb *pcb = obtener_PCB_segun_PID_en(lista,atoi(opcion));
-			log_info(kernel_log, "EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
+			printf(kernel_log, "El exit code del proceso es: %d\n",pcb->exit_code);
 			//printf("EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
 			free(opcion);
 			break;
@@ -474,7 +474,13 @@ void habilitarConsolaKernel() {
 		case 't':
 		{
 			printf("Tabla Global:");
-
+			int i = 0, j=0;
+				for(i=0;i<CANT_PROC_TABLA_ARCH;i++){
+					for(j=0;j<CANT_ARCH_TABLA_ARCH;j++){
+						printf("%d ",tablasDeArchivosDeProcesos[i][j].fdGlobal);
+					}
+					printf("\n");
+				}
 			break;
 		}
 		case 'g':
@@ -503,7 +509,10 @@ void habilitarConsolaKernel() {
 			char *opcion = reservarMemoria(100);
 			fgets(opcion, 100, stdin);
 			int id_proceso_a_detener = atoi(opcion);
-			realizar_finalizacion_forsoza(id_proceso_a_detener);
+			int consola = obtener_cliente_segun_PID(id_proceso_a_detener);
+			pid_nuevo_exit_code *p_n_e_c = crear_pid_nuevo_exit_code(id_proceso_a_detener,-13);
+			list_add(lista_pids_con_nuevos_exit_code,p_n_e_c);
+			finalizar_programas_de(consola);
 			free(opcion);
 			break;
 
@@ -526,9 +535,9 @@ void habilitarConsolaKernel() {
 			break;
 		}
 		}
+		free(lineaIngresada);
+		free(subcomando);
 	} 	while(seguirAbierto);
-	free(lineaIngresada);
-	free(subcomando);
 }
 
 void abrirHiloConsolaKernel(){
