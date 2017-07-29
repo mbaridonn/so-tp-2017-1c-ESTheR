@@ -460,13 +460,13 @@ void habilitarConsolaKernel() {
 		case 'i':
 		{
 			printf("Info");
-			printf("Ingrese el ID del proceso a finalizar: ");
+			printf("Ingrese el ID del proceso para obtener info: ");
 			char *opcion = reservarMemoria(100);
 			fgets(opcion, 100, stdin);
 			mostrar_info_de(atoi(opcion));
 			t_list *lista = lista_que_tiene_este_pcb(atoi(opcion));
 			t_pcb *pcb = obtener_PCB_segun_PID_en(lista,atoi(opcion));
-			printf(kernel_log, "El exit code del proceso es: %d\n",pcb->exit_code);
+			printf("El exit code del proceso es: %d\n",pcb->exit_code);
 			//printf("EL FAMOSO EXIT_CODE ES: %d\n",pcb->exit_code);
 			free(opcion);
 			break;
