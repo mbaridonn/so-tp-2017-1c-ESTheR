@@ -42,12 +42,14 @@ int *obtener_FDs_de_proceso(int PID){
 void enviarPathAFS(char *path){
 	int tamPath = strlen(path)+1;
 	if (send(servFS, &tamPath, sizeof(int), 0) == -1) {
-		printf("Error enviando la longitud del Path\n");
+		log_error(kernel_log, "Error enviando la longitud del Path");
+		//printf("Error enviando la longitud del Path\n");
 		exit(-1);
 	}
 	esperarSenialDeFS();
 	if (send(servFS, path, tamPath, 0) == -1) {
-		printf("Error enviando el Path\n");
+		log_error(kernel_log, "Error enviando el Path");
+		//printf("Error enviando el Path\n");
 		exit(-1);
 	}
 }
@@ -55,7 +57,8 @@ void enviarPathAFS(char *path){
 int recibirIntDeFS(){
 	int valor;
 	if (recv(servFS, &valor, sizeof(int), 0) == -1) {
-		printf("Error recibiendo el archivo\n");
+		log_error(kernel_log, "Error recibiendo el archivo");
+		//printf("Error recibiendo el archivo\n");
 		exit(-1);
 	}
 	return valor;
@@ -72,7 +75,8 @@ u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_bander
 	avisarAccionAFS(k_fs_validar_archivo);
 	enviarPathAFS(direccion);
 	if (recv(servFS, &existeArchivo, sizeof(bool), 0) == -1) {
-		printf("Error recibiendo si el archivo existe\n");
+		log_error(kernel_log, "Error recibiendo si el archivo existe");
+		//printf("Error recibiendo si el archivo existe\n");
 		exit(-1);
 	}
 	if(!existeArchivo){
@@ -93,7 +97,8 @@ u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_bander
 
 
 	if(PID>=CANT_PROC_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
+		log_error(kernel_log, "Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d", PID);
+		//printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
 	}
 
@@ -115,7 +120,8 @@ u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_bander
 		i=0;
 		while((tablaArchivosGlobal[i].nombreArchivo != NULL) && (i<CANT_ARCH_TABLA_ARCH)) i++;
 		if(i==CANT_ARCH_TABLA_ARCH){
-			printf("No hay más entradas disponibles en la tabla de archivos global\n");
+			log_error(kernel_log, "No hay más entradas disponibles en la tabla de archivos global");
+			//printf("No hay más entradas disponibles en la tabla de archivos global\n");
 			exit(-1);
 		}
 		tablaArchivosGlobal[i].nombreArchivo = string_duplicate(direccion);
@@ -129,7 +135,8 @@ u_int32_t abrirArchivo(int PID, /*t_direccion_archivo*/char* direccion, t_bander
 	int j=0;
 	while((tablasDeArchivosDeProcesos[PID][j].flags!=NULL) && j<CANT_ARCH_TABLA_ARCH) j++;
 	if(j==CANT_ARCH_TABLA_ARCH){
-		printf("No hay más entradas disponibles en la tabla de archivos del proceso\n");
+		log_error(kernel_log, "No hay más entradas disponibles en la tabla de archivos del proceso");
+		//printf("No hay más entradas disponibles en la tabla de archivos del proceso\n");
 		exit(-1);
 	}
 	tablasDeArchivosDeProcesos[PID][j].flags = string_duplicate(strFlags);
@@ -154,18 +161,21 @@ void entradaTablaArchivosGlobal_limpiar(entradaTablaArchivosGlobal *entrada){
 
 void cerrarArchivo(int PID, u_int32_t fileDescriptor){
 	if(PID>=CANT_PROC_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
+		log_error(kernel_log, "Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d", PID);
+		//printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
 	}
 	if(fileDescriptor>=CANT_ARCH_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
+		log_error(kernel_log, "Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u", fileDescriptor);
+		//printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
 		exit(-1);
 	}
 
 	//Actualizo tabla de archivos del proceso
 	int posicionReal = fileDescriptor - 3;//(!)
 	if(tablasDeArchivosDeProcesos[PID][posicionReal].flags==NULL){
-		printf("No existe la entrada en la tabla de archivos del proceso\n");
+		log_error(kernel_log, "No existe la entrada en la tabla de archivos del proceso");
+		//printf("No existe la entrada en la tabla de archivos del proceso\n");
 		exit(-1);
 	}
 	u_int32_t fdGlobal = tablasDeArchivosDeProcesos[PID][posicionReal].fdGlobal;
@@ -180,17 +190,20 @@ void cerrarArchivo(int PID, u_int32_t fileDescriptor){
 
 int borrarArchivo(int PID, u_int32_t fileDescriptor){
 	if(PID>=CANT_PROC_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
+		log_error(kernel_log, "Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d", PID);
+		//printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
 	}
 	if(fileDescriptor>=CANT_ARCH_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
+		log_error(kernel_log, "Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u", fileDescriptor);
+		//printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
 		exit(-1);
 	}
 
 	int posicionReal = fileDescriptor - 3;//(!)
 	if(tablasDeArchivosDeProcesos[PID][posicionReal].flags==NULL){
-		printf("No existe la entrada en la tabla de archivos del proceso\n");
+		log_error(kernel_log, "No existe la entrada en la tabla de archivos del proceso");
+		//printf("No existe la entrada en la tabla de archivos del proceso\n");
 		exit(-1);
 	}
 	u_int32_t fdGlobal = tablasDeArchivosDeProcesos[PID][posicionReal].fdGlobal;
@@ -203,24 +216,28 @@ int borrarArchivo(int PID, u_int32_t fileDescriptor){
 		//cerrarArchivo(PID,fileDescriptor); NO SE TIENE QUE HACER AUTOMÁTICAMENTE
 		return k_cpu_accion_OK;
 	} else {
-		printf("El archivo no puede ser borrado, ya que está abierto por otro proceso\n");
+		log_info(kernel_log, "El archivo no puede ser borrado, ya que está abierto por otro proceso");
+		//printf("El archivo no puede ser borrado, ya que está abierto por otro proceso\n");
 		return k_cpu_error;
 	}
 }
 
 void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int posicion){
 	if(PID>=CANT_PROC_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
+		log_error(kernel_log, "Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d", PID);
+		//printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
 	}
 	if(fileDescriptor>=CANT_ARCH_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
+		log_error(kernel_log, "Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u", fileDescriptor);
+		//printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
 		exit(-1);
 	}
 
 	int posicionReal = fileDescriptor - 3;//(!)
 	if(tablasDeArchivosDeProcesos[PID][posicionReal].flags==NULL){
-		printf("No existe la entrada en la tabla de archivos del proceso\n");
+		log_error(kernel_log, "No existe la entrada en la tabla de archivos del proceso");
+		//printf("No existe la entrada en la tabla de archivos del proceso\n");
 		exit(-1);
 	}
 
@@ -229,17 +246,20 @@ void moverCursorArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/i
 
 char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tamanio){
 	if(PID>=CANT_PROC_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
+		log_error(kernel_log, "Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d", PID);
+		//printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
 	}
 	if(fileDescriptor>=CANT_ARCH_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
+		log_error(kernel_log, "Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u", fileDescriptor);
+		//printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
 		exit(-1);
 	}
 
 	int posicionReal = fileDescriptor - 3;//(!)
 	if(tablasDeArchivosDeProcesos[PID][posicionReal].flags==NULL){
-		printf("No existe la entrada en la tabla de archivos del proceso\n");
+		log_error(kernel_log, "No existe la entrada en la tabla de archivos del proceso");
+		//printf("No existe la entrada en la tabla de archivos del proceso\n");
 		exit(-1);
 	}
 
@@ -253,7 +273,8 @@ char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tam
 		avisarAccionAFS(tamanio);//Uso avisarAccion para pasar parámetro
 		char* bytesLeidos = reservarMemoria(tamanio);
 		if (recv(servFS, bytesLeidos, tamanio, 0) == -1) {
-			printf("Error recibiendo el archivo leido\n");
+			log_error(kernel_log, "Error recibiendo el archivo leido");
+			//printf("Error recibiendo el archivo leido\n");
 			exit(-1);
 		}
 		//Enviar mensaje a CPU con los bytesLeidos, para que lo almacene en su puntero informacion
@@ -268,42 +289,51 @@ char* leerArchivo(int PID, u_int32_t fileDescriptor, /*t_valor_variable*/int tam
 int escribirArchivo(int PID, u_int32_t fileDescriptor, char* bytesAEscribir, /*t_valor_variable*/int tamanio){
 	if(fileDescriptor == 1){
 		int consola = obtener_cliente_segun_PID(PID), tam = tamanio;
-		printf("Nro consola: %d\n", consola);
+		log_info(kernel_log, "Nro consola: %d", consola);
+		//printf("Nro consola: %d\n", consola);
 		if(consola != NULL){
 			int accion = print;
 			if(send(consola,&accion,sizeof(int),0)<0){
-				printf("Error enviando accion a consola\n");
+				log_error(kernel_log, "Error enviando accion a consola");
+				//printf("Error enviando accion a consola\n");
 				exit(-1);
 			}
 			esperarSenialDeCPU(&consola);
 			if(send(consola,&tam,sizeof(int),0)<0){
-				printf("Error enviando tamanio a consola\n");
+				log_error(kernel_log, "Error enviando tamanio a consola");
+				//printf("Error enviando tamanio a consola\n");
 				exit(-1);
 			}
 			if(send(consola,bytesAEscribir,tamanio,0)<0){
-				printf("Error enviando bytesAEscribir a consola\n");
+				log_error(kernel_log, "Error enviando bytesAEscribir a consola");
+				//printf("Error enviando bytesAEscribir a consola\n");
 				exit(-1);
 			}
-			printf("Le envie los bytes a consola\n");
+			log_info(kernel_log, "Le envie los bytes a consola");
+			//printf("Le envie los bytes a consola\n");
 			esperarSenialDeCPU(&consola);
 		} else {
-			printf("No se pudo enviar mensaje a consola, ésta se encuentra desconectada\n");
+			log_info(kernel_log, "No se pudo enviar mensaje a consola, ésta se encuentra desconectada");
+			//printf("No se pudo enviar mensaje a consola, ésta se encuentra desconectada\n");
 		}
 		return k_cpu_accion_OK;
 	}
 
 	if(PID>=CANT_PROC_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
+		log_error(kernel_log, "Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d", PID);
+		//printf("Es necesario incrementar CANT_PROC_TABLA_ARCH para poder ubicar al proceso %d\n", PID);
 		exit(-1);
 	}
 	if(fileDescriptor>=CANT_ARCH_TABLA_ARCH){
-		printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
+		log_error(kernel_log, "Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u", fileDescriptor);
+		//printf("Es necesario incrementar CANT_ARCH_TABLA_ARCH para poder ubicar al archivo %u\n", fileDescriptor);
 		exit(-1);
 	}
 
 	int posicionReal = fileDescriptor - 3;//(!)
 	if(tablasDeArchivosDeProcesos[PID][posicionReal].flags==NULL){
-		printf("No existe la entrada en la tabla de archivos del proceso\n");
+		log_error(kernel_log, "No existe la entrada en la tabla de archivos del proceso");
+		//printf("No existe la entrada en la tabla de archivos del proceso\n");
 		exit(-1);
 	}
 
